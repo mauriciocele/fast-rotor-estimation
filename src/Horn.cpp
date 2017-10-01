@@ -13,9 +13,9 @@ Quaterniond Horn(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vec
 {
 	Matrix3d M;
 	Matrix4d N;
-	int n = P.size();
+	const size_t n = P.size();
 	M.setZero();
-	for (int j = 0; j < n; ++j)
+	for (size_t j = 0; j < n; ++j)
 	{
 		M += w[j] * P[j] * Q[j].transpose();
 	}
