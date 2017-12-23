@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+*.log
+*.tlog
+*.pdb
+*.db
+*.opendb
+.vs/Estimator/v14/.suo
