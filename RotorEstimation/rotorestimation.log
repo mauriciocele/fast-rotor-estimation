@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.11)  23 DEC 2017 12:41
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.11)  24 FEB 2018 11:42
 entering extended mode
 **rotorestimation.tex
 
@@ -238,41 +238,98 @@ Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
 \ALC@tlm=\skip51
 \algorithmicindent=\skip52
 )
+(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\booktabs\booktabs.sty
+Package: booktabs 2005/04/14 v1.61803 publication quality tables
+\heavyrulewidth=\dimen130
+\lightrulewidth=\dimen131
+\cmidrulewidth=\dimen132
+\belowrulesep=\dimen133
+\belowbottomsep=\dimen134
+\aboverulesep=\dimen135
+\abovetopsep=\dimen136
+\cmidrulesep=\dimen137
+\cmidrulekern=\dimen138
+\defaultaddspace=\dimen139
+\@cmidla=\count120
+\@cmidlb=\count121
+\@aboverulesep=\dimen140
+\@belowrulesep=\dimen141
+\@thisruleclass=\count122
+\@lastruleclass=\count123
+\@thisrulewidth=\dimen142
+)
+(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\caption\caption.sty
+Package: caption 2013/05/02 v3.3-89 Customizing captions (AR)
+
+(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\caption\caption3.sty
+Package: caption3 2013/05/02 v1.6-88 caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 57.
+\captionmargin=\dimen143
+\captionmargin@=\dimen144
+\captionwidth=\dimen145
+\caption@tempdima=\dimen146
+\caption@indent=\dimen147
+\caption@parindent=\dimen148
+\caption@hangindent=\dimen149
+Package caption Info: Unknown document class (or package),
+(caption)             standard defaults will be used.
+)
+
+Package caption Warning: Unsupported document class (or package) detected,
+(caption)                usage of the caption package is not recommended.
+See the caption package documentation for explanation.
+
+Package caption Info: \@makecaption = \long macro:#1#2->\setbox \@tempboxa \vbo
+x {\color@setgroup \advance \hsize -2\captionindent \noindent \@captionfont \@c
+aptionheadfont #1\@xp \@ifnotempty \@xp {\@cdr #2\@nil }{.\@captionfont \upshap
+e \enspace #2}\unskip \kern -2\captionindent \par \global \setbox \@ne \lastbox
+ \color@endgroup }\ifhbox \@ne \setbox \@ne \hbox {\unhbox \@ne \unskip \unskip
+ \unpenalty \unkern }\fi \ifdim \wd \@tempboxa =\z@ \setbox \@ne \hbox to\colum
+nwidth {\hss \kern -2\captionindent \box \@ne \hss }\else \setbox \@ne \vbox {\
+unvbox \@tempboxa \parskip \z@skip \noindent \unhbox \@ne \advance \hsize -2\ca
+ptionindent \par }\fi \ifnum \@tempcnta <64 \addvspace \abovecaptionskip \mover
+ight \captionindent \box \@ne \else \moveright \captionindent \box \@ne \nobrea
+k \vskip \belowcaptionskip \fi \relax .
+Package caption Info: AMS or SMF document class.
+\c@ContinuedFloat=\count124
+Package caption Info: float package is loaded.
+Package caption Info: listings package is loaded.
+)
 (D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.aux
 )
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Try loading font information for U+msa on input line 28.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Try loading font information for U+msa on input line 31.
  ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 28.
+LaTeX Font Info:    Try loading font information for U+msb on input line 31.
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 (C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count120
-\scratchdimen=\dimen130
+\scratchcounter=\count125
+\scratchdimen=\dimen150
 \scratchbox=\box35
-\nofMPsegments=\count121
-\nofMParguments=\count122
+\nofMPsegments=\count126
+\nofMParguments=\count127
 \everyMPshowfont=\toks31
-\MPscratchCnt=\count123
-\MPscratchDim=\dimen131
-\MPnumerator=\count124
-\makeMPintoPDFobject=\count125
+\MPscratchCnt=\count128
+\MPscratchDim=\dimen151
+\MPnumerator=\count129
+\makeMPintoPDFobject=\count130
 \everyMPtoPDFconversion=\toks32
 )
 *geometry* driver: auto-detecting
@@ -309,24 +366,28 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-\c@lstlisting=\count126
+\c@lstlisting=\count131
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
 [1
 Non-PDF special ignored!{C:/Users/Mauricio/AppData/Local/MiKTeX/2.9/pdftex/conf
-ig/pdftex.map}]
-Underfull \vbox (badness 2012) has occurred while \output is active []
-
- [2]
-[3] [4] [5] [6]
-Overfull \hbox (23.51218pt too wide) in alignment at lines 287--295
+ig/pdftex.map}] [2] [3] [4] [5] [6] [7]
+Overfull \hbox (23.51218pt too wide) in alignment at lines 259--267
  [][][] []
  []
 
 
-Overfull \hbox (63.92099pt too wide) in alignment at lines 304--312
+Overfull \hbox (63.92099pt too wide) in alignment at lines 276--284
  [][][] []
  []
 
-[7] [8] [9]
+[8] [9] [10] <time.jpg, id=49, 977.6525pt x 788.9475pt>
+File: time.jpg Graphic file (type jpg)
+ <use time.jpg>
+Package pdftex.def Info: time.jpg used on input line 462.
+(pdftex.def)             Requested size: 332.89726pt x 268.6479pt.
+ [11]
+[12 <D:/Research/Projects/fast-rotor-estimation/RotorEstimation/time.jpg>]
 (C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2014/09/06 1.5e listings language file
 )
@@ -336,38 +397,35 @@ File: lstlang1.sty 2014/09/06 1.5e listings language file
 (C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstmisc.sty
 File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
 )
-LaTeX Font Info:    Try loading font information for OML+cmr on input line 878.
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 480.
 
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omlcmr.fd"
 File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <6> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 878.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 879.
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 480.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 481.
 
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 879.
- [10] [11]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 481.
+
 (D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.bbl
-
-LaTeX Warning: Empty `thebibliography' environment on input line 3.
-
-) [12]
+[13]) [14]
 (D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.aux
 ) ) 
 Here is how much of TeX's memory you used:
- 4713 strings out of 493921
- 62858 string characters out of 3144866
- 201773 words of memory out of 3000000
- 7789 multiletter control sequences out of 15000+200000
- 13256 words of font info for 51 fonts, out of 3000000 for 9000
+ 5806 strings out of 493921
+ 82617 string characters out of 3144866
+ 189110 words of memory out of 3000000
+ 8870 multiletter control sequences out of 15000+200000
+ 13601 words of font info for 52 fonts, out of 3000000 for 9000
  1002 hyphenation exceptions out of 8191
- 34i,13n,60p,1334b,1655s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,13n,60p,1445b,1304s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmb10.pfb>
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><
 C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:
@@ -386,12 +444,13 @@ onts/type1/public/amsfonts/cm/cmr9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
 ype1/public/amsfonts/cm/cmsy6.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type
 1/public/amsfonts/cm/cmsy7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/p
 ublic/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/pub
-lic/amsfonts/cm/cmtt9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/amsfonts/symbols/msbm10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/pub
-lic/amsfonts/symbols/msbm7.pfb>
-Output written on rotorestimation.pdf (12 pages, 276529 bytes).
+lic/amsfonts/cm/cmti9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/amsfonts/cm/cmtt9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/am
+sfonts/symbols/msbm10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/amsfonts/symbols/msbm7.pfb>
+Output written on rotorestimation.pdf (14 pages, 913967 bytes).
 PDF statistics:
- 125 PDF objects out of 1000 (max. 8388607)
+ 137 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

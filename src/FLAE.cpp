@@ -26,7 +26,7 @@ Quaterniond Flae(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vec
 	MM.setZero();
 	for (size_t j = 0; j < N; ++j)
 	{
-		MM.noalias() += w[j] * Q[j] * P[j].transpose();
+		MM.noalias() += (w[j] * Q[j]) * P[j].transpose();
 	}
 
 	Hx1 = MM(0, 0);    Hx2 = MM(0, 1);    Hx3 = MM(0, 2);
@@ -101,7 +101,7 @@ Quaterniond FlaeNewton(const vector<Vector3d>& P, const vector<Vector3d>& Q, con
 	MM.setZero();
 	for (size_t j = 0; j < N; ++j)
 	{
-		MM.noalias() += w[j] * Q[j] * P[j].transpose();
+		MM.noalias() += (w[j] * Q[j]) * P[j].transpose();
 	}
 
 	Hx1 = MM(0, 0);    Hx2 = MM(0, 1);    Hx3 = MM(0, 2);

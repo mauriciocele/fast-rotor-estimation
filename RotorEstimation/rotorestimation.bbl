@@ -1,3 +1,63 @@
-\begin{thebibliography}{}
+\begin{thebibliography}{10}
+
+\bibitem{Horn1987}
+B.~K.~P. Horn.
+\newblock Closed-form solution of absolute orientation using unit quaternions.
+\newblock {\em Journal of the Optical Society of America A}, 4(4):629--642,
+  1987.
+
+\bibitem{Mortari1996}
+D.~Mortari.
+\newblock {EULER-q algorithm for attitude determination from vector
+  observations}.
+\newblock {\em Journal of Guidance, Control, and Dynamics}, 21(2):328--334,
+  1998.
+
+\bibitem{Nieto2012}
+J.~R. Nieto and A.~Sus{\'\i}n.
+\newblock Cage based deformations: A survey.
+\newblock {\em Deformation Models: Tracking, Animation and Applications}, 7:75,
+  2012.
+
+\bibitem{Perwass2009}
+C.~B.~U. Perwass.
+\newblock {\em Geometric algebra with applications in engineering}, volume~4 of
+  {\em Geometry and Computing}.
+\newblock Springer, Berlin; Heidelberg, 2009.
+
+\bibitem{Shuster1981}
+M.~D. Shuster and S.~D. Oh.
+\newblock {Three-axis attitude determination from vector observations}.
+\newblock {\em Journal of Guidance, Control, and Dynamics}, 4(1):70--77, 1981.
+
+\bibitem{Sin2013}
+F.~Sin, D.~Schroeder, and J.~Barbic.
+\newblock Vega: Non-linear fem deformable object simulator.
+\newblock {\em Comput. Graph. Forum}, 32(1):36--48, 2013.
+
+\bibitem{Sorkine2007}
+O.~Sorkine and M.~Alexa.
+\newblock As-rigid-as-possible surface modeling.
+\newblock In {\em Proceedings of the fifth Eurographics symposium on Geometry
+  processing}, SGP '07, pages 109--116, Aire-la-Ville, Switzerland,
+  Switzerland, 2007. Eurographics Association.
+
+\bibitem{Wahba1965}
+G.~Wahba.
+\newblock {A Least Squares Estimate of Satellite Attitude}, 1965.
+
+\bibitem{Wu2017}
+J.~Wu, Z.~Zhou, B.~Gao, R.~Li, Y.~Cheng, and H.~Fourati.
+\newblock {Fast Linear Quaternion Attitude Estimator Using Vector
+  Observations}.
+\newblock {\em IEEE Transactions on Automation Science and Engineering},
+  X(X):1--13, 2017.
+
+\bibitem{Yang2015}
+Y.~Yang.
+\newblock {Attitude determination using Newton's method on Riemannian
+  manifold}.
+\newblock {\em Proceedings of the Institution of Mechanical Engineers, Part G:
+  Journal of Aerospace Engineering}, 229(14):2737--2742, 2015.
 
 \end{thebibliography}

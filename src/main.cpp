@@ -15,6 +15,7 @@
 using namespace std;
 using namespace Eigen;
 
+
 Vector3d getRandomVector()
 {
 	auto e0 = (double)rand() / (double)RAND_MAX;
