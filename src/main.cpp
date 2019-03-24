@@ -14,7 +14,7 @@
 
 using namespace std;
 using namespace Eigen;
-
+using namespace std::placeholders;
 
 Vector3d getRandomVector()
 {
@@ -71,25 +71,6 @@ double benchmark(
 	return total;
 }
 
-double benchmarkIncr(
-	const vector<Vector3d>& P, 
-	const vector<Vector3d>& Q, 
-	const std::vector<double>& weights, 
-	function<Quaterniond(const vector<Vector3d>&, const vector<Vector3d>&, const vector<double>&, const Quaterniond&)> estimator)
-{
-	Quaterniond QI;
-	QI.setIdentity();
-	Quaterniond result;
-	double total = 0;
-	for (int i = 0; i < 5000000; ++i) {
-		clock_t time1 = clock();
-		result = estimator(P, Q, weights, QI);
-		clock_t time2 = clock();
-		total += time2 - time1;
-	}
-	return total;
-}
-
 int main(int argc, char* argv[])
 {
 	srand(static_cast<unsigned>(time(NULL)));
@@ -108,7 +89,7 @@ int main(int argc, char* argv[])
 	}
 
 	auto axis = getRandomVector();
-	auto angle = 2 * M_PI*getRandom();
+	auto angle = 2 * EIGEN_PI*getRandom();
 	Quaterniond Q;
 	Q = AngleAxisd(angle, axis);
 
@@ -124,6 +105,10 @@ int main(int argc, char* argv[])
 	Quaterniond flaeNewtonQ = FlaeNewton(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
+	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-6, 2);
+	Quaterniond  GAFastQ4 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-5, 4);
+	Quaterniond  GAFastQ8 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-4, 8);
+	Quaterniond  GAFastQ15 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-2, 15);
 	Quaterniond GANewtonQ = GANewtonRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdM = SVDMcAdams(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdE = SVDEigen(pointsOriginal, pointsTransformed, weights);
@@ -135,6 +120,10 @@ int main(int argc, char* argv[])
 	double errorFlaeNewton = WahbaError(pointsOriginal, pointsTransformed, flaeNewtonQ);
 	double errorGAFast = WahbaError(pointsOriginal, pointsTransformed, GAFastQ);
 	double errorGAFastInc = WahbaError(pointsOriginal, pointsTransformed, GAFastQInc);
+	double errorGAFast2 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ2);
+	double errorGAFast4 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ4);
+	double errorGAFast8 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ8);
+	double errorGAFast15 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ15);
 	double errorSVD = WahbaError(pointsOriginal, pointsTransformed, svdM);
 	double errorSVDE = WahbaError(pointsOriginal, pointsTransformed, svdE);
 	double errorHorn = WahbaError(pointsOriginal, pointsTransformed, hornQ);
@@ -146,11 +135,21 @@ int main(int argc, char* argv[])
 	std::cout << "FLAE Newton error " << errorFlaeNewton << endl;
 	std::cout << "GA Fast Rotor Estimator error " << errorGAFast << endl;
 	std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
+	std::cout << "GA Fast Rotor Estimator Aprox 2 error " << errorGAFast2 << endl;
+	std::cout << "GA Fast Rotor Estimator Aprox 4 error " << errorGAFast4 << endl;
+	std::cout << "GA Fast Rotor Estimator Aprox 8 error " << errorGAFast8 << endl;
+	std::cout << "GA Fast Rotor Estimator Aprox 15 error " << errorGAFast15 << endl;
 	std::cout << "GA Rotor Estimator Newton error " << errorGANewton << endl;
 	std::cout << "GA Valkenburg error " << errorGAValkenburg << endl;
 	std::cout << "SVD McAdams error " << errorSVD << endl;
 	std::cout << "SVD error " << errorSVDE << endl;
 	std::cout << "Horn error " << errorHorn << endl;
+
+	auto GAFastRotorEstimatorIncrQI = std::bind(GAFastRotorEstimatorIncr, _1, _2, _3, QI);
+	auto GAFastRotorEstimatorAprox2 = std::bind(GAFastRotorEstimatorAprox, _1, _2, _3, 1e-6, 2);
+	auto GAFastRotorEstimatorAprox4 = std::bind(GAFastRotorEstimatorAprox, _1, _2, _3, 5e-5, 4);
+	auto GAFastRotorEstimatorAprox8 = std::bind(GAFastRotorEstimatorAprox, _1, _2, _3, 5e-4, 8);
+	auto GAFastRotorEstimatorAprox15 = std::bind(GAFastRotorEstimatorAprox, _1, _2, _3, 5e-2, 15);
 
 	double total;
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Flae);
@@ -162,8 +161,20 @@ int main(int argc, char* argv[])
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
 	std::cout << "Exec time GAFastRotorEstimator: " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
 
-	total = benchmarkIncr(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorIncr);
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorIncrQI);
 	std::cout << "Exec time GAFastRotorEstimator Incremental: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox2);
+	std::cout << "Exec time GAFastRotorEstimator Aprox 2: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox4);
+	std::cout << "Exec time GAFastRotorEstimator Aprox 4: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox8);
+	std::cout << "Exec time GAFastRotorEstimator Aprox 8: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox15);
+	std::cout << "Exec time GAFastRotorEstimator Aprox 15: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GANewtonRotorEstimator);
 	std::cout << "Exec time GARotorEstimator Newton: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
