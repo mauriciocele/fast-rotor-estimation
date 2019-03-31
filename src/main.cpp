@@ -11,6 +11,7 @@
 #include "ArunSVD.h"
 #include "Horn.h"
 #include "GAValkenburg.h"
+#include "FA3R.h"
 
 using namespace std;
 using namespace Eigen;
@@ -62,7 +63,7 @@ double benchmark(
 {
 	ResultType result;
 	double total = 0;
-	for (int i = 0; i < 5000000; ++i) {
+	for (int i = 0; i < 2500000; ++i) {
 		clock_t time1 = clock();
 		result = estimator(P, Q, weights);
 		clock_t time2 = clock();
@@ -102,7 +103,10 @@ int main(int argc, char* argv[])
 	QI.setIdentity();
 
 	Quaterniond flaeQ = Flae(pointsOriginal, pointsTransformed, weights);
+	Quaterniond flaeSymbolicQ = FlaeSymbolic(pointsOriginal, pointsTransformed, weights);
 	Quaterniond flaeNewtonQ = FlaeNewton(pointsOriginal, pointsTransformed, weights);
+	Matrix3d FA3EDoubleM = FA3R_double(pointsOriginal, pointsTransformed, weights);
+	Matrix3d FA3EIntM = FA3R_int(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
 	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-6, 2);
@@ -117,7 +121,10 @@ int main(int argc, char* argv[])
 
 	double errorGroundTruth = WahbaError(pointsOriginal, pointsTransformed, Q);
 	double errorFlae = WahbaError(pointsOriginal, pointsTransformed, flaeQ);
+	double errorFlaeSymbolic = WahbaError(pointsOriginal, pointsTransformed, flaeSymbolicQ);	
 	double errorFlaeNewton = WahbaError(pointsOriginal, pointsTransformed, flaeNewtonQ);
+	double errorFA3RDouble = WahbaError(pointsOriginal, pointsTransformed, FA3EDoubleM);
+	double errorFA3RInt = WahbaError(pointsOriginal, pointsTransformed, FA3EIntM);
 	double errorGAFast = WahbaError(pointsOriginal, pointsTransformed, GAFastQ);
 	double errorGAFastInc = WahbaError(pointsOriginal, pointsTransformed, GAFastQInc);
 	double errorGAFast2 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ2);
@@ -132,7 +139,10 @@ int main(int argc, char* argv[])
 
 	std::cout << "Ground Truth error " << errorGroundTruth << endl;
 	std::cout << "FLAE error " << errorFlae << endl;
+	std::cout << "FLAE Symbolic error " << errorFlaeSymbolic << endl;
 	std::cout << "FLAE Newton error " << errorFlaeNewton << endl;
+	std::cout << "FA3R Double error " << errorFA3RDouble << endl;
+	std::cout << "FA3R Int error " << errorFA3RInt << endl;
 	std::cout << "GA Fast Rotor Estimator error " << errorGAFast << endl;
 	std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 2 error " << errorGAFast2 << endl;
@@ -155,8 +165,17 @@ int main(int argc, char* argv[])
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Flae);
 	std::cout << "Exec time FLAE: "<< total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeSymbolic);
+	std::cout << "Exec time FLAE Symbolic: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeNewton);
 	std::cout << "Exec time FLAE Newton: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_double);
+	std::cout << "Exec time FA3R Double: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_int);
+	std::cout << "Exec time FA3R Int: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
 	std::cout << "Exec time GAFastRotorEstimator: " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;

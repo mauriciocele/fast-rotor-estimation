@@ -10,6 +10,58 @@ using std::vector;
 using std::complex;
 using std::max;
 
+Quaterniond FlaeSymbolic(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
+{
+	Matrix3d  sigma_;
+
+	const size_t N = P.size();
+	sigma_.setZero();
+
+	for (size_t i = 0; i < N; ++i) {
+		sigma_ += (w[i] * Q[i]) * P[i].transpose();
+	}
+
+	Matrix3d A = sigma_ - sigma_.transpose();
+	Matrix3d tmp;
+	Vector3d D(A(1, 2), A(2, 0), A(0, 1));
+	Matrix4d QQ;
+	QQ(0, 0) = sigma_(0, 0) + sigma_(1, 1) + sigma_(2, 2);
+	tmp = sigma_ + sigma_.transpose();
+	tmp(0, 0) -= QQ(0, 0);    tmp(1, 1) -= QQ(0, 0);    tmp(2, 2) -= QQ(0, 0);
+	QQ(0, 1) = D.x();     QQ(0, 2) = D.y();     QQ(0, 3) = D.z();
+	QQ(1, 0) = D.x();     QQ(2, 0) = D.y();     QQ(3, 0) = D.z();
+
+	QQ(1, 1) = tmp(0, 0); QQ(1, 2) = tmp(0, 1); QQ(1, 3) = tmp(0, 2);
+	QQ(2, 1) = tmp(1, 0); QQ(2, 2) = tmp(1, 1); QQ(2, 3) = tmp(1, 2);
+	QQ(3, 1) = tmp(2, 0); QQ(3, 2) = tmp(2, 1); QQ(3, 3) = tmp(2, 2);
+
+	double c = QQ.determinant();
+	double b = -8.0 * sigma_.determinant();
+	double a = -2.0 * (sigma_(0, 0) * sigma_(0, 0) + sigma_(0, 1) * sigma_(0, 1) + sigma_(0, 2) * sigma_(0, 2) +
+		sigma_(1, 0) * sigma_(1, 0) + sigma_(1, 1) * sigma_(1, 1) + sigma_(1, 2) * sigma_(1, 2) +
+		sigma_(2, 0) * sigma_(2, 0) + sigma_(2, 1) * sigma_(2, 1) + sigma_(2, 2) * sigma_(2, 2));
+
+	double T0 = 2.0 * a * a * a + 27.0 * b * b - 72.0 * a * c;
+	double tt = a * a + 12.0 * c;
+	double theta = atan2(sqrt(4.0 * tt * tt * tt - T0 * T0), T0);
+	double aT1 = 1.259921049894873 * sqrt(tt) * cos(theta * 0.333333333333333333);
+	double T2 = sqrt(-4.0 * a + 3.174802103936399 * aT1);
+	double lambda = 0.204124145231932 * (T2 + sqrt(-T2 * T2 - 12.0 * a - 29.393876913398135 * b / T2));
+
+	double G11 = QQ(0, 0) - lambda, G12 = QQ(0, 1), G13 = QQ(0, 2), G14 = QQ(0, 3);
+	double G22 = QQ(1, 1) - lambda, G23 = QQ(1, 2), G24 = QQ(1, 3);
+	double G33 = QQ(2, 2) - lambda, G34 = QQ(2, 3);
+	double G44 = QQ(3, 3);
+
+	Quaterniond qRes = Quaterniond(
+		G14 * G23 * G23 - G13 * G23 * G24 - G14 * G22 * G33 + G12 * G24 * G33 + G13 * G22 * G34 - G12 * G23 * G34,
+		G13 * G13 * G24 + G12 * G14 * G33 - G11 * G24 * G33 + G11 * G23 * G34 - G13 * G14 * G23 - G13 * G12 * G34,
+		G13 * G14 * G22 - G12 * G14 * G23 - G12 * G13 * G24 + G11 * G23 * G24 + G12 * G12 * G34 - G11 * G22 * G34,
+		-(G13 * G13 * G22 - 2 * G12 * G13 * G23 + G11 * G23 * G23 + G12 * G12 * G33 - G11 * G22 * G33));
+	qRes.normalize();
+	return qRes;
+}
+
 Quaterniond Flae(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
 	Matrix3d MM;

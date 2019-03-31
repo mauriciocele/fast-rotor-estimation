@@ -37,3 +37,7 @@
 *.opendb
 .vs/Estimator/v14/.suo
 Estimator.sdf
+Debug/*
+Release/*
+x64/*
+src/x64/*
