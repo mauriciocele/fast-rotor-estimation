@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	}
 
 	auto axis = getRandomVector();
-	auto angle = 2 * EIGEN_PI*getRandom();
+	auto angle = 2 * EIGEN_PI* getRandom();
 	Quaterniond Q;
 	Q = AngleAxisd(angle, axis);
 

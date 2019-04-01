@@ -35,7 +35,7 @@
 *.pdb
 *.db
 *.opendb
-.vs/Estimator/v14/.suo
+.vs/*
 Estimator.sdf
 Debug/*
 Release/*
