@@ -70,9 +70,9 @@
 
 %\thanks{This work was completed with the support of our \TeX-pert.}
 %----------Author 2
-\author[Jin Wu]{Jin Wu}
-\address{University of Electronic Science and Technology of China, Chengdu, China}
-\email{jin\_wu\_uestc@hotmail.com}
+%\author[Jin Wu]{Jin Wu}
+%\address{University of Electronic Science and Technology of China, Chengdu, China}
+%\email{jin\_wu\_uestc@hotmail.com}
 
 %----------classification, keywords, date
 \subjclass{Parallel algorithms 68W10; Clifford algebras, spinors 15A66}
@@ -96,9 +96,10 @@ We present a fast estimator of the best rotation aligning two sets of correspond
 %\tableofcontents
 \section{Introduction}
 
-\indent Wahba's problem has been studied for over half a century since 1965 \cite{Wahba1965}. The problem seeks the optimal rotation between two sets of corresponding vectors. Until now, some effective algorithms have been proposed to solve the problem, including QUEST, Euler-q and FLAE \cite{Mortari1996,Shuster1981,Wu2017,Yang2015}. Not only for aerospace engineering computation of spacecraft attitude, the Wahba's solutions are applied to the mesh deformation in computer graphics \cite{Sorkine2007, Sin2013} for accurate motion construction and restoration \cite{Nieto2012,Perwass2009}. For computer engineering, the accuracy requirements are not so high as that in aerospace engineering. As mentioned in \cite{Wu2017}, the solving accuracy for non-extreme data sets can reach to the level of $1\times10^{-14}$ for accurate navigation. For normal storage of floating numbers in nowadays computers, the accuracy is only about $1\times10^{-6}$ to $1\times10^{-8}$, owning far less required word-length than aerospace ones. By swapping the accuracy with computation time, in this paper, we solve the problem of estimating the best rotation for the alignment of two sets of corresponding vectors (also known as Wahba's problem). The proposed method is fast, robust to noise, accurate and simple. It is based on solving the linear equations derived from the formulation of the problem in geometric algebra.
+\indent Wahba's problem has been studied for over half a century since 1965 \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective algorithms have been developed to solve the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Wu2017, Yang2015} using quaternions, the Singular Value Decomposition (SVD) and recently geometric algebra representation \cite{Perwass2009, Dorst2011}. Applications of Wahba's solutions are diverse from aerospace engineering computation of spacecraft attitude \cite{Wu2017} to mesh deformation in computer graphics \cite{Sorkine2007, Sin2013} for accurate motion construction and restoration \cite{Nieto2012, Perwass2009}. 
+In engineering fields for which the accuracy requirements are not high the computation time can be lowered down in more than 50\% by resigning a little bit of accuracy. In this work we propose a fast, robust to noise, simple and accurate method for solving the Wahba's problem. It is based on minimizing a convex least squares error formulated in geometric algebra $\mathbb{G}_3$. The proposed method can be applied for aligning vectors and bivectors alike.
 
-Few work has been done on studying this problem using geometric algebra. Geometric algebra rotors are closely related to quaternions (quaternion algebra can be regarded as a geometric algebra defined on a set of imaginary basis vectors) we find geometric algebra to be a more natural choice for studying this problem since it is defined over a Euclidean vector space $\mathbb R^3$, where original data is defined. Given the prevalence of quaternions in literature it is somewhat surprising that a similar solution in quaternion form has never been discovered, it seem that such solution was waiting for the appearance of geometric algebra. The implementation of our algorithm does not require access to any geometric algebra library, we present an implementation based on standard matrix and quaternion library. 
+Few work has been done on studying this problem using geometric algebra. Geometric algebra rotors are closely related to quaternions (quaternion algebra can be regarded as a geometric algebra defined on a set of imaginary basis vectors) we find geometric algebra to be a more natural choice for studying this problem since it is defined over a Euclidean vector space $\mathbb R^3$, where original data is defined. We derive our algorithm from Wahba's problem defined on bivectos instead of vectors for the sake of mathematical simplicity. By duality our formulation is valid also for vectors. The implementation of our algorithm does not require access to any geometric algebra library, we present an implementation based on standard matrix and quaternion library. 
 
 \indent This paper is arranged as follows: Section II introduces the geometric algebra $\mathbb{G}_3$, Section III includes the presentation of our fast rotor estimation algorithm. Section IV demonstrates the experimental results.
 
@@ -124,30 +125,37 @@ Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, w
 
 \section{Geometric Algebra Rotor Estimation}
 
-Given two sets of $n$ corresponding vectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to minimize the following error function:
+Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to minimize the following error function:
 \begin{eqnarray*}
 E(R) = \min_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|q_j - R p_i \tilde R\|^2 }\\
 s.t. \ R \tilde R = 1
 \end{eqnarray*}
-where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. In that form, the minimization is a nonlinear least squares problem in $R$. Following Perwass \cite{Perwass2009}, we can make it a linear least squares problem by multiplying by $R$ on the right and using the fact that $R \tilde R = 1$.
-\begin{eqnarray*}
-q_j - R p_j \tilde R = 0\\
-q_j R - R p_j \tilde R R = 0\\
-q_j R - R p_j = 0
-\end{eqnarray*}
-with the normalization constraint $R \tilde R = 1$ now implicit in the energy $E(R)$. Although the normalization is implicit, it is not enforced, so we will need to project $R$ back to the rotor manifold through normalization. So the equivalent linear least squares problem is:
+where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. In that form, the minimization is a nonlinear least squares problem in $R$. Notice that the error term $q_j - R p_i \tilde R$ is equivalent to $q_j R - R p_j$ by multiplying by $R$ on the right and using the fact that $R \tilde R = 1$. The equivalent least squares problem is:
 \begin{eqnarray*}
 E(R) = \min_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j - q_j R\|^2 }\\
+s.t. \ R \tilde R = 1
 \end{eqnarray*}
-Let $\Psi^j : \mathbb{G}^{+}_3 \mapsto \mathbb{G}^{-}_3$ be a function that maps even grade multivectors to odd grade multivectors. 
+Let $\mathcal K : \mathbb{G}^{+}_3 \mapsto \mathbb{R}^4$ be a function that maps a rotor to a $4\times1$ column matrix. 
 \begin{eqnarray*}
-\Psi^j(R) = \sqrt{c_{j}} (R p_j - q_j R)
+\mathcal K(R) = \left[\begin{array}{c} \langle R \rangle_0 \\ \langle R \rangle_{12} \\ \langle R \rangle_{13} \\ \langle R \rangle_{23} \end{array}\right]
 \end{eqnarray*}
-And let $F^j : \mathbb{G}^{-}_3 \mapsto \mathbb{R}^4$ be a function that projects an odd grade multiverctor to a $4\times1$ column matrix.
+Let define the function $F^j$ representing the linear transformation:
 \begin{eqnarray*}
-F^j(X) = \left[\begin{array}{c} \langle X \rangle_1 \cdot e_1 \\ \langle X \rangle_1 \cdot e_2 \\ \langle X \rangle_1 \cdot e_3 \\ \langle X \rangle_3 \cdot \tilde I \end{array}\right]
+F^j = \sqrt{c_{j}} \mathcal K(R p_j - q_j R)\\
+F^j = \sqrt{c_{j}} M_j R\\
+M_j = 
+\left[\begin{array}{cccc}
+0                       & \langle D \rangle_{12} & \langle D \rangle_{13}  & \langle D \rangle_{23}\\ 
+-\langle D \rangle_{12} &         0              & -\langle S \rangle_{23} & \langle S \rangle_{13}\\  
+-\langle D \rangle_{13} & \langle S \rangle_{23} &          0              & -\langle S \rangle_{12}\\ 
+-\langle D \rangle_{23} & -\langle S \rangle_{13}& \langle S \rangle_{12}  &          0             \\ 
+\end{array}\right]
+D = q_j - p_j \ \ \ S = p_j + q_j
 \end{eqnarray*}
-For the sake of simplicity we will refer to the composed function $F^j \circ \Psi^j:\mathbb{G}^{+}_3 \mapsto \mathbb{R}^4$ as simply $F^j$ with an abuse of notation.
+where we refer to $R$ as a member of $\mathbb{G}^{+}_3$ and as a member of $\mathbb R^4$ linear space for the sake of simplicity.
+Note that $M_j$ is skew-symmetric $4\times4$ matrix. So $M_j^T = -M_j$. 
+$M_j$ is representing the non-commutativity of the geometric product as well as the antisymmetry of bivectors.
+
 Let $F$ be a column vector of $n$ functions $F^j$
 \begin{eqnarray*}
 F = \left[\begin{array}{c}F^1 \\ \vdots \\ F^n\end{array}\right]
@@ -159,38 +167,61 @@ E(R) = F^T F =
 \left[\begin{array}{c}F^1 \\ \vdots \\ F^n\end{array}\right]
 \end{eqnarray*}
 
-The critical points of the energy $E(R)$ where it is minimized can be found solving $\nabla E(R) = 0$. Where the gradient has the following form:
+We can express $E(R)$ as the following quadratic form:
+\begin{eqnarray*}
+E(R) = \min_R R^T M R\\
+s.t. \ R^T R = 1
+\end{eqnarray*}
+where $M = \sum_j^n { c_j M_j^T M_j}$. Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite.
+Consequently the matrix $M$ is also symmetric positive semi-definite. Then the rotor minimizing $E(R)$ is the eigenvector of $M$ associated with the minimum eigenvalue.
+Since $M$ is symmetric and positive semi-definite, all eigenvalues are real and $\lambda_i \gte 0$.
+Typically the eigenvector associated with the minimum eigenvalue of a symmetric positive semi-definite matrix can be obtained with great precision using 
+SVD or QR factorization. However in this work we seek for more efficient solution such as the \emph{inverse} power iteration.
+As we are looking for the eigenvector associated with minimum eigenvalue the cases having $\lambda_i = 0$ are problematic.
+The reason for $\lambda_i = 0$ is that the energy $E(R)$ is non-convex, its shape is similar to a sinusoidal wave with infinitely many points at minimum energy value, 
+each one at rotor $R_i = e^{-(\theta + i \pi) B}$ for $i \in \mathbb N$, being $B$ the optimal unique attitude bivector and $\theta $ an optimal angle with minimal absolute value. 
+That means the solution is in general non-unique, in such case $H$ is a singular matrix.
+
+
+Let us analyze the critical points of the energy $E(R)$. The minimum is attained when the gradient vanishes $\nabla E(R) = 0$. The gradient has the following form:
 \begin{eqnarray*}
 g = \nabla E(R)\\
 g = \nabla (F^T F)\\
 g = 2 J^T F
 \end{eqnarray*}
-where $J$ is the Jacobian matrix of $F$. Since the energy $E(R)$ is purely quadratic in $R$, the solution for $\nabla E(R) = 0$ can be found by solving a linear system of equations. An optimal rotor is in the null space of a particular matrix derived from $J^T F = 0$. An easy way to obtain a solution in the null-space is using one iteration of Newton's method. Due to linearity of the equation $J^T F = 0$ w.r.t. $R$ one iteration suffice for obtaining a solution. The optimal increment for $E(R)$ is given by the Newton formula $\Delta R = H^{-1} \nabla E$, provided that the inverse of Hessian matrix $H^{-1}$ exists. Noting that $J$ does not depend on $R$, i.e. is constant, the Hessian matrix $H$ takes the simple form:
+where $J$ is the Jacobian matrix of $F$. Since the energy $E(R)$ is purely quadratic in $R$, the solution for $\nabla E(R) = 0$ can be found by solving a linear system of equations. An optimal rotor is in the null space of matrix $J^T F$. Naturally, a solution in the null space of $J^T F$ can be obtained using the Newton's method. Due to linearity of the equation $(J^T F) R = 0$ w.r.t. $R$ the optimal increment for $E(R)$ is given by the Newton formula $\Delta R = H^{-1} (J^T F) R$, provided that the inverse of Hessian matrix $H^{-1}$ exists. Noting that since $J$ does not depend on $R$, i.e. is constant, the Hessian matrix $H$ takes the simple form:
 \begin{eqnarray*}
-H = \frac{\partial(2 J^T F)}{\partial R} \\
-H = 2 J^T \frac{\partial F}{\partial R}\\
+H = \frac{\partial(2 J^T F R)}{\partial R} \\
+H = 2 J^T \frac{\partial F R}{\partial R}\\
 H = 2 J^T J
 \end{eqnarray*}
 Where $H$ is independent of $R$. An optimal solution can then be found by solving a linear system.
 \begin{eqnarray*}
-R^* = R_0 - H^{-1} g(R_0)
+R_{i+1} = R_i - H^{-1} (J^T F) R_i
 \end{eqnarray*}
-Where $R_0$ is an initial rotor and $g(R_0)$ is the gradient of $E$ evaluated at $R_0$. Of course, the choice of initial rotor $R_0$ has a particular effect on finding a local minimum. The energy $E(R)$ is non-convex, its shape is similar to a sinusoidal wave with infinitely many points at minimum energy value, each one at rotor $R_i = e^{-(\theta + i \pi) B}$ for $i \in \mathbb N$, being $B$ the optimal unique attitude bivector and $\theta $ an optimal angle with minimal absolute value. The choice of $R_0$ lead us to find a local solution close to it, the choice $R_0 = [1 \ 0 \ 0 \ 0]^T$ is optimal from the computational point of view and is also desirable because lead us to find solutions close to the \emph{identity} rotor. 
 
-Since there are infinite solutions, $H$ is a singular matrix and consequently the problem is ill-posed. One simple solution is to use the Tikhonov regularization on $H$ to find an inverse $(H + \epsilon I)^{-1}$ that approaches the Moore-Penrose pseudo-inverse as $\epsilon$ approaches to zero. An optimal solution can then be found by solving a series of linear systems.
+Even when $H$ is non-singular the Newton iteration is not possible. Note that $J^j = M_j$ since:
 \begin{eqnarray*}
-R_{i+1} = R_i - (H + \epsilon I)^{-1} g(R_i)
+J^j = \frac{\partial(F^j R)}{\partial R}\\
+J^j = \frac{\partial(M_j R )}{\partial R}\\
+J^j = M_j
 \end{eqnarray*}
-until convergence is reached in the sense that $|R_i - R_{i+1}| < \xi$ for a small $\xi$. Where we use $R_0 = [1 \ 0 \ 0 \ 0]^T$. This algorithm has a number of advantages. Since Hessian $(H + \epsilon I)^{-1}$ is constant, it can be precomputed. Also the Jacobian matrix $J^T$ is constant, so it can be precomputed as well. But the computation of the gradient $g(R_i) = J^T F(R_i)$ is still required at each step. Although the computation of $g(R_i)$ is relatively cheap and this approach is fast we can do better by making the gradient constant as well.
+replacing in Newton's formula we get
+\begin{eqnarray*}
+R_{i+1} = R_i - H^{-1} (J^T F) R_i
+R_{i+1} = R_i - (J^T J)^{-1} (J^T J) R_i
+\end{eqnarray*}
+
+One simple solution is to use the Tikhonov regularization on $H$ to find an inverse $(H + \epsilon I)^{-1}$ since it approaches the Moore-Penrose pseudo-inverse as $\epsilon$ approaches to zero. Tikhonov regularization makes $H$ symmetric positive definite matrix, so now the optimization is convex. An optimal solution can then be found by solving a series of linear systems.
+\begin{eqnarray*}
+R_{i+1} = R_i - (H + \epsilon I)^{-1} H R_i
+\end{eqnarray*}
+until convergence is reached in the sense that $|R_i - R_{i+1}|_1 < \xi$ for a small $\xi$. Where we use $R_0 = [1 \ 0 \ 0 \ 0]^T$. This algorithm has a number of advantages. Since Hessian $(H + \epsilon I)^{-1}$ is constant, it can be precomputed. Also the Jacobian matrix $J^T$ is constant, so it can be precomputed as well. Although the computation of $g(R_i)$ is relatively cheap and this approach is fast we can do better by adding a new regularization term.
 
 \section{Fast Geometric Algebra Rotor Estimation}
 
-From now on we will consider the gradient to be constant $g = g(R_0)$. Where $R_0 = [1 \ 0 \ 0 \ 0]^T$ is the identity rotor. However, we will add a very small regularization term to $E(R)$ to allow optimization. Our strategy is to introduce a new fixed rotor $R_i$ within a new function $\Phi(R, R_i) = \sqrt{\epsilon} (R - R_i)$. Let us define a function $D : \mathbb{G}^{+}_3 \mapsto \mathbb{R}^4$ that projects a multivector of even grade to a $4\times1$ column matrix.
-\begin{eqnarray*}
-D(X) = 
-\left[\begin{array}{c} \langle X \rangle_0 \\ X \cdot e_{12} \\ X \cdot e_{13} \\ X \cdot e_{23}\end{array}\right]
-\end{eqnarray*}
-For the sake of simplicity we will refer to the composed function $D \circ \Phi:\mathbb{G}^{+}_3 \times \mathbb{G}^{+}_3 \mapsto \mathbb{R}^4$ as simply $D$ with an abuse of notation. The new term can be expressed as matrix product:
+We add a small regularization term to $E(R)$ to allow better optimization. Our strategy is to introduce a new rotor $R_i$ within a new function $D(R, R_i) = \sqrt{\epsilon} (R - R_i)$.
+The new term can be expressed as matrix product:
 \begin{eqnarray*}
 D^T D = \epsilon \|R - R_i\|^2
 \end{eqnarray*}
@@ -203,27 +234,35 @@ where $I$ is the $4\times4$ identity matrix. The energy now looks like this:
 E_2(R, R_i) = F^T F + D^T D\\
 E_2(R, R_i) = \sum_j { c_{j} \|R p_j - q_j R\|^2 } + \epsilon \|R - R_i\|^2
 \end{eqnarray*}
-Where $0 < \epsilon < 1$ is constant but small (we use $\epsilon = 10^{-6}$). The regularization term $D^T D = \epsilon \|R - R_i\|^2$ helps on finding a solution \emph{shifted} by a small amount towards the direction $\delta D = \epsilon (R - R_i)$, so one can interpret the rotor $R_i$ as a target of displacement. The regularization is perturbing the gradient and Hessian in the following way:
+Where $0 < \epsilon < 1$ is constant but small (we use $\epsilon = 10^{-6}$). The regularization term $D^T D = \epsilon \|R - R_i\|^2$ helps on finding a solution \emph{shifted} by a small amount towards the direction $\delta D = \epsilon (R - R_i)$, so one can interpret the rotor $R_i$ as a target of displacement. Also note that using $R^T R = 1$ and $R_i^T R_i = 1$ we get $D^T D = \epsilon (1 - R^T R_i)$ which can be seen as a particular way of reintroducing the normalization constraint. 
+
+The regularization term is perturbing the gradient and Hessian in the following way:
 \begin{eqnarray*}
 g_2 = \nabla(F^T F + D^T D)\\
 g_2 = \frac{\partial (F^T F)}{\partial R} + \frac{\partial (D^T D)}{\partial R}\\
 g_2 = 2 (J^T F + J_D^T D)\\
-g_2 = 2 (J^T F + \sqrt{\epsilon} D)
+g_2 = 2 (J^T J + \epsilon D)\\
+g_2 = 2 ((H + \epsilon I) R - \epsilon R_i)
 \end{eqnarray*}
 \begin{eqnarray*}
 H_2 = 2 \frac{\partial(J^T F + \sqrt{\epsilon} D)}{\partial R} \\
 H_2 = 2 J^T \frac{\partial(F)}{\partial R} + 2 \sqrt{\epsilon} \frac{\partial(D)}{\partial R}\\
-H_2 = 2 (J^T J + \epsilon I)
+H_2 = 2 (J^T J + \epsilon I)\\
+H_2 = 2 (H + \epsilon I)
 \end{eqnarray*}
-It is useful to express $g_2$ also as $g_2 = g(R) + \sqrt{\epsilon} D(R,R_i)$ and $H_2$ as $H_2 = H + \epsilon I$.  
-An optimal solution can then be found by solving a series of linear systems:
+It is useful to express $g_2$ also as $g_2 = (H + \epsilon I) R - R_i$ and $H_2$ as $H_2 = H + \epsilon I$.  
+Replacing the above definitions in Newton's formula we get:
 \begin{eqnarray*}
-R_{i+1} = R_0 - (H + \epsilon I)^{-1} (g(R_0) + \sqrt{\epsilon} D(R_0,R_i))
+R_{i+1} = R_0 - (H + \epsilon I)^{-1} ((H + \epsilon I) R_0 - \epsilon R_i)\\
+R_{i+1} = \epsilon (H + \epsilon I)^{-1} R_i
 \end{eqnarray*}
-This perturbation on the Hessian resembles now the Tikhonov regularization, and inverse $H_2^{-1}$ approaches the Moore-Penrose pseudo-inverse.
-The perturbation on the gradient $g(R_0)$ affects its direction, forcing $R_{i+1}$ to move a little bit towards $R_i$.
+With this perturbation on the Hessian the Tikhonov regularization emerges by itself. 
+The perturbation on the gradient $g(R_0)$ make it disappear, canceling it out with the initial guess, forcing $R_{i+1}$ to move a little bit towards $R_i$.
+This is in fact the inverse power iteration algorithm, which happen to coincide with Newton's method for minimizing a convex energy functional. 
+Since Newton's method convergence rate is quadratic, we can expect this method convergence would be as fast.
 
-Notice that if we take $R_i$ as being equal to $R_0$ then the gradient is not perturbed by any displacement. This is ok for finding an initial approximation $R_{i+1}$, moreover when the optimal rotor $R^*$ is close to $R_0$ the feedback is not necessary. However, if the optimal rotor is at $\pm \pi$ from $R_0$, that choice might cause the optimization get stuck. For example, given two sets of corresponding vectors $P = \{p_1=e_1, p_2=e_2\}$ and $Q = \{q_1=-e_1, q_2=-e_2\}$ which are rotated by $\pi$ radians to each other, the Hessian is diagonal, and its pseudo-inverse $H_2^{-1}$ is simply the reciprocal values of its diagonal, assuming $R_i = R_0$, the gradient $g(R_0)$ coincide with the first column of $H$, and so the product $H_2^{-1} g(R_0) = [1 \ 0 \ 0 \ 0]^T$ so the resulting rotor $R_{i+1} = R_0 - H_2^{-1} g(R_0) = [0 \ 0 \ 0 \ 0]^T$. In practice, we have never experienced this problem, even with synthetic data, since the Tikhonov regularization introduces a sufficient perturbation on the pseudo-inverse to get a non-zero $R_{i+1}$ which, after normalization, is useful as a feedback direction.
+We still need to provide a first guess $R_0$ for our method. In theory any random unit quaternion would work. In all our tests we used $R_0 = [1 \ \epsilon \ \epsilon \ \epsilon]$.
+However, if the optimal rotor is at $\pm \pi$ from $R_0$, that choice might cause the optimization get stuck. For example, given two sets of corresponding vectors $P = \{p_1=e_1, p_2=e_2\}$ and $Q = \{q_1=-e_1, q_2=-e_2\}$ which are rotated by $\pi$ radians to each other, the Hessian is diagonal, and its pseudo-inverse $H_2^{-1}$ is \emph{almost} having the reciprocal values of its diagonal, assuming $R_i = R_0$, the gradient $g(R_0)$ coincide with the first column of $H$, and so the product $H_2^{-1} g(R_0) = [1 \ 0 \ 0 \ 0]^T$ so the resulting rotor $R_{i+1} = R_0 - H_2^{-1} g(R_0) = [0 \ 0 \ 0 \ 0]^T$. In practice, we have never experienced this problem, even with synthetic data, since the Tikhonov regularization introduces a sufficient perturbation on the pseudo-inverse to get a non-zero $R_{i+1}$ which, after normalization, is useful as a feedback direction.
 
 Given an estimated rotor $R_{i+1}$ a necessary condition for it to the optimal is that the recurrence $R_{i+1} = R_0 - H_2^{-1} g_2(R_0,R_i)$ converge to a rotor $R^*$ in the sense that $|R_i - R_{i+1}| < \xi$ for a small $\xi$. That is true because if $R_{i+1}$ is already optimal, the small displacement induced by the regularization term $\sqrt{\epsilon} D(R_0,R_i)$ should increase the least squares error $E_2$ and the linear system should compute the last $R_{i+1} = R^*$ as it has less error. So regularization term can be seen as a feedback for reaching a stable $R^*$. Since the regularization term is only affecting the gradient, the computation is very cheap. The gradient $g(R_0)$ can be precomputed as well as the matrix $H_2^{-1}$, and the iteration is reduced to compute a matrix vector multiplication.
 

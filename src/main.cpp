@@ -90,13 +90,13 @@ int main(int argc, char* argv[])
 	}
 
 	auto axis = getRandomVector();
-	auto angle = 2 * EIGEN_PI* getRandom();
+	auto angle = 2 * EIGEN_PI * getRandom();
 	Quaterniond Q;
 	Q = AngleAxisd(angle, axis);
 
 	for(size_t i = 0 ; i < N ; ++i)
 	{
-		pointsTransformed.push_back(Q._transformVector(pointsOriginal[i]));
+		pointsTransformed.push_back((Q * AngleAxisd(EIGEN_PI * getRandom(), getRandomVector()))._transformVector(pointsOriginal[i]));
 	}
 
 	Quaterniond QI;
@@ -109,10 +109,10 @@ int main(int argc, char* argv[])
 	Matrix3d FA3EIntM = FA3R_int(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
-	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-6, 2);
-	Quaterniond  GAFastQ4 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-5, 4);
-	Quaterniond  GAFastQ8 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-4, 8);
-	Quaterniond  GAFastQ15 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 5e-2, 15);
+	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -1e-6, 2);
+	Quaterniond  GAFastQ4 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -5e-5, 4);
+	Quaterniond  GAFastQ8 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -5e-4, 8);
+	Quaterniond  GAFastQ15 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights,-5e-2, 15);
 	Quaterniond GANewtonQ = GANewtonRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdM = SVDMcAdams(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdE = SVDEigen(pointsOriginal, pointsTransformed, weights);
