@@ -164,12 +164,7 @@ Quaterniond FlaeNewton(const vector<Vector3d>& P, const vector<Vector3d>& Q, con
 	W(1, 1) = Hx1 - Hy2 - Hz3; W(1, 2) = Hx2 + Hy1;  W(1, 3) = Hx3 + Hz1;
 	W(2, 2) = Hy2 - Hx1 - Hz3; W(2, 3) = Hy3 + Hz2;
 	W(3, 3) = Hz3 - Hy2 - Hx1;
-	W(1, 0) = W(0, 1);
-	W(2, 0) = W(0, 2);
-	W(3, 0) = W(0, 3);
-	W(2, 1) = W(1, 2);
-	W(3, 1) = W(1, 3);
-	W(3, 2) = W(2, 3);
+	W.selfadjointView<Eigen::Upper>().evalTo(W);
 
 	c = W.determinant();
 	b = 8 * Hx3*Hy2*Hz1 - 8 * Hx2*Hy3*Hz1 - 8 * Hx3*Hy1*Hz2 + 8 * Hx1*Hy3*Hz2 + 8 * Hx2*Hy1*Hz3 - 8 * Hx1*Hy2*Hz3;

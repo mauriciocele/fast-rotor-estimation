@@ -50,7 +50,7 @@ Matrix3d FA3R_int(const vector<Vector3d>& P, const vector<Vector3d>& Q, const ve
 	hy1 = (int64_t)(sigma_(1, 0) * d2l);  hy2 = (int64_t)(sigma_(1, 1) * d2l);  hy3 = (int64_t)(sigma_(1, 2) * d2l);
 	hz1 = (int64_t)(sigma_(2, 0) * d2l);  hz2 = (int64_t)(sigma_(2, 1) * d2l);  hz3 = (int64_t)(sigma_(2, 2) * d2l);
 
-	const size_t steps = 10;
+	const size_t steps = 7;
 
 	for (int i = 0; i < steps; ++i)
 	{
@@ -96,7 +96,7 @@ Matrix3d FA3R_double(const vector<Vector3d>& P, const vector<Vector3d>& Q, const
 	Vector3d hx_, hy_, hz_;
 	double k;
 
-	const size_t steps = 10;
+	const size_t steps = 7;
 	for (size_t i = 0; i < steps; ++i)
 	{
 		k = 2.0 / (hx(0) * hx(0) + hx(1) * hx(1) + hx(2) * hx(2) +

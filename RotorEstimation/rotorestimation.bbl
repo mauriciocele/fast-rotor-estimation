@@ -1,5 +1,16 @@
 \begin{thebibliography}{10}
 
+\bibitem{Arun1987}
+K.~S. {Arun}, T.~S. {Huang}, and S.~D. {Blostein}.
+\newblock Least-squares fitting of two 3-d point sets.
+\newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  PAMI-9(5):698--700, Sep. 1987.
+
+\bibitem{Dorst2011}
+L.~Dorst and J.~Lasenby, editors.
+\newblock {\em Guide to Geometric Algebra in Practice}.
+\newblock Springer, 2011.
+
 \bibitem{Horn1987}
 B.~K.~P. Horn.
 \newblock Closed-form solution of absolute orientation using unit quaternions.

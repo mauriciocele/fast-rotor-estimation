@@ -9,11 +9,11 @@ using std::vector;
 
 Quaterniond GAFastRotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
-	Matrix4d H;
-	Vector4d R, R_i;
-	Vector3d S, D;
+	Eigen::Matrix4d H;
+	Eigen::Vector4d R;
+	Eigen::Vector3d S, D;
 	double S1, S2, S3, D1, D2, D3, wj;
-	constexpr double epsilon = -5e-2;
+	constexpr double epsilon = 1e-13;
 	const size_t N = P.size();
 
 	H.setZero();
@@ -28,16 +28,25 @@ Quaterniond GAFastRotorEstimator(const vector<Vector3d>& P, const vector<Vector3
 		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(2, 3) += wj*(D2*D3 - S3*S2);
 		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
 	}
-	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
 	H.selfadjointView<Eigen::Upper>().evalTo(H);
-	H = epsilon * H.inverse().eval();
-	R(0) = 1; R(1) = R(2) = R(3) = epsilon;
-	do {
-		R_i = R;
-		R = H * R;
-	} while ((R_i - R).lpNorm<1>() > 1e-13);
+	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
+	H = H.inverse().eval();
+	H *= H * H;
+	H.normalize();
+	H *= H * H;
+	H.normalize();
+	H *= H * H;
+	D1 = H.col(0).lpNorm<1>();
+	S1 = H.col(1).lpNorm<1>();
+	S2 = H.col(2).lpNorm<1>();
+	S3 = H.col(3).lpNorm<1>();
+	wj = std::max(S3, std::max(S2, std::max(D1, S1)));
+	if (wj == D1) R = H.col(0);
+	else if (wj == S1) R = -H.col(1);
+	else if (wj == S2) R = -H.col(2);
+	else R = -H.col(3);
 	R.normalize();
-	return Quaterniond(R(0), R(1), R(2), R(3));
+	return Quaterniond(R.coeff(0), R.coeff(1), R.coeff(2), R.coeff(3));
 }
 
 //Quaterniond GAFastRotorEstimatorAVX2(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
@@ -150,8 +159,18 @@ Quaterniond GAFastRotorEstimatorAprox(const vector<Vector3d>& P, const vector<Ve
 	}
 	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
 	H.selfadjointView<Eigen::Upper>().evalTo(H);
-	H = epsilon * H.inverse().eval();
-	R(0) = 1; R(1) = R(2) = R(3) = epsilon;
+	H = H.inverse().eval();
+	H *= H * H;
+	H.normalize();
+	D1 = H.col(0).lpNorm<1>();
+	S1 = H.col(1).lpNorm<1>();
+	S2 = H.col(2).lpNorm<1>();
+	S3 = H.col(3).lpNorm<1>();
+	wj = std::max(S3, std::max(S2, std::max(D1, S1)));
+	if (wj == D1) R = H.col(0);
+	else if (wj == S1) R = -H.col(1);
+	else if (wj == S2) R = -H.col(2);
+	else R = -H.col(3);
 	while (steps--) {
 		R = H * R;
 	}
