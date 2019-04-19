@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.11)  7 APR 2019 20:39
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.11)  19 APR 2019 17:39
 entering extended mode
 **rotorestimation.tex
 
@@ -372,22 +372,6 @@ Package caption Info: End \AtBeginDocument code.
 [1
 Non-PDF special ignored!{C:/Users/Mauricio/AppData/Local/MiKTeX/2.9/pdftex/conf
 ig/pdftex.map}] [2] [3] [4] [5] [6] [7]
-Overfull \hbox (23.51218pt too wide) in alignment at lines 314--322
- [][][] []
- []
-
-
-Overfull \hbox (63.92099pt too wide) in alignment at lines 331--339
- [][][] []
- []
-
-[8] [9] [10] [11] <time.jpg, id=53, 977.6525pt x 788.9475pt>
-File: time.jpg Graphic file (type jpg)
- <use time.jpg>
-Package pdftex.def Info: time.jpg used on input line 517.
-(pdftex.def)             Requested size: 332.89726pt x 268.6479pt.
-
-[12 <D:/Research/Projects/fast-rotor-estimation/RotorEstimation/time.jpg>]
 (C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2014/09/06 1.5e listings language file
 )
@@ -397,35 +381,40 @@ File: lstlang1.sty 2014/09/06 1.5e listings language file
 (C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstmisc.sty
 File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
 )
-LaTeX Font Info:    Try loading font information for OML+cmr on input line 535.
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 581.
 
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omlcmr.fd"
 File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <6> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 535.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 536.
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 581.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 584.
 
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 536.
- [13]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 584.
+LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <6> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 593.
+ [8]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [9]
 (D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.bbl
-) [14]
+) [10]
 (D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.aux
 ) ) 
 Here is how much of TeX's memory you used:
- 5808 strings out of 493921
- 82638 string characters out of 3144866
- 189009 words of memory out of 3000000
- 8872 multiletter control sequences out of 15000+200000
- 13601 words of font info for 52 fonts, out of 3000000 for 9000
+ 5902 strings out of 493921
+ 83726 string characters out of 3144866
+ 217442 words of memory out of 3000000
+ 8963 multiletter control sequences out of 15000+200000
+ 15196 words of font info for 58 fonts, out of 3000000 for 9000
  1002 hyphenation exceptions out of 8191
- 36i,13n,60p,1141b,1304s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,13n,60p,1105b,1657s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmb10.pfb>
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><
 C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:
@@ -443,14 +432,16 @@ onts/type1/public/amsfonts/cm/cmr9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
 /type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/t
 ype1/public/amsfonts/cm/cmsy6.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type
 1/public/amsfonts/cm/cmsy7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/p
-ublic/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/pub
-lic/amsfonts/cm/cmti9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/amsfonts/cm/cmtt9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/am
-sfonts/symbols/msbm10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/amsfonts/symbols/msbm7.pfb>
-Output written on rotorestimation.pdf (14 pages, 913386 bytes).
+ublic/amsfonts/cm/cmsy9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/publ
+ic/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/amsfonts/cm/cmti7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/am
+sfonts/cm/cmti9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfo
+nts/cm/cmtt9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts
+/symbols/msbm10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfo
+nts/symbols/msbm7.pfb>
+Output written on rotorestimation.pdf (10 pages, 322964 bytes).
 PDF statistics:
- 137 PDF objects out of 1000 (max. 8388607)
+ 131 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

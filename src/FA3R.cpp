@@ -109,6 +109,9 @@ Matrix3d FA3R_double(const vector<Vector3d>& P, const vector<Vector3d>& Q, const
 		cross(hz_, hx_, k, hy);
 		cross(hy_, hz_, k, hx);
 	}
+	hx.normalize();
+	hy.normalize();
+	hz.normalize();
 
 	rRes(0, 0) = hx(0);  rRes(0, 1) = hy(0);  rRes(0, 2) = hz(0);
 	rRes(1, 0) = hx(1);  rRes(1, 1) = hy(1);  rRes(1, 2) = hz(1);

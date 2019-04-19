@@ -109,11 +109,12 @@ int main(int argc, char* argv[])
 	Matrix3d FA3EDoubleM = FA3R_double(pointsOriginal, pointsTransformed, weights);
 	Matrix3d FA3EIntM = FA3R_int(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
+	Quaterniond  GAFastQAVX = GAFastRotorEstimatorAVX(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
-	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -1e-6, 2);
-	Quaterniond  GAFastQ4 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -5e-5, 4);
-	Quaterniond  GAFastQ8 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, -5e-4, 8);
-	Quaterniond  GAFastQ15 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights,-5e-2, 15);
+	Quaterniond  GAFastQ2 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-13, 2);
+	Quaterniond  GAFastQ4 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-13, 4);
+	Quaterniond  GAFastQ8 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights, 1e-13, 8);
+	Quaterniond  GAFastQ15 = GAFastRotorEstimatorAprox(pointsOriginal, pointsTransformed, weights,1e-13, 15);
 	Quaterniond GANewtonQ = GANewtonRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdM = SVDMcAdams(pointsOriginal, pointsTransformed, weights);
 	Matrix3d  svdE = SVDEigen(pointsOriginal, pointsTransformed, weights);
@@ -127,6 +128,7 @@ int main(int argc, char* argv[])
 	double errorFA3RDouble = WahbaError(pointsOriginal, pointsTransformed, FA3EDoubleM);
 	double errorFA3RInt = WahbaError(pointsOriginal, pointsTransformed, FA3EIntM);
 	double errorGAFast = WahbaError(pointsOriginal, pointsTransformed, GAFastQ);
+	double errorGAFastAVX = WahbaError(pointsOriginal, pointsTransformed, GAFastQAVX);
 	double errorGAFastInc = WahbaError(pointsOriginal, pointsTransformed, GAFastQInc);
 	double errorGAFast2 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ2);
 	double errorGAFast4 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ4);
@@ -140,22 +142,23 @@ int main(int argc, char* argv[])
 
 	std::cout.precision(12);
 	//std::cout << "Ground Truth error                        " << errorGroundTruth << endl;
-	//std::cout << "FLAE error                                " << errorFlae << endl;
+	std::cout << "FLAE error                                " << errorFlae << endl;
 	//std::cout << "FLAE Symbolic error                       " << errorFlaeSymbolic << endl;
 	std::cout << "FLAE Newton error                         " << errorFlaeNewton << endl;
-	//std::cout << "FA3R Double error                         " << errorFA3RDouble << endl;
-	//std::cout << "FA3R Int error                            " << errorFA3RInt << endl;
+	std::cout << "FA3R Double error                         " << errorFA3RDouble << endl;
+	std::cout << "FA3R Int error                            " << errorFA3RInt << endl;
+	std::cout << "GA Fast Rotor Estimator AVX error         " << errorGAFastAVX << endl;
 	std::cout << "GA Fast Rotor Estimator error             " << errorGAFast << endl;
-	//std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
+	std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 2 error     " << errorGAFast2 << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 4 error     " << errorGAFast4 << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 8 error     " << errorGAFast8 << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 15 error    " << errorGAFast15 << endl;
-	//std::cout << "GA Rotor Estimator Newton error           " << errorGANewton << endl;
-	//std::cout << "GA Valkenburg error                       " << errorGAValkenburg << endl;
-	//std::cout << "SVD McAdams error                         " << errorSVD << endl;
-	//std::cout << "SVD error                                 " << errorSVDE << endl;
-	//std::cout << "Horn error                                " << errorHorn << endl;
+	std::cout << "GA Rotor Estimator Newton error           " << errorGANewton << endl;
+	std::cout << "GA Valkenburg error                       " << errorGAValkenburg << endl;
+	std::cout << "SVD McAdams error                         " << errorSVD << endl;
+	std::cout << "SVD error                                 " << errorSVDE << endl;
+	std::cout << "Horn error                                " << errorHorn << endl;
 
 	auto GAFastRotorEstimatorIncrQI = std::bind(GAFastRotorEstimatorIncr, _1, _2, _3, QI);
 	auto GAFastRotorEstimatorAprox2 = std::bind(GAFastRotorEstimatorAprox, _1, _2, _3, 1e-6, 2);
@@ -178,6 +181,9 @@ int main(int argc, char* argv[])
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_int);
 	std::cout << "Exec time FA3R Int: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAVX);
+	std::cout << "Exec time GAFastRotorEstimatorAVX: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
 	std::cout << "Exec time GAFastRotorEstimator: " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;

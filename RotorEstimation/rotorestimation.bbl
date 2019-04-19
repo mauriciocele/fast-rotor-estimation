@@ -6,6 +6,11 @@ K.~S. {Arun}, T.~S. {Huang}, and S.~D. {Blostein}.
 \newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
   PAMI-9(5):698--700, Sep. 1987.
 
+\bibitem{brauer1946}
+A.~Brauer.
+\newblock Limits for the characteristic roots of a matrix.
+\newblock {\em Duke Mathematical Journal}, 13(3):387--395, 09 1946.
+
 \bibitem{Dorst2011}
 L.~Dorst and J.~Lasenby, editors.
 \newblock {\em Guide to Geometric Algebra in Practice}.
@@ -16,6 +21,11 @@ B.~K.~P. Horn.
 \newblock Closed-form solution of absolute orientation using unit quaternions.
 \newblock {\em Journal of the Optical Society of America A}, 4(4):629--642,
   1987.
+
+\bibitem{Kostlan1991}
+E.~Kostlan.
+\newblock Statistical complexity of dominant eigenvector calculation.
+\newblock {\em Journal of Complexity}, 1991.
 
 \bibitem{Mortari1996}
 D.~Mortari.
@@ -56,6 +66,11 @@ O.~Sorkine and M.~Alexa.
 \bibitem{Wahba1965}
 G.~Wahba.
 \newblock {A Least Squares Estimate of Satellite Attitude}, 1965.
+
+\bibitem{Wilkinson1988}
+J.~H. Wilkinson, editor.
+\newblock {\em The Algebraic Eigenvalue Problem}.
+\newblock Oxford University Press, Inc., New York, NY, USA, 1988.
 
 \bibitem{Wu2017}
 J.~Wu, Z.~Zhou, B.~Gao, R.~Li, Y.~Cheng, and H.~Fourati.
