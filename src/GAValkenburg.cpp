@@ -1,6 +1,6 @@
 #include "GAValkenburg.h"
-#include <Eigen\core>
-#include <Eigen\Eigenvalues>
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 
 using Eigen::Vector3d;
 using Eigen::Vector4d;

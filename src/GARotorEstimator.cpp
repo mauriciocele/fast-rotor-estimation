@@ -7,73 +7,99 @@ using Eigen::Matrix4d;
 using Eigen::Quaterniond;
 using std::vector;
 
+/*
+
+max | p + R* q R |^2
+
+p + R* q R = 0
+
+p R* + R* q = 0
+
+p (w - L) + (w - L) q = 0
+
+(Remember: inner product of bivectors is negative and commutator anticommute)
+w (p + q) + L . (p + q) + (q - p) x L = 0
+
+| 0     s^T  | | w | = | s^T L       |  
+| s    [d]_x | | L |   | w s + d x L |
+
+| 0     s^T  | | 0    s^T  | = | s^T s    s^T [d]_x       |
+| s   -[d]_x | | s   [d]_x |   |-[d]_x s  s s^T - [d]^2_x |
+
+| 0     s^T  | | 0    s^T  | = | s^T s    s x d         | = | s^T s    s x d                 |
+| s   -[d]_x | | s   [d]_x |   | s x d  s s^T - [d]^2_x |   | s x d  s s^T - d d^t + d^T d I |
+
+*/
+
 Quaterniond GAFastRotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
-	Eigen::Matrix4d H;
-	Eigen::Vector4d R;
-	Eigen::Vector3d S, D;
-	double S0, S1, S2, S3, D1, D2, D3, wj;
-	const double epsilon = 1e-13;
-	const size_t N = P.size(), MAX_STEPS = 12;
-
-	H.setZero();
-	for (register size_t j = 0; j < N; ++j) {
-		wj = (w[j]);
-		S = (Q[j] + P[j]);
-		D = (P[j] - Q[j]);
-		S1 = S.x(); S2 = S.y(); S3 = S.z();
-		D1 = D.x(); D2 = D.y(); D3 = D.z();
-		H(0, 0) += wj*(D1*D1 + D2*D2 + D3*D3); H(1, 0) += wj*(D3*S2 - D2*S3); H(2, 0) += wj*(D1*S3 - D3*S1); H(3, 0) += wj*(D2*S1 - D1*S2);
-		H(1, 1) += wj*(D1*D1 + S3*S3 + S2*S2); H(2, 1) += wj*(D1*D2 - S2*S1); H(3, 1) += wj*(D1*D3 - S3*S1);
-		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(3, 2) += wj*(D2*D3 - S3*S2);
-		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
+	Matrix4d H;
+	Matrix3d Sx;
+	Vector3d S;
+	double wj;
+	const size_t N = P.size();
+	const size_t MAX_STEPS = 12;
+	Sx.setZero();
+	S.setZero();
+	for (size_t j = 0; j < N; ++j) {
+		wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		S.noalias() += wj * (Pj + Qj);
+		Sx.noalias() += (wj * Pj) * Qj.transpose();
 	}
+	wj = S.dot(S);
+	H(3, 3) = wj + 2.0 * Sx.trace(); 
+	wj = wj - 2.0 * Sx.trace();
+	H(3, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
+	H(3, 1) = 2.0 * (Sx(2, 0) - Sx(0, 2));
+	H(3, 2) = 2.0 * (Sx(0, 1) - Sx(1, 0));
+	H(0, 0) = 4.0 * Sx(0, 0) + wj;
+	H(1, 0) = 2.0 * (Sx(0, 1) + Sx(1, 0)); 
+	H(2, 0) = 2.0 * (Sx(2, 0) + Sx(0, 2));
+	H(1, 1) = 4.0 * Sx(1, 1) + wj; 
+	H(2, 1) = 2.0 * (Sx(1, 2) + Sx(2, 1));
+	H(2, 2) = 4.0 * Sx(2, 2) + wj;
 	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
-	H = H.inverse().eval();
-	for (register size_t j = 0; j < MAX_STEPS; ++j) {
+	for (size_t j = 0; j < MAX_STEPS; ++j) {
 		H *= H;
 		H *= 1.0 / H.trace();
 	}
-	S0 = H.col(0).lpNorm<1>();
-	S1 = H.col(1).lpNorm<1>();
-	S2 = H.col(2).lpNorm<1>();
-	S3 = H.col(3).lpNorm<1>();
-	wj = std::max(S3, std::max(S2, std::max(S0, S1)));
-	if (wj == S0) R = H.col(0);
-	else if (wj == S1) R = H.col(1);
-	else if (wj == S2) R = H.col(2);
-	else R = H.col(3);
-	R.normalize();
-	return Quaterniond(R(0), R(1), R(2), R(3));
+	return Quaterniond(H.col(0).normalized());
 }
 
 Quaterniond GAFastRotorEstimatorAVX(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
 	Matrix4d H;
-	Vector4d R;
-	Vector3d S, D;
-	double S0, S1, S2, S3, D1, D2, D3, wj;
-	const double epsilon = 1e-13;
-	const size_t N = P.size(), MAX_STEPS = 12;
+	Matrix3d Sx;
+	Vector3d S;
+	double wj;
+	const size_t N = P.size();
+	const size_t MAX_STEPS = 12;
 	const double* DP = nullptr;
 
-	H.setZero();
-	for (register size_t j = 0; j < N; ++j) {
-		wj = (w[j]);
-		S = (Q[j] + P[j]);
-		D = (P[j] - Q[j]);
-		S1 = S.x(); S2 = S.y(); S3 = S.z();
-		D1 = D.x(); D2 = D.y(); D3 = D.z();
-		H(0, 0) += wj*(D1*D1 + D2*D2 + D3*D3); H(1, 0) += wj*(D3*S2 - D2*S3); H(2, 0) += wj*(D1*S3 - D3*S1); H(3, 0) += wj*(D2*S1 - D1*S2);
-		H(1, 1) += wj*(D1*D1 + S3*S3 + S2*S2); H(2, 1) += wj*(D1*D2 - S2*S1); H(3, 1) += wj*(D1*D3 - S3*S1);
-		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(3, 2) += wj*(D2*D3 - S3*S2);
-		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
+	Sx.setZero();
+	S.setZero();
+	for (size_t j = 0; j < N; ++j) {
+		const double wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		S.noalias() += wj * (Pj + Qj);
+		Sx.noalias() += (wj * Pj) * Qj.transpose();
 	}
-	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
-	H = H.inverse().eval();
-	for (register size_t j = 0; j < MAX_STEPS; ++j) {
+	wj = S.dot(S);
+	H(3, 3) = wj + 2.0 * Sx.trace(); 
+	wj = wj - 2.0 * Sx.trace();
+	H(3, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
+	H(3, 1) = 2.0 * (Sx(2, 0) - Sx(0, 2));
+	H(3, 2) = 2.0 * (Sx(0, 1) - Sx(1, 0));
+	H(0, 0) = 4.0 * Sx(0, 0) + wj;
+	H(1, 0) = 2.0 * (Sx(0, 1) + Sx(1, 0)); 
+	H(2, 0) = 2.0 * (Sx(2, 0) + Sx(0, 2));
+	H(1, 1) = 4.0 * Sx(1, 1) + wj; 
+	H(2, 1) = 2.0 * (Sx(1, 2) + Sx(2, 1));
+	H(2, 2) = 4.0 * Sx(2, 2) + wj;
+	for (size_t j = 0; j < MAX_STEPS; ++j) {
 		wj = 1.0 / H.trace();
 		__m256d C1 = _mm256_setr_pd(H(0, 0), H(1, 0), H(2, 0), H(3, 0));
 		__m256d C2 = _mm256_setr_pd(H(1, 0), H(1, 1), H(2, 1), H(3, 1));
@@ -124,90 +150,83 @@ Quaterniond GAFastRotorEstimatorAVX(const vector<Vector3d>& P, const vector<Vect
 
 		H(3, 2) = DP[0]; H(3, 3) = DP[1];
 	}
-	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	S0 = H.col(0).lpNorm<1>();
-	S1 = H.col(1).lpNorm<1>();
-	S2 = H.col(2).lpNorm<1>();
-	S3 = H.col(3).lpNorm<1>();
-	wj = std::max(S3, std::max(S2, std::max(S0, S1)));
-	if (wj == S0) R = H.col(0);
-	else if (wj == S1) R = H.col(1);
-	else if (wj == S2) R = H.col(2);
-	else R = H.col(3);
-	R.normalize();
-	return Quaterniond(R(0), R(1), R(2), R(3));
+	return Quaterniond(H.col(0).normalized());
 }
 
-Quaterniond GAFastRotorEstimatorAprox(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, double epsilon, size_t steps)
+Quaterniond GAFastRotorEstimatorAprox(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, const double epsilon, size_t steps)
 {
 	Matrix4d H;
 	Vector4d R;
-	Vector3d S, D;
-	double S1, S2, S3, D1, D2, D3, wj;
+	Matrix3d Sx;
+	Vector3d S;
+	double wj;
 	const size_t N = P.size();
-
-	H.setZero();
-	for (register size_t j = 0; j < N; ++j) {
-		wj = (w[j]);
-		S = (Q[j] + P[j]);
-		D = (P[j] - Q[j]);
-		S1 = S.x(); S2 = S.y(); S3 = S.z();
-		D1 = D.x(); D2 = D.y(); D3 = D.z();
-		H(0, 0) += wj*(D1*D1 + D2*D2 + D3*D3); H(1, 0) += wj*(D3*S2 - D2*S3); H(2, 0) += wj*(D1*S3 - D3*S1); H(3, 0) += wj*(D2*S1 - D1*S2);
-		H(1, 1) += wj*(D1*D1 + S3*S3 + S2*S2); H(2, 1) += wj*(D1*D2 - S2*S1); H(3, 1) += wj*(D1*D3 - S3*S1);
-		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(3, 2) += wj*(D2*D3 - S3*S2);
-		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
+	Sx.setZero();
+	S.setZero();
+	for (size_t j = 0; j < N; ++j) {
+		wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		S.noalias() += wj * (Pj + Qj);
+		Sx.noalias() += (wj * Qj) * Pj.transpose();
 	}
-	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
+	wj = S.dot(S);
+	H(3, 3) = wj - 2.0 * Sx.trace(); 
+	wj = wj + 2.0 * Sx.trace();
+	H(3, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
+	H(3, 1) = 2.0 * (Sx(2, 0) - Sx(0, 2));
+	H(3, 2) = 2.0 * (Sx(0, 1) - Sx(1, 0));
+	H(0, 0) = -4.0 * Sx(0, 0) + wj;
+	H(1, 0) = -2.0 * (Sx(0, 1) + Sx(1, 0)); 
+	H(2, 0) = -2.0 * (Sx(2, 0) + Sx(0, 2));
+	H(1, 1) = -4.0 * Sx(1, 1) + wj; 
+	H(2, 1) = -2.0 * (Sx(1, 2) + Sx(2, 1));
+	H(2, 2) = -4.0 * Sx(2, 2) + wj;
 	H.selfadjointView<Eigen::Lower>().evalTo(H);
 	H = H.inverse().eval();
 	H *= H;
 	H *= 1.0 / H.trace();
 	H *= H;
 	H *= 1.0 / H.trace();
-	D1 = H.col(0).lpNorm<1>();
-	S1 = H.col(1).lpNorm<1>();
-	S2 = H.col(2).lpNorm<1>();
-	S3 = H.col(3).lpNorm<1>();
-	wj = std::max(S3, std::max(S2, std::max(D1, S1)));
-	if (wj == D1) R = H.col(0);
-	else if (wj == S1) R = H.col(1);
-	else if (wj == S2) R = H.col(2);
-	else R = H.col(3);
+	R = H.col(0);
 	while (steps--) {
 		R = H * R;
 	}
 	R.normalize();
-	return Quaterniond(R(0), R(1), R(2), R(3));
+	return Quaterniond(R);
 }
 
 Quaterniond GAFastRotorEstimatorIncr(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, const Quaterniond& Qprev)
 {
 	Matrix4d H;
-	Vector4d R(Qprev.w(), Qprev.x(), Qprev.y(), Qprev.z());
-	Vector3d S, D;
-	const double epsilon = -1e-6;
-	double S1, S2, S3, D1, D2, D3, wj;
+	Matrix3d Sx;
+	Vector3d S;
+	double wj;
 	const size_t N = P.size();
-
-	H.setZero();
-	for (register size_t j = 0; j < N; ++j)
+	Sx.setZero();
+	S.setZero();
+	for (size_t j = 0; j < N; ++j)
 	{
-		wj = (w[j]);
-		S = (Q[j] + P[j]);
-		D = (P[j] - Q[j]);
-		S1 = S.x(); S2 = S.y(); S3 = S.z();
-		D1 = D.x(); D2 = D.y(); D3 = D.z();
-		H(0, 0) += wj*(D1*D1 + D2*D2 + D3*D3); H(1, 0) += wj*(D3*S2 - D2*S3); H(2, 0) += wj*(D1*S3 - D3*S1); H(3, 0) += wj*(D2*S1 - D1*S2);
-		H(1, 1) += wj*(D1*D1 + S3*S3 + S2*S2); H(2, 1) += wj*(D1*D2 - S2*S1); H(3, 1) += wj*(D1*D3 - S3*S1);
-		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(3, 2) += wj*(D2*D3 - S3*S2);
-		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
+		wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		S.noalias() += wj * (Pj + Qj);
+		Sx.noalias() += (wj * Qj) * Pj.transpose();
 	}
-	H(0, 0) += epsilon; H(1, 1) += epsilon; H(2, 2) += epsilon; H(3, 3) += epsilon;
+	wj = S.dot(S);
+	H(3, 3) = wj - 2.0 * Sx.trace(); 
+	wj = wj + 2.0 * Sx.trace();
+	H(3, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
+	H(3, 1) = 2.0 * (Sx(2, 0) - Sx(0, 2));
+	H(3, 2) = 2.0 * (Sx(0, 1) - Sx(1, 0));
+	H(0, 0) = -4.0 * Sx(0, 0) + wj;
+	H(1, 0) = -2.0 * (Sx(0, 1) + Sx(1, 0)); 
+	H(2, 0) = -2.0 * (Sx(2, 0) + Sx(0, 2));
+	H(1, 1) = -4.0 * Sx(1, 1) + wj; 
+	H(2, 1) = -2.0 * (Sx(1, 2) + Sx(2, 1));
+	H(2, 2) = -4.0 * Sx(2, 2) + wj;
 	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	R = H.inverse() * R;
-	R.normalize();
-	return Quaterniond(R(0), R(1), R(2), R(3));
+	return Quaterniond((H.inverse() * Qprev.coeffs()).normalized());
 }
 
 Quaterniond GANewtonRotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
@@ -215,22 +234,32 @@ Quaterniond GANewtonRotorEstimator(const vector<Vector3d>& P, const vector<Vecto
 	const double epsilon = 5e-2;
 	const size_t N = P.size();
 	Matrix4d H, Hinv;
+	Matrix3d Sx;
 	Vector4d R_i, R(1, epsilon, epsilon, epsilon);
-	Vector3d D, S;
 	double wj;
-	double S1, S2, S3, D1, D2, D3;
-	H.setZero();
-	for (register size_t i = 0; i < N; ++i) {
-		wj = w[i];
-		S = Q[i] + P[i];
-		D = P[i] - Q[i];
-		S1 = S.x(); S2 = S.y(); S3 = S.z();
-		D1 = D.x(); D2 = D.y(); D3 = D.z();
-		H(0, 0) += wj*(D1*D1 + D2*D2 + D3*D3); H(1, 0) += wj*(D3*S2 - D2*S3); H(2, 0) += wj*(D1*S3 - D3*S1); H(3, 0) += wj*(D2*S1 - D1*S2);
-		H(1, 1) += wj*(D1*D1 + S3*S3 + S2*S2); H(2, 1) += wj*(D1*D2 - S2*S1); H(3, 1) += wj*(D1*D3 - S3*S1);
-		H(2, 2) += wj*(D2*D2 + S3*S3 + S1*S1); H(3, 2) += wj*(D2*D3 - S3*S2);
-		H(3, 3) += wj*(D3*D3 + S2*S2 + S1*S1);
+	double S0, S1, S3;
+	Sx.setZero();
+	S0 = S1 = 0;
+	for (size_t j = 0; j < N; ++j) {
+		wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		S1 += wj * Qj.dot(Qj);
+		S0 += wj * Pj.dot(Pj);
+		Sx.noalias() += (wj * Qj) * Pj.transpose();
 	}
+	S3 = (S0 + S1);
+	H(0, 0) = S3 - 2.0 * Sx.trace(); 
+	S3 = S3 + 2.0 * Sx.trace();
+	H(1, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
+	H(2, 0) = 2.0 * (Sx(2, 0) - Sx(0, 2));
+	H(3, 0) = 2.0 * (Sx(0, 1) - Sx(1, 0));
+	H(1, 1) = -4.0 * Sx(0, 0) + S3;
+	H(2, 1) = -2.0 * (Sx(0, 1) + Sx(1, 0)); 
+	H(3, 1) = -2.0 * (Sx(2, 0) + Sx(0, 2));
+	H(2, 2) = -4.0 * Sx(1, 1) + S3; 
+	H(3, 2) = -2.0 * (Sx(1, 2) + Sx(2, 1));
+	H(3, 3) = -4.0 * Sx(2, 2) + S3;
 	H.selfadjointView<Eigen::Lower>().evalTo(H);
 	Hinv = H;
 	Hinv(0, 0) += epsilon; Hinv(1, 1) += epsilon; Hinv(2, 2) += epsilon; Hinv(3, 3) += epsilon;
@@ -238,7 +267,7 @@ Quaterniond GANewtonRotorEstimator(const vector<Vector3d>& P, const vector<Vecto
 	do {
 		R_i = R;
 		R = R - Hinv * R;
-	} while ((R_i - R).lpNorm<1>() > 1e-13);
+	} while ((R_i - R).lpNorm<1>() > 1e-6);
 	R.normalize();
 	return Quaterniond(R[0], R[1], R[2], R[3]);
 }

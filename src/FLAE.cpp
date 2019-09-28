@@ -18,15 +18,14 @@ Quaterniond FlaeSymbolic(const vector<Vector3d>& P, const vector<Vector3d>& Q, c
 	sigma_.setZero();
 
 	for (size_t i = 0; i < N; ++i) {
-		sigma_ += (w[i] * Q[i]) * P[i].transpose();
+		sigma_.noalias() += (w[i] * P[i]) * Q[i].transpose();
 	}
 
 	Matrix3d A = sigma_ - sigma_.transpose();
-	Matrix3d tmp;
+	Matrix3d tmp = sigma_ + sigma_.transpose();
 	Vector3d D(A(1, 2), A(2, 0), A(0, 1));
 	Matrix4d QQ;
 	QQ(0, 0) = sigma_(0, 0) + sigma_(1, 1) + sigma_(2, 2);
-	tmp = sigma_ + sigma_.transpose();
 	tmp(0, 0) -= QQ(0, 0);    tmp(1, 1) -= QQ(0, 0);    tmp(2, 2) -= QQ(0, 0);
 	QQ(0, 1) = D.x();     QQ(0, 2) = D.y();     QQ(0, 3) = D.z();
 	QQ(1, 0) = D.x();     QQ(2, 0) = D.y();     QQ(3, 0) = D.z();

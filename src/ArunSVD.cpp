@@ -14,8 +14,8 @@ Matrix3d SVDEigen(const vector<Vector3d>& P, const vector<Vector3d>& Q, const ve
 	{
 		m += (w[j] * P[j]) * Q[j].transpose();
 	}
-	Eigen::JacobiSVD<Matrix3d> svd(m, Eigen::ComputeFullU | Eigen::ComputeFullV);
-	return svd.matrixV() * svd.matrixU().transpose();
+	Eigen::JacobiSVD<Matrix3d> svdjac(m, Eigen::ComputeFullU | Eigen::ComputeFullV);
+	return svdjac.matrixV() * svdjac.matrixU().transpose();
 }
 
 Matrix3d SVDMcAdams(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)

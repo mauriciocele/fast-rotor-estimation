@@ -60,7 +60,7 @@ http://www.beyond3d.com/content/articles/8/
 //   return x;
 //}
 
-inline double rsqrt(double x) {
+static double rsqrt(double x) {
    return 1.0 / sqrt(x);
 }
 
@@ -68,16 +68,16 @@ inline double rsqrt(double x) {
 increased accuracy. The constant 0x5f37599e makes the relative error
 range from 0 to -0.00000463.
    You can't balance the error by adjusting the constant. */
-inline double rsqrt1(double x) {
+static double rsqrt1(double x) {
    return 1.0 / sqrt(x);
 }
 
-inline double accurateSqrt(double x)
+static double accurateSqrt(double x)
 {
     return x * rsqrt1(x);
 }
 
-inline void condSwap(bool c, double &X, double &Y)
+static void condSwap(bool c, double &X, double &Y)
 {
     // used in step 2
     double Z = X;
@@ -85,7 +85,7 @@ inline void condSwap(bool c, double &X, double &Y)
     Y = c ? Z : Y;
 }
 
-inline void condNegSwap(bool c, double &X, double &Y)
+static void condNegSwap(bool c, double &X, double &Y)
 {
     // used in step 2 and 3
     double Z = -X;
@@ -94,7 +94,7 @@ inline void condNegSwap(bool c, double &X, double &Y)
 }
 
 // matrix multiplication M = A * B
-inline void multAB(double a11, double a12, double a13,
+static void multAB(double a11, double a12, double a13,
           double a21, double a22, double a23,
           double a31, double a32, double a33,
           //
@@ -113,7 +113,7 @@ inline void multAB(double a11, double a12, double a13,
 }
 
 // matrix multiplication M = Transpose[A] * B
-inline void multAtB(double a11, double a12, double a13,
+static void multAtB(double a11, double a12, double a13,
           double a21, double a22, double a23,
           double a31, double a32, double a33,
           //
@@ -130,7 +130,7 @@ inline void multAtB(double a11, double a12, double a13,
   m31=a13*b11 + a23*b21 + a33*b31; m32=a13*b12 + a23*b22 + a33*b32; m33=a13*b13 + a23*b23 + a33*b33;
 }
 
-inline void quatToMat3(const double * qV,
+static void quatToMat3(const double * qV,
 double &m11, double &m12, double &m13,
 double &m21, double &m22, double &m23,
 double &m31, double &m32, double &m33
@@ -156,7 +156,7 @@ double &m31, double &m32, double &m33
     m31=2*(qxz - qwy); m32=2*(qyz + qwx); m33=1 - 2*(qxx + qyy);
 }
 
-inline void approximateGivensQuaternion(double a11, double a12, double a22, double &ch, double &sh)
+static void approximateGivensQuaternion(double a11, double a12, double a22, double &ch, double &sh)
 {
 /*
      * Given givens angle computed by approximateGivensAngles,
@@ -173,7 +173,7 @@ inline void approximateGivensQuaternion(double a11, double a12, double a22, doub
     sh=b?w*sh:_sstar;
 }
 
-inline void jacobiConjugation( const int x, const int y, const int z,
+static void jacobiConjugation( const int x, const int y, const int z,
                         double &s11,
                         double &s21, double &s22,
                         double &s31, double &s32, double &s33,
@@ -226,13 +226,13 @@ inline void jacobiConjugation( const int x, const int y, const int z,
 
 }
 
-inline double dist2(double x, double y, double z)
+static double dist2(double x, double y, double z)
 {
     return x*x+y*y+z*z;
 }
 
 // finds transformation that diagonalizes a symmetric matrix
-inline void jacobiEigenanlysis( // symmetric matrix
+static void jacobiEigenanlysis( // symmetric matrix
 								double &s11,
 								double &s21, double &s22,
 								double &s31, double &s32, double &s33,
@@ -253,7 +253,7 @@ inline void jacobiEigenanlysis( // symmetric matrix
 }
 
 
-inline void sortSingularValues(// matrix that we want to decompose
+static void sortSingularValues(// matrix that we want to decompose
 							double &b11, double &b12, double &b13,
 							double &b21, double &b22, double &b23,
 							double &b31, double &b32, double &b33,
@@ -283,7 +283,7 @@ inline void sortSingularValues(// matrix that we want to decompose
 }
 
 
-void QRGivensQuaternion(double a1, double a2, double &ch, double &sh)
+static void QRGivensQuaternion(double a1, double a2, double &ch, double &sh)
 {
     // a1 = pivot point on diagonal
     // a2 = lower triangular entry we want to annihilate
@@ -300,7 +300,7 @@ void QRGivensQuaternion(double a1, double a2, double &ch, double &sh)
 }
 
 
-inline void QRDecomposition(// matrix that we want to decompose
+static void QRDecomposition(// matrix that we want to decompose
 							double b11, double b12, double b13,
 							double b21, double b22, double b23,
 							double b31, double b32, double b33,
@@ -364,7 +364,7 @@ inline void QRDecomposition(// matrix that we want to decompose
     q33=(-1+2*sh22)*(-1+2*sh32);
 }
 
-void svd(// input A
+static void svd(// input A
 		double a11, double a12, double a13,
 		double a21, double a22, double a23,
 		double a31, double a32, double a33,
@@ -415,7 +415,7 @@ void svd(// input A
 
 /// polar decomposition can be reconstructed trivially from SVD result
 // A = UP
-void pd(double a11, double a12, double a13,
+static void pd(double a11, double a12, double a13,
         double a21, double a22, double a23,
         double a31, double a32, double a33,
         // output U

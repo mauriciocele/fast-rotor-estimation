@@ -1,6 +1,6 @@
 #include "Horn.h"
 
-#include <Eigen\Eigenvalues>
+#include <Eigen/Eigenvalues>
 
 using Eigen::Vector3d;
 using Eigen::Vector4d;

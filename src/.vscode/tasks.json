@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build with Clang",
+            "type": "shell",
+            "command": "clang++",
+            "args": [
+                "-std=c++17",
+                "-stdlib=libc++",
+                "-I/Users/maurlope/workplace/eigen-eigen-323c052e1731/",
+                "-mavx",
+                "-Ofast",
+                "-march=native",
+                "-funroll-loops",
+                // "-ffast-math",
+                "ArunSVD.cpp",
+                "Davenport.cpp",
+                "FA3R.cpp",
+                "FLAE.cpp",
+                "GARotorEstimator.cpp",
+                "GAValkenburg.cpp",
+                "Horn.cpp",
+                "main.cpp",
+                "stdafx.cpp",
+                "-o",
+                "Estimator.out",
+                // "--debug",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

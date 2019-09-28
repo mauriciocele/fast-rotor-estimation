@@ -152,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArunSVD.h" />
+    <ClInclude Include="Davenport.h" />
     <ClInclude Include="FA3R.h" />
     <ClInclude Include="FLAE.h" />
     <ClInclude Include="GARotorEstimator.h" />
@@ -163,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArunSVD.cpp" />
+    <ClCompile Include="Davenport.cpp" />
     <ClCompile Include="FA3R.cpp" />
     <ClCompile Include="FLAE.cpp" />
     <ClCompile Include="GARotorEstimator.cpp" />
