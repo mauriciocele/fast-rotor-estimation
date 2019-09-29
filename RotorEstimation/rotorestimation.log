@@ -1,68 +1,64 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.11)  19 APR 2019 17:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7050) (preloaded format=pdflatex 2019.9.28)  29 SEP 2019 16:23
 entering extended mode
-**rotorestimation.tex
-
-(D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.tex
-LaTeX2e <2011/06/27>
-Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
-abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
-croatian, czech, danish, dutch, esperanto, estonian, farsi, finnish, french, ga
-lician, german, german-x-2013-05-26, greek, gujarati, hindi, hungarian, iceland
-ic, indonesian, interlingua, irish, italian, kannada, kurmanji, latin, latvian,
- lithuanian, malayalam, marathi, mongolian, mongolianlmc, monogreek, ngerman, n
-german-x-2013-05-26, nynorsk, oriya, panjabi, pinyin, polish, portuguese, roman
-ian, russian, sanskrit, serbian, slovak, slovenian, spanish, swedish, swissgerm
-an, tamil, telugu, turkish, turkmen, ukenglish, ukrainian, uppersorbian, usengl
-ishmax, welsh, loaded.
-(D:\Research\Projects\fast-rotor-estimation\RotorEstimation\birkjour.cls
+**./rotorestimation.tex
+(rotorestimation.tex
+LaTeX2e <2018-12-01>
+(birkjour.cls
 Document Class: birkjour 2009/09/04 v6.0
 \linespacing=\dimen102
 \normalparindent=\dimen103
 \normaltopskip=\skip41
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsgen.sty"
-File: amsgen.sty 1999/11/30 v2.0
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msmath/amsgen.sty"
+File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks14
 \ex@=\dimen104
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsmath.sty"
-Package: amsmath 2013/01/14 v2.14 AMS math features
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msmath/amsmath.sty"
+Package: amsmath 2018/12/01 v2.17b AMS math features
 \@mathmargin=\skip42
 
 For additional information on amsmath, use the `?' option.
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amstext.sty"
-Package: amstext 2000/06/29 v2.01
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msmath/amstext.sty"
+Package: amstext 2000/06/29 v2.01 AMS text
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsbsy.sty"
-Package: amsbsy 1999/11/29 v1.2d
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msmath/amsbsy.sty"
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen105
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsopn.sty"
-Package: amsopn 1999/12/14 v2.01 operator names
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msmath/amsopn.sty"
+Package: amsopn 2016/03/08 v2.02 operator names
 )
-\inf@bad=\count79
-LaTeX Info: Redefining \frac on input line 210.
-\uproot@=\count80
-\leftroot@=\count81
-LaTeX Info: Redefining \overline on input line 306.
-\classnum@=\count82
-\DOTSCASE@=\count83
-LaTeX Info: Redefining \ldots on input line 378.
-LaTeX Info: Redefining \dots on input line 381.
-LaTeX Info: Redefining \cdots on input line 466.
-\Mathstrutbox@=\box26
-\strutbox@=\box27
+\inf@bad=\count80
+LaTeX Info: Redefining \frac on input line 223.
+\uproot@=\count81
+\leftroot@=\count82
+LaTeX Info: Redefining \overline on input line 385.
+\classnum@=\count83
+\DOTSCASE@=\count84
+LaTeX Info: Redefining \ldots on input line 482.
+LaTeX Info: Redefining \dots on input line 485.
+LaTeX Info: Redefining \cdots on input line 606.
+\Mathstrutbox@=\box27
+\strutbox@=\box28
 \big@size=\dimen106
-LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
-LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
-\macc@depth=\count84
-\c@MaxMatrixCols=\count85
+LaTeX Font Info:    Redeclaring font encoding OML on input line 729.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 730.
+\macc@depth=\count85
+\c@MaxMatrixCols=\count86
 \dotsspace@=\muskip10
-\c@parentequation=\count86
-\dspbrk@lvl=\count87
+\c@parentequation=\count87
+\dspbrk@lvl=\count88
 \tag@help=\toks15
-\row@=\count88
-\column@=\count89
-\maxfields@=\count90
+\row@=\count89
+\column@=\count90
+\maxfields@=\count91
 \andhelp@=\toks16
 \eqnshift@=\dimen107
 \alignsep@=\dimen108
@@ -74,54 +70,53 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
 \multlinegap=\skip43
 \multlinetaggap=\skip44
 \mathdisplay@stack=\toks18
-LaTeX Info: Redefining \[ on input line 2665.
-LaTeX Info: Redefining \] on input line 2666.
+LaTeX Info: Redefining \[ on input line 2844.
+LaTeX Info: Redefining \] on input line 2845.
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\amsfonts.sty"
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msfonts/amsfonts.sty"
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\graphicx.sty"
-Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics/graphicx.sty"
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\keyval.sty"
-Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics/keyval.sty"
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
 \KV@toks@=\toks19
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\graphics.sty"
-Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics/graphics.sty"
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\trig.sty"
-Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics/trig.sty"
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\00miktex\graphics.cfg"
-File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics-cfg/graphics.cfg"
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
-Package graphics Info: Driver file: pdftex.def on input line 91.
+Package graphics Info: Driver file: pdftex.def on input line 99.
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pdftex-def\pdftex.def"
-File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
-
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\infwarerr.sty"
-Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
-)
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ltxcmds.sty"
-Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
-)
-\Gread@gobject=\count91
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+raphics-def/pdftex.def"
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen113
 \Gin@req@width=\dimen114
 )
-\lheadtstbox=\box28
-\rheadtstbox=\box29
+\lheadtstbox=\box29
+\rheadtstbox=\box30
 \lmaxhead=\dimen115
 \rmaxhead=\dimen116
-\copyins=\insert233
-\abstractbox=\box30
+\copyins=\insert199
+\abstractbox=\box31
 \listisep=\skip45
 \c@part=\count92
 \c@section=\count93
@@ -134,8 +129,9 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 \belowcaptionskip=\skip47
 \captionindent=\dimen117
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amscls\amsthm.sty"
-Package: amsthm 2004/08/06 v2.20
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+mscls/amsthm.sty"
+Package: amsthm 2017/10/31 v2.20.4
 \thm@style=\toks20
 \thm@bodyfont=\toks21
 \thm@headfont=\toks22
@@ -150,18 +146,21 @@ Package: amsthm 2004/08/06 v2.20
 \c@lastpage=\count100
 \c@nrofpages=\count101
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\geometry\geometry.sty"
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+eometry-de/geometry.sty"
 Package: geometry 2010/09/12 v5.6 Page Geometry
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ifpdf.sty"
-Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
-Package ifpdf Info: pdfTeX in PDF mode is detected.
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/ifpdf.sty"
+Package: ifpdf 2018/09/07 v3.3 Provides the ifpdf switch
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ifvtex.sty"
-Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/ifvtex.sty"
+Package: ifvtex 2016/05/16 v1.6 Detect VTeX and its facilities (HO)
 Package ifvtex Info: VTeX not detected.
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\ifxetex\ifxetex.sty"
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/ifxetex/ifxetex.sty"
 Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 )
 \Gm@cnth=\count102
@@ -177,17 +176,20 @@ Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 \Gm@layoutvoffset=\dimen125
 \Gm@dimlist=\toks26
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\geometry\geometry.cfg")))
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/g
+eometry/geometry.cfg")))
 \c@thm=\count105
 
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\cite\cite.sty
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/c
+ite/cite.sty"
 LaTeX Info: Redefining \cite on input line 302.
-LaTeX Info: Redefining \nocite on input line 373.
-Package: cite 2010/09/10  v 5.3
+LaTeX Info: Redefining \nocite on input line 332.
+Package: cite 2015/02/27  v 5.5
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\listings.sty
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/listings.sty"
 \lst@mode=\count106
-\lst@gtempboxa=\box31
+\lst@gtempboxa=\box32
 \lst@token=\toks27
 \lst@length=\count107
 \lst@currlwidth=\dimen126
@@ -199,37 +201,42 @@ Package: cite 2010/09/10  v 5.3
 \lst@lineno=\count111
 \lst@maxwidth=\dimen129
 
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstmisc.sty
-File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/lstmisc.sty"
+File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
 \c@lstnumber=\count112
 \lst@skipnumbers=\count113
-\lst@framebox=\box32
+\lst@framebox=\box33
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\listings.cfg
-File: listings.cfg 2014/09/06 1.5e listings configuration
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/listings.cfg"
+File: listings.cfg 2019/09/10 1.8c listings configuration
 ))
-Package: listings 2014/09/06 1.5e (Carsten Heinz)
+Package: listings 2019/09/10 1.8c (Carsten Heinz)
 
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\algorithms\algorithm.st
-y
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+lgorithms/algorithm.sty"
 Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
 nment
- ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\float\float.sty"
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/f
+loat/float.sty"
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \c@float@type=\count114
 \float@exts=\toks28
-\float@box=\box33
+\float@box=\box34
 \@float@everytoks=\toks29
-\@floatcapt=\box34
+\@floatcapt=\box35
 )
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\ifthen.sty"
-Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
+ase/ifthen.sty"
+Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
 )
 \@float@every@algorithm=\toks30
 \c@algorithm=\count115
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\algorithms\algorithmic.
-sty
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+lgorithms/algorithmic.sty"
 Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
 \c@ALC@unique=\count116
 \c@ALC@line=\count117
@@ -238,7 +245,8 @@ Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
 \ALC@tlm=\skip51
 \algorithmicindent=\skip52
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\booktabs\booktabs.sty
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
+ooktabs/booktabs.sty"
 Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \heavyrulewidth=\dimen130
 \lightrulewidth=\dimen131
@@ -258,12 +266,14 @@ Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \@lastruleclass=\count123
 \@thisrulewidth=\dimen142
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\caption\caption.sty
-Package: caption 2013/05/02 v3.3-89 Customizing captions (AR)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/c
+aption/caption.sty"
+Package: caption 2019/09/01 v3.3d Customizing captions (AR)
 
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\caption\caption3.sty
-Package: caption3 2013/05/02 v1.6-88 caption3 kernel (AR)
-Package caption3 Info: TeX engine: e-TeX on input line 57.
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/c
+aption/caption3.sty"
+Package: caption3 2019/09/01 v1.8d caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 64.
 \captionmargin=\dimen143
 \captionmargin@=\dimen144
 \captionwidth=\dimen145
@@ -291,12 +301,13 @@ ptionindent \par }\fi \ifnum \@tempcnta <64 \addvspace \abovecaptionskip \mover
 ight \captionindent \box \@ne \else \moveright \captionindent \box \@ne \nobrea
 k \vskip \belowcaptionskip \fi \relax .
 Package caption Info: AMS or SMF document class.
-\c@ContinuedFloat=\count124
+\c@caption@flags=\count124
+\c@ContinuedFloat=\count125
 Package caption Info: float package is loaded.
 Package caption Info: listings package is loaded.
-)
-(D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.aux
-)
+) (rotorestimation.aux)
+\openout1 = `rotorestimation.aux'.
+
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
 LaTeX Font Info:    ... okay on input line 31.
 LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
@@ -310,27 +321,84 @@ LaTeX Font Info:    ... okay on input line 31.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
 LaTeX Font Info:    ... okay on input line 31.
 LaTeX Font Info:    Try loading font information for U+msa on input line 31.
- ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msfonts/umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 LaTeX Font Info:    Try loading font information for U+msb on input line 31.
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/a
+msfonts/umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\context\base\supp-pdf.mkii
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/context
+/base/mkii/supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count125
+\scratchcounter=\count126
 \scratchdimen=\dimen150
-\scratchbox=\box35
-\nofMPsegments=\count126
-\nofMParguments=\count127
+\scratchbox=\box36
+\nofMPsegments=\count127
+\nofMParguments=\count128
 \everyMPshowfont=\toks31
-\MPscratchCnt=\count128
+\MPscratchCnt=\count129
 \MPscratchDim=\dimen151
-\MPnumerator=\count129
-\makeMPintoPDFobject=\count130
+\MPnumerator=\count130
+\makeMPintoPDFobject=\count131
 \everyMPtoPDFconversion=\toks32
+)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/o
+berdiek/epstopdf-base.sty"
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/infwarerr.sty"
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/o
+berdiek/grfext.sty"
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/kvdefinekeys.sty"
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/ltxcmds.sty"
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+)))
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/o
+berdiek/kvoptions.sty"
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/kvsetkeys.sty"
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/etexcmds.sty"
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/ifluatex.sty"
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+))))
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/generic
+/oberdiek/pdftexcmds.sty"
+Package: pdftexcmds 2019/07/25 v0.30 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
 )
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -366,82 +434,229 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-\c@lstlisting=\count131
+\c@lstlisting=\count132
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
+
+Overfull \hbox (5.78622pt too wide) in paragraph at lines 89--90
+\OT1/cmr/m/n/9 the roots of the quartic polynomial associated with the eigenval
+ue problem
+ []
+
+
+Overfull \hbox (12.31178pt too wide) in paragraph at lines 89--90
+\OT1/cmr/m/n/9 with an analytic formula. Those methods are fast but they have s
+ingularities
+ []
+
+
+Overfull \hbox (8.14996pt too wide) in paragraph at lines 89--90
+\OT1/cmr/m/n/9 quaternions. The proposed method converge in a fixed number of i
+terations
+ []
+
+
+Overfull \hbox (18.65361pt too wide) in paragraph at lines 94--94
+[]\OT1/cmr/b/n/17.28 A High-Performance Singularity-Free Rotation
+ []
+
+
+LaTeX Warning: Citation `FA3R' on page 1 undefined on input line 99.
+
+
+LaTeX Warning: Citation `FS3R' on page 1 undefined on input line 99.
+
 [1
-Non-PDF special ignored!{C:/Users/Mauricio/AppData/Local/MiKTeX/2.9/pdftex/conf
-ig/pdftex.map}] [2] [3] [4] [5] [6] [7]
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstlang1.sty
-File: lstlang1.sty 2014/09/06 1.5e listings language file
-)
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstlang1.sty
-File: lstlang1.sty 2014/09/06 1.5e listings language file
-)
-(C:\Users\Mauricio\AppData\Roaming\MiKTeX\2.9\tex\latex\listings\lstmisc.sty
-File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
-)
-LaTeX Font Info:    Try loading font information for OML+cmr on input line 581.
+Non-PDF special ignored!
+<special> papersize=15.5cm,23.5cm
+{/Users/maurlope/Library/Application Support/MiKTeX/texmfs/data/pdftex/config/p
+dftex.map}]
+Overfull \hbox (7.29773pt too wide) in paragraph at lines 101--102
+\OT1/cmr/m/n/10 works [14] where the trade-off between performance and robustne
+ss is valorated.
+ []
 
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omlcmr.fd"
-File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+Overfull \hbox (17.51898pt too wide) in paragraph at lines 101--102
+\OT1/cmr/m/n/10 In particular SVD based methods exhibit very good accuracy but 
+low performance
+ []
+
+
+Overfull \hbox (32.29788pt too wide) in paragraph at lines 101--102
+\OT1/cmr/m/n/10 and quaternion based methods are in the other end depending on 
+the implementation.
+ []
+
+
+Overfull \hbox (4.15999pt too wide) in paragraph at lines 103--104
+\OT1/cmr/m/n/10 of the best quaternion aligning two sets of corresponding vecto
+rs i.e., equivalent
+ []
+
+
+LaTeX Warning: Citation `Eigen' on page 2 undefined on input line 107.
+
+
+Overfull \hbox (6.76274pt too wide) in paragraph at lines 109--110
+\OT1/cmr/m/n/10 algebra. Geo-met-ric algebra rotors are closely related to quat
+ernions (quaternion
+ []
+
+
+Overfull \hbox (23.52005pt too wide) in paragraph at lines 109--110
+\OT1/cmr/m/n/10 formulation on bivectos instead of vectors for the sake of math
+ematical convenience.
+ []
+
+
+Underfull \vbox (badness 1102) has occurred while \output is active []
+
+ [2]
+Overfull \hbox (2.4099pt too wide) in paragraph at lines 119--120
+\OT1/cmr/m/n/10 known as the pseudoscalar, because the trivector basis consist 
+of single element
+ []
+
+
+Overfull \hbox (8.25505pt too wide) has occurred while \output is active
+ \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
+etric Algebra []
+ []
+
+[3]
+Overfull \hbox (1.96445pt too wide) in paragraph at lines 139--141
+\OT1/cmr/m/n/10 minimization is a non-linear least squares problem with a non-l
+inear constraint
+ []
+
+[4]
+Overfull \hbox (8.25505pt too wide) has occurred while \output is active
+ \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
+etric Algebra []
+ []
+
+[5]
+Overfull \hbox (6.601pt too wide) in paragraph at lines 222--223
+[]\OT1/cmr/m/n/10 Where $\OML/cmm/m/it/10 $ \OT1/cmr/m/n/10 is a small real va
+lue $0 \OML/cmm/m/it/10 <  < \OT1/cmr/m/n/10 1$. The use of Tikhonov regulariz
+ation
+ []
+
+
+Overfull \hbox (17.63121pt too wide) in paragraph at lines 228--230
+\OT1/cmr/m/n/10 That is a non-linear qua-drat-ic maximization problem with a no
+n-linear constraint.
+ []
+
+[6]
+Overfull \hbox (18.77666pt too wide) in paragraph at lines 283--284
+\OT1/cmr/m/n/10 and Jacobi iteration among others. However those algorithms fin
+ds all eigenvectors
+ []
+
+
+Overfull \hbox (8.25505pt too wide) has occurred while \output is active
+ \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
+etric Algebra []
+ []
+
+[7] [8]
+Overfull \hbox (8.25505pt too wide) has occurred while \output is active
+ \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
+etric Algebra []
+ []
+
+[9]
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/lstlang1.sty"
+File: lstlang1.sty 2019/09/10 1.8c listings language file
+)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/lstlang1.sty"
+File: lstlang1.sty 2019/09/10 1.8c listings language file
+)
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
+istings/lstmisc.sty"
+File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
+)
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 480.
+
+
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
+ase/omlcmr.fd"
+File: omlcmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <6> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 581.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 584.
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 480.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 483.
 
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omscmr.fd"
-File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
+ase/omscmr.fd"
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 584.
-LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 593.
- [8]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 483.
+ (rotorestimation.bbl [10]
+Underfull \hbox (badness 1199) in paragraph at lines 60--65
+\OT1/cmr/m/it/9 of the fifth Eurographics symposium on Geometry processing\OT1/
+cmr/m/n/9 , SGP '07,
+ []
 
- [9]
-(D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.bbl
-) [10]
-(D:\Research\Projects\fast-rotor-estimation\RotorEstimation\rotorestimation.aux
-) ) 
+)
+Overfull \hbox (8.25505pt too wide) has occurred while \output is active
+ \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
+etric Algebra []
+ []
+
+[11] (rotorestimation.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
 Here is how much of TeX's memory you used:
- 5902 strings out of 493921
- 83726 string characters out of 3144866
- 217442 words of memory out of 3000000
- 8963 multiletter control sequences out of 15000+200000
- 15196 words of font info for 58 fonts, out of 3000000 for 9000
- 1002 hyphenation exceptions out of 8191
- 36i,13n,60p,1105b,1657s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmb10.pfb>
-<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><
-C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:
-/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/P
-rogram Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Prog
-ram Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Program
- Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Fi
-les (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files
- (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x
-86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Program Files (x86)/
-MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files (x86)/MiKT
-eX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Program Files (x86)/MiKTeX 2
-.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Program Files (x86)/MiKTeX 2.9/f
-onts/type1/public/amsfonts/cm/cmr9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
-/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/t
-ype1/public/amsfonts/cm/cmsy6.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type
-1/public/amsfonts/cm/cmsy7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/p
-ublic/amsfonts/cm/cmsy9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/amsfonts/cm/cmti7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/am
-sfonts/cm/cmti9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/cm/cmtt9.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts
-/symbols/msbm10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/symbols/msbm7.pfb>
-Output written on rotorestimation.pdf (10 pages, 322964 bytes).
+ 6540 strings out of 494857
+ 95450 string characters out of 3176364
+ 361320 words of memory out of 3000000
+ 9941 multiletter control sequences out of 15000+200000
+ 13601 words of font info for 52 fonts, out of 3000000 for 9000
+ 162 hyphenation exceptions out of 8191
+ 41i,13n,60p,1181b,1430s stack positions out of 5000i,500n,10000p,200000b,50000s
+</Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type
+1/public/amsfonts/cm/cmb10.pfb></Users/maurlope/Library/Application Support/MiK
+TeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></Users/maurlope/
+Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/c
+m/cmex10.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install
+/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/maurlope/Library/Application
+ Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users
+/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/
+amsfonts/cm/cmmi6.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmf
+s/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/maurlope/Library/App
+lication Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb
+></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1
+/public/amsfonts/cm/cmr12.pfb></Users/maurlope/Library/Application Support/MiKT
+eX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/maurlope/Libr
+ary/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cm
+r6.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts
+/type1/public/amsfonts/cm/cmr7.pfb></Users/maurlope/Library/Application Support
+/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/maurlope
+/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/
+cm/cmr9.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/
+fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/maurlope/Library/Application 
+Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy6.pfb></Users/
+maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/a
+msfonts/cm/cmsy7.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs
+/install/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/maurlope/Library/App
+lication Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti9.pfb
+></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1
+/public/amsfonts/cm/cmtt9.pfb></Users/maurlope/Library/Application Support/MiKT
+eX/texmfs/install/fonts/type1/public/amsfonts/symbols/msbm10.pfb></Users/maurlo
+pe/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfont
+s/symbols/msbm7.pfb>
+Output written on rotorestimation.pdf (11 pages, 296455 bytes).
 PDF statistics:
- 131 PDF objects out of 1000 (max. 8388607)
+ 126 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
