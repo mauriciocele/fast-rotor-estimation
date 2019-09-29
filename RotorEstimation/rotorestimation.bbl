@@ -16,6 +16,12 @@ L.~Dorst and J.~Lasenby, editors.
 \newblock {\em Guide to Geometric Algebra in Practice}.
 \newblock Springer, 2011.
 
+\bibitem{Eggert1997}
+D.~Eggert, A.~Lorusso, and R.~Fisher.
+\newblock Estimating 3-d rigid body transformations: a comparison of four major
+  algorithms.
+\newblock {\em Machine Vision and Applications}, 9(5):272--290, Mar 1997.
+
 \bibitem{Horn1987}
 B.~K.~P. Horn.
 \newblock Closed-form solution of absolute orientation using unit quaternions.
@@ -26,6 +32,11 @@ B.~K.~P. Horn.
 E.~Kostlan.
 \newblock Statistical complexity of dominant eigenvector calculation.
 \newblock {\em Journal of Complexity}, 1991.
+
+\bibitem{Markley1999}
+L.~Markley.
+\newblock 30 years of wahba's problem.
+\newblock 02 1999.
 
 \bibitem{Mortari1996}
 D.~Mortari.
@@ -71,6 +82,15 @@ G.~Wahba.
 J.~H. Wilkinson, editor.
 \newblock {\em The Algebraic Eigenvalue Problem}.
 \newblock Oxford University Press, Inc., New York, NY, USA, 1988.
+
+\bibitem{Wu2018FA3R}
+J.~Wu, M.~Liu, Z.~Zhou, and R.~Li.
+\newblock Fast rigid 3d registration solution: A simple method free of svd and
+  eigen-decomposition, 2018.
+
+\bibitem{Wu2018FS3R}
+J.~Wu, M.~Liu, Z.~Zhou, and R.~Li.
+\newblock Fast symbolic 3d registration solution, 2018.
 
 \bibitem{Wu2017}
 J.~Wu, Z.~Zhou, B.~Gao, R.~Li, Y.~Cheng, and H.~Fourati.

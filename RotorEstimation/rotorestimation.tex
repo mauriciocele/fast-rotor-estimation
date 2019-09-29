@@ -86,7 +86,7 @@
 
 \begin{abstract}
 
-Well known methods for solving the Wahba's problem are formulated in the linear algebra framework, mainly using the SVD, or in quaternion's framework which leads to solve a max-eigenvalue problem. Those methods are based on well stablished numerical algorithms which on the other hand are iterative and slow. Recently, closed form solutions for computing the optimal quaternion has been proposed base on solving the roots of the quartic polynomial associated with the eigenvalue problem with an analytic formula. Those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem  in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions.  The proposed method converge in a fixed number of iterations being is as fast as the closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
+Well known methods for solving the Wahba's problem are formulated in the linear algebra framework, mainly using the SVD or polar decomposition, or in quaternion's framework which leads to solve a max-eigenvalue problem. Those methods are based on well stablished numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed based on an analytic formula for solving the roots of the quartic polynomial associated with the eigenvalue problem. Closed form methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem  in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions.  The proposed method converges in a fixed number of iterations, its performance is competitive with closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
 
 \end{abstract}
 
@@ -96,9 +96,9 @@ Well known methods for solving the Wahba's problem are formulated in the linear 
 %\tableofcontents
 \section{Introduction}
 
-\indent Wahba's problem has been studied for over half a century since 1965 \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective methods have been developed to solving the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} mainly by formulating it in the quaternions framework, which lead us to solve an eigenvalue problem, or by formulating it in the linear algebra framework and using the Singular Value Decomposition (SVD) and recently by formulating it in the Geometric Algebra framework \cite{Perwass2009, Dorst2011} which at some point casts the solution into linear algebra framework and SVD due to the lack of geometric algebra numerical algorithms. More recently, closed form solutions for computing the optimal quaternion has been proposed \cite{Wu2017, FA3R, FS3R} based on solving the roots of the quartic polynomial associated with the eigenvalue problem with an analytic formula.
+\indent Wahba's problem has been studied for over half a century since 1965 \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective methods have been developed to solving the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} mainly by formulating it in the quaternions framework, which lead us to solve an eigenvalue problem, or by formulating it in the linear algebra framework and using the Singular Value Decomposition (SVD) and recently by formulating it in the Geometric Algebra framework \cite{Perwass2009, Dorst2011} which at some point casts the solution into linear algebra framework and SVD due to the lack of geometric algebra numerical algorithms. More recently, closed form solutions for computing the optimal quaternion has been proposed \cite{Wu2017, Wu2018FA3R, Wu2018FS3R} based on solving the roots of the quartic polynomial associated with the eigenvalue problem with an analytic formula.
 
-Accuracy and speed of most methods have been compared in previous works \cite{Wu2017} where the trade-off between performance and robustness is valorated. In particular SVD based methods exhibit very good accuracy but low performance and quaternion based methods are in the other end depending on the implementation. Regarding the later methods, the proposed closed form solutions exhibit the best trade-off so far but they have singularities i.e., they completely fail on certain input data.
+Accuracy and speed of most methods have been compared in previous works \cite{Eggert1997,Markley1999, Wu2017} where the trade-off between performance and robustness is assessed. In particular SVD based methods exhibit very good accuracy but low performance and quaternion based methods are in the other end depending on the implementation. Regarding the later methods, the proposed closed form solutions exhibit the best trade-off so far but they have singularities i.e., they completely fail on certain input data.
 
 In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem  in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions.  The proposed method converge in a fixed number of iterations being is as fast as the closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
 
@@ -276,7 +276,7 @@ Nevertheless, in this work we seek for an efficient solution which allow us to t
 
 \section{Convexity}
 
-The convexity of the energy $E(R)$ can be proof by showing that its Hessian matrix of second partial derivatives is positive semi-definite. The Hessian matrix of $E(R)$ is $\frac{\partial^2 E(R)}{\partial R} = \sum_j^n { c_j M_j^T M_j}$ which is symmetric, moreover since $M_j$ is skew-symmetric matrix, the product $M_j^T M_j$ is symmetric positive semi-definite. Then follows that $\sum_j^n { c_j M_j^T M_j}$ is positive semi-definite and therefore convex, provided that the sum of weights is convex i.e., $\sum_j^n { c_j } = 1$ and $\forall j, c_j \geq 0$.
+The convexity of the energy $E(R)$ can be proof by showing that its Hessian matrix of second partial derivatives is positive semi-definite. The Hessian matrix of $E(R)$ is $\frac{\partial^2 E(R)}{\partial R} = \sum_j^n { c_j M_j^T M_j}$ which is symmetric, moreover since $M_j$ is skew-symmetric matrix, the product $M_j^T M_j$ is symmetric positive semi-definite. Then follows that $\sum_j^n { c_j M_j^T M_j}$ is positive semi-definite and therefore convex, provided that the sum of weights is convex i.e., $\sum_j^n { c_j } = 1$.
 
 \section{Fast Geometric Algebra Rotor Estimation}
 
@@ -331,7 +331,7 @@ The proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}.
 \begin{algorithmic}[1]
 \REQUIRE {$P = \{p_{j}\}_{j=1}^n, Q = \{q_{j}\}_{j=1}^n, C = \{c_{j}\}_{j=1}^n$}
 \FOR{$j = 1$ \TO $n$}
-\STATE{$S = c_j (p_j + q_j)$}
+\STATE{$S = S + c_j (p_j + q_j)$}
 \STATE{$B = B + c_j p_j q_j^T$}
 \ENDFOR
 \STATE{$H = \left[\begin{array}{cccc}
@@ -354,32 +354,6 @@ The proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}.
 \caption{Fast Rotor Estimation}\label{alg:FastRotorEstimation}
 \end{algorithm}
 The C++ code using the Eigen library can be found in Listing~\ref{lst:cppcode}.
-
-%The \emph{incremental} algorithm is best suited if we know that the two sets of vectors are almost aligned. Let us suppose that we already have suboptimal rotor estimation $R_{prev}$, perhaps calculated for a previous simulation step, that almost align the two sets of vectors. We can use $R_{prev}$ to form a direction $\delta D = \epsilon (R - R_{prev})$ which we integrate in the regularization term. So the new rotor estimation is given by $R_{i+1} = R_0 - (H + \epsilon I)^{-1} (g + \epsilon (R_{prev} - R_0))$. This can be seen as moving the loop from inside the \emph{standalone} algorithm to the outside. When a simulation provides a temporal coherence between consecutive simulation steps, the incremental estimation of rotations is a good choice, since incremental algorithm only requires to solve a linear system for computing the next best rotor. Provided that the simulation converge to stable sets of corresponding vectors, then incremental rotor estimation will converge to $R^*$. The Algorithm~\ref{alg:FastRotorEstimation_incremental} shows the complete algorithm.
-%
-%\begin{algorithm}
-%\begin{algorithmic}[1]
-%\REQUIRE {$P = \{p_{j}\}_{j=1}^n, Q = \{q_{j}\}_{j=1}^n, C = \{c_{j}\}_{j=1}^n, R_{prev}$}
-%\STATE{$R_0 = [1,0,0,0]^T, H = 0_{4\times4}$}
-%\FOR{$j = 1$ \TO $n$}
-%\STATE{$S_1 = (q_{j} + p_{j}) \cdot e_1 \ , \ S_2 = (q_{j} + p_{j}) \cdot e_2 \ , \ S_3 = (q_{j} + p_{j}) \cdot e_3$}
-%\STATE{$D_1 = (p_{j} - q_{j}) \cdot e_1 \ , \ D_2 = (p_{j} - q_{j}) \cdot e_2 \ , \ D_3 = (p_{j} - q_{j}) \cdot e_3$}
-%\STATE{$H = H + $\\
-%$c_j
-%\left[\begin{array}{cccc}
-%D_1^2 + D_2^2 + D_3^2    & D_1 S_2 - D_2 S_1      & D_1 S_3 - D_3 S_1     & D_2 S_3 - D_3 S_2\\ 
-%D_1 S_2 - D_2 S_1        & S_2^2 + S_1^2 + D_3^2  & S_2 S_3 - D_3 D_2     & D_3 D_1 - S_1 S_3 \\
-%D_1 S_3 - D_3 S_1        & S_2 S_3 - D_3 D_2      & S_3^2 + S_1^2 + D_2^2 & S_1 S_2 - D_2 D_1\\ 
-%D_2 S_3 - D_3 S_2        & D_3 D_1 - S_1 S_3      & S_1 S_2 - D_2 D_1     & S_3^2 + S_2^2 + D_1^2
-%\end{array}\right]$}
-%\ENDFOR
-%\STATE{$g = -\left[\begin{array}{cccc} H(0,0) & H(1,0) & H(2,0) & H(3,0) \end{array}\right]^T$} 
-%\STATE{$\Delta R = (H + \epsilon I)^{-1} (g + \epsilon (R_{prev} - R_0))$}
-%\STATE{$R = normalize(R_0 + \Delta R)$}
-%\RETURN {$R(0) + R(1) e_{12} + R(2) e_{13} + R(3) e_{23}$}
-%\end{algorithmic}
-%\caption{Incremental Fast Rotor Estimation}\label{alg:FastRotorEstimation_incremental}
-%\end{algorithm}
 
 \section{Comparisons}
 
