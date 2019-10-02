@@ -22,6 +22,7 @@
                 "GAValkenburg.cpp",
                 "Horn.cpp",
                 "main.cpp",
+                "Quest.cpp",
                 "stdafx.cpp",
                 "-o",
                 "Estimator.out",

@@ -13,6 +13,7 @@
 #include "GAValkenburg.h"
 #include "FA3R.h"
 #include "Davenport.h"
+#include "Quest.h"
 
 using namespace std;
 using namespace Eigen;
@@ -131,10 +132,11 @@ int main(int argc, char* argv[])
 	Quaterniond hornQ = Horn(pointsOriginal, pointsTransformed, weights);
 	Quaterniond GAValkenburgQ = GAValkenburg(pointsOriginal, pointsTransformed, weights);
 	Quaterniond davenportQ = Davenport(pointsOriginal, pointsTransformed, weights);
+	Quaterniond questQ = Quest(pointsOriginal, pointsTransformed, weights);
 
 	double errorGroundTruth = WahbaError(pointsOriginal, pointsTransformed, Q);
 	double errorFlae = WahbaError(pointsOriginal, pointsTransformed, flaeQ);
-	double errorFlaeSymbolic = WahbaError(pointsOriginal, pointsTransformed, flaeSymbolicQ);	
+	double errorFlaeSymbolic = WahbaError(pointsOriginal, pointsTransformed, flaeSymbolicQ);
 	double errorFlaeNewton = WahbaError(pointsOriginal, pointsTransformed, flaeNewtonQ);
 	double errorFA3RDouble = WahbaError(pointsOriginal, pointsTransformed, FA3EDoubleM);
 	double errorFA3RInt = WahbaError(pointsOriginal, pointsTransformed, FA3EIntM);
@@ -151,8 +153,9 @@ int main(int argc, char* argv[])
 	double errorGAValkenburg = WahbaError(pointsOriginal, pointsTransformed, GAValkenburgQ);
 	double errorGANewton = WahbaError(pointsOriginal, pointsTransformed, GANewtonQ);
 	double errorDavenport = WahbaError(pointsOriginal, pointsTransformed, davenportQ);
+	double errorQuest = WahbaError(pointsOriginal, pointsTransformed, questQ);
 
-	std::cout.precision(12);
+	std::cout.precision(15);
 	//std::cout << "Ground Truth error                        " << errorGroundTruth << endl;
 	std::cout << "FLAE error                                " << errorFlae << endl;
 	std::cout << "FLAE Symbolic error                       " << errorFlaeSymbolic << endl;
@@ -168,6 +171,7 @@ int main(int argc, char* argv[])
 	std::cout << "GA Fast Rotor Estimator Aprox 15 error    " << errorGAFast15 << endl;
 	std::cout << "GA Rotor Estimator Newton error           " << errorGANewton << endl;
 	std::cout << "Davenport error                           " << errorDavenport << endl;
+	std::cout << "Quest error                               " << errorQuest << endl;
 	std::cout << "GA Valkenburg error                       " << errorGAValkenburg << endl;
 	std::cout << "SVD McAdams error                         " << errorSVD << endl;
 	std::cout << "SVD error                                 " << errorSVDE << endl;
@@ -181,58 +185,61 @@ int main(int argc, char* argv[])
 
 	double total;
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Flae);
-	std::cout << "Exec time FLAE: "<< total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time FLAE:                           "<< total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeSymbolic);
-	std::cout << "Exec time FLAE Symbolic: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time FLAE Symbolic:                  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeNewton);
-	std::cout << "Exec time FLAE Newton: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time FLAE Newton:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_double);
-	std::cout << "Exec time FA3R Double: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time FA3R Double:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_int);
-	std::cout << "Exec time FA3R Int: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time FA3R Int:                       " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAVX);
-	std::cout << "Exec time GAFastRotorEstimatorAVX: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimatorAVX:        " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
-	std::cout << "Exec time GAFastRotorEstimator: " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator:           " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorIncrQI);
-	std::cout << "Exec time GAFastRotorEstimator Incremental: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator Incr.:     " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox2);
-	std::cout << "Exec time GAFastRotorEstimator Aprox 2: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator Aprox 2:   " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox4);
-	std::cout << "Exec time GAFastRotorEstimator Aprox 4: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator Aprox 4:   " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox8);
-	std::cout << "Exec time GAFastRotorEstimator Aprox 8: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator Aprox 8:   " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorAprox15);
-	std::cout << "Exec time GAFastRotorEstimator Aprox 15: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GAFastRotorEstimator Aprox 15:  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GANewtonRotorEstimator);
-	std::cout << "Exec time GARotorEstimator Newton: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GARotorEstimator Newton:        " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Davenport);
-	std::cout << "Exec time Davenport Q-Method: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time Davenport Q-Method:             " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Quest);
+	std::cout << "Exec time QUEST:                          " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAValkenburg);
-	std::cout << "Exec time GA Valkenburg: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time GA Valkenburg:                  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, SVDMcAdams);
-	std::cout << "Exec time SVD McAdams: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time SVD McAdams:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, SVDEigen);
-	std::cout << "Exec time SVD: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time SVD:                            " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Horn);
-	std::cout << "Exec time Horn: " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	std::cout << "Exec time Horn:                           " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	std::cout << "FINISHED..." << endl;
 	int key;
