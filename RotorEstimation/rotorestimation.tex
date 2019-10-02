@@ -132,51 +132,46 @@ Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, w
 
 \section{Geometric Algebra Rotor Estimation}
 
-Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to minimize the following error function:
+Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to maximize the following energy function:
 \begin{eqnarray*}
-E(R) = \min_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|q_j - R p_i \tilde R\|^2 }\\
-s.t. \ R \tilde R = 1
+	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j + \tilde R q_i R \|^2 }\\
+	s.t. \ R \tilde R = 1
 \end{eqnarray*}
-where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. In that form, the minimization is a non-linear least squares problem with a non-linear constraint in $R$. Notice that the error term $q_j - R p_i \tilde R$ is equivalent to $q_j R - R p_j$ by multiplying by $R$ on the right and using the fact that $R \tilde R = 1$. The equivalent problem is:
+where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. It is a non-linear quadratic maximization problem with a non-linear constraint in $R$. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to the traditional least squares error $\|q_j - R p_j \tilde R\|^2$. Duality in the sense that the optimal $R$ is a critical point of both energies.
+Notice also that $p_j + \tilde R q_i R$ is equivalent to $R p_j + q_j R$ by multiplying by $R$ on the left and using the fact that $R \tilde R = 1$. The equivalent problem is:
 \begin{eqnarray*}
-E(R) = \min_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j R - R q_j\|^2 }\\
-s.t. \ R \tilde R = 1
+	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j + q_j R\|^2 }\\
+	s.t. \ R \tilde R = 1
 \end{eqnarray*}
-which is a linear least squares problem with a non-linear constraint in $R$.
+which is a linear maximization problem with a non-linear constraint in $R$.
 
 We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors in the sense that the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. Recall that the inner product of bivectors is not the same as the inner product of vectors, since the square of bivectors is negative, the inner product of bivectors has the opposite sign e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
 
 For a pair of unit bivectors, $A$ and $B$, the rotor $R$ aligning them can be defined as $R = A \frac{(A + B)}{\|A + B\|}$. Defining the unit bivector $C = \frac{A + B}{\|A + B\|}$ the rotor $R$ is also $R = A C = w + L$ where $w = A \cdot C = \cos(\theta/2)$ and $L = A \times C = \sin(\theta/2) \frac{A \times B}{\|A \times B\|}$.
 
-The constraint $p_j R - R q_j = 0$ can be rewriten as $p_j (w + L) - (w + L) q_j =  (p_j - q_j) \cdot (w + L) + (p_j + q_j) \times L$. Since the inner product $(p_j - q_j) \cdot L= 0$, the constraint could be simplified as follows for a pair of vectors:
-
+The constraint $R p_j + q_j R$ can be rewriten as $(w + L) p_j  + q_j (w + L)$. Expanding the geometric product of bivectors in terms of the inner product and the communtator product we get:
 \begin{eqnarray*}
-(p_j + q_j)  \times L= -w (p_j - q_j)\\
-\end{eqnarray*}
-However the above constraint holds only when the input data is not noisy. For our purposes keeping the term $(p_j - q_j) \cdot L$ aids the optimization on enforcing orthogonality while finding a minimum possible value:
-
-\begin{eqnarray*}
-(p_j - q_j) \cdot (w + L) + (p_j + q_j) \times L = 0\\
+	w  (p_j + q_j) + L \cdot (p_j + q_j)  + (q_j - p_j) \times L
 \end{eqnarray*}
 
 In matrix language we can define the following matrix system $M_j R = 0$:
-
 \begin{eqnarray*}
-\left[\begin{array}{cc}
-0      &           -d_j^T \\
-d_j    &   \left[ s_j \right]_\times \\
-\end{array}\right]
-\left[\begin{array}{c} 
-	w \\
-	L
-\end{array}\right] = 
-\left[\begin{array}{c}
-	0 \\
-	0 
-\end{array}\right]\\
-d_j = p_j - q_j \ \ s_j = p_j + q_j
+	M_j R =
+	\left[\begin{array}{cc}
+		0      &       -s_j^T \\
+		s_j    &   \left[ d_j \right]_\times \\
+	\end{array}\right]
+	\left[\begin{array}{c} 
+		w \\
+		L
+	\end{array}\right] = 
+	\left[\begin{array}{c}
+		-s_j^T L \\
+		w s_j + d_j \times L 
+	\end{array}\right]\\
+	d_j = q_j - p_j \ \ s_j = p_j + q_j
 \end{eqnarray*}
-where $d_j$ and $s_j$ are $3 \times 1$ column vectors holding bivector's coefficients, $M_j$ is a skew-symmetric $4\times 4$ real matrix, so that $M_j^T = -M_j$. The rotor $R$ is represented as $4 \times 1$ column vector made of the scalar $w$ and the $3 \times 1$ column vector $L$ holding the bivector's components. The $3\times 3$ matrix $\left[ s_j \right]_\times$ is representing the skew-symmetric cross-product matrix as usually defined for vectors in $\mathbb R^3$.
+where $d_j$ and $s_j$ are $3 \times 1$ column vectors holding bivector's coefficients, $M_j$ is a skew-symmetric $4\times 4$ real matrix, so that $M_j^T = -M_j$. The rotor $R$ is represented as $4 \times 1$ column vector made of the scalar $w$ and the $3 \times 1$ column vector $L$ holding the bivector's components. The $3\times 3$ matrix $\left[ d_j \right]_\times$ is representing the skew-symmetric cross-product matrix as usually defined for vectors in $\mathbb R^3$.
 
 Let define the function $F^j$ representing the linear transformation:
 \begin{eqnarray*}
@@ -196,75 +191,16 @@ E(R) = F^T F =
 
 We can express $E(R)$ as the following quadratic form:
 \begin{eqnarray*}
-E(R) = \min_R R^T M R\\
+E(R) = \max_R R^T M R\\
 s.t. \ R^T R = 1
 \end{eqnarray*}
 where $M = \sum_j^n { c_j M_j^T M_j}$. Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite.
 Consequently the matrix $M$ is also symmetric positive semi-definite. It follows that all eigenvalues of $M$ are real and $\lambda_i \geq 0$.
 
 \begin{eqnarray*}
-M_j^T M_j = 
-\left[\begin{array}{cc}
-\| d_j \|^2       &         (d_j \times s_j)^T \\
-d_j \times s_j  & d_j d_j^T - \left[ s_j \right]^2_\times \\
-\end{array}\right]\\
-d_j = p_j - q_j \ \ s_j = p_j + q_j
-\end{eqnarray*}
-
-Using the spectral theorem it is easy to show that the minimizer of $E(R)$ is the eigenvector of $M$ associated with the minimum eigenvalue.
-
-The equation $M_j R = 0$ holds when the rotor $R$ aligns perfectly the input bivectors i.e., $R$ is in the null space of $M_j$ and the matrix $M_j^T M_j$ is singular as at least one eigenvalue is zero $\lambda_{\min} = 0$ (two eigenvalues will be zero for a single pair of corresponding bivectors). That implies that when all input bivectors can be aligned perfectly the energy $E(R)$ is non strictly convex since it has infinitely many points at minimum energy value i.e., the solution is in general non-unique. That is problematic since we are interested in finding an eigenvector with least eigenvalue. For instance to use the Inverse Power Method we would need to find the pseudo-inverse of $M$ which need the use of SVD, or the use of Tikhonov regularization:
-
-\begin{eqnarray*}
-	R_{i+1} = \epsilon (M + \epsilon I)^{-1} R_i
-\end{eqnarray*}
-
-Where $\epsilon$ is a small real value $0 < \epsilon < 1$. The use of Tikhonov regularization makes $M$ symmetric positive-definite matrix, making the energy $E(R)$ strictly convex. Note that the Hessian matrix of $E^j = R^T M_j^T M_j R$ is $H^j = 2 M_j^T M_j$, so the Hessian matrix $H = \sum_j {M_j^T M_j}$ of $E(R)$ is equal to the matrix $M$. The Tikhonov regularization makes the Hessian matrix positive-definite.
-
-However, instead of rely on the Inverse Power Method and the need of finding the approximate inverse of $M$ we reformulate the optimization problem to the equivalent maximization:
-\begin{eqnarray*}
-	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j + \tilde R q_i R \|^2 }\\
-	s.t. \ R \tilde R = 1
-\end{eqnarray*}
-That is a non-linear quadratic maximization problem with a non-linear constraint. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to $\|q_j - R p_j \tilde R\|^2$ in the sense that the optimal $R$ makes the first maximum at $(\| p_j \| +  \| q_j \|)^2$ and the second minimal at $0$. The equivalent problem is:
-\begin{eqnarray*}
-	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j + q_j R\|^2 }\\
-	s.t. \ R \tilde R = 1
-\end{eqnarray*}
-The constraint $R p_j + q_j R$ can be rewriten as $(w + L) p_j  + q_j (w + L)$.
-
-\begin{eqnarray*}
-    w  (p_j + q_j) + L \cdot (p_j + q_j)  + (q_j - p_j) \times L
-\end{eqnarray*}
-
-In matrix language we can define the following matrix system:
-\begin{eqnarray*}
-	M_j R =
-	\left[\begin{array}{cc}
-		0      &       -s_j^T \\
-		s_j    &   \left[ d_j \right]_\times \\
-	\end{array}\right]
-	\left[\begin{array}{c} 
-		w \\
-		L
-	\end{array}\right] = 
-	\left[\begin{array}{c}
-		-s_j^T L \\
-		w s_j + d_j \times L 
-	\end{array}\right]\\
-	d_j = q_j - p_j \ \ s_j = p_j + q_j
-\end{eqnarray*}
-$M_j$ is a skew-symmetric $4\times 4$ real matrix. We can then express $E(R)$ as the following quadratic form:
-\begin{eqnarray*}
-	E(R) = \max_R R^T (\sum_j^n { c_j M_j^T M_j}) R\\
-	s.t. \ R^T R = 1
-\end{eqnarray*}
-Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite. 
-Consequently the matrix $M$ is also symmetric positive semi-definite i.e., $R^T M R \geq 0$ and all eigenvalues of $M$ are real and $\lambda_i \geq 0$.
-\begin{eqnarray*}
 	M_j^T M_j = 
 	\left[\begin{array}{cc}
-		 \| s_j \|^2       &         (s_j \times d_j)^T \\
+		\| s_j \|^2       &         (s_j \times d_j)^T \\
 		s_j \times d_j  &    s_j s_j^T - \left[ d_j \right]^2_\times \\
 	\end{array}\right]\\
 	d_j = q_j - p_j \ \ s_j = p_j + q_j
@@ -278,7 +214,7 @@ Nevertheless, in this work we seek for an efficient solution which allow us to t
 
 The convexity of the energy $E(R)$ can be proof by showing that its Hessian matrix of second partial derivatives is positive semi-definite. The Hessian matrix of $E(R)$ is $\frac{\partial^2 E(R)}{\partial R} = \sum_j^n { c_j M_j^T M_j}$ which is symmetric, moreover since $M_j$ is skew-symmetric matrix, the product $M_j^T M_j$ is symmetric positive semi-definite. Then follows that $\sum_j^n { c_j M_j^T M_j}$ is positive semi-definite and therefore convex, provided that the sum of weights is convex i.e., $\sum_j^n { c_j } = 1$.
 
-\section{Fast Geometric Algebra Rotor Estimation}
+\section{Numerical Method}
 
 The most time consuming task of the estimation is to compute the eigenvector of $M$ associated with the greatest eigenvalue. Sound numerical algorithms for computing eigenvectors of a real symmetric matrix are SVD, QR factorization and Jacobi iteration among others. However those algorithms finds all eigenvectors of a matrix. Since we are interested in finding an eigenvector with greatest eigenvalue, our best choice is to use the Power Iteration. Which have the following form:
 
@@ -298,7 +234,7 @@ Several mathematicians have proved bounds on eigenvalues in terms of the value o
 
 \section{Optimal Computation of M}
 
-The symmetric matrix $M^j = M_j^T M_j$ has a simple form:
+The symmetric matrix $M_j^T M_j$ has a simple form:
 
 \begin{eqnarray*}
 	M_j^T M_j = 
@@ -334,30 +270,30 @@ The proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}.
 \STATE{$S = S + c_j (p_j + q_j)$}
 \STATE{$B = B + c_j p_j q_j^T$}
 \ENDFOR
-\STATE{$H = \left[\begin{array}{cccc}
+\STATE{$M = \left[\begin{array}{cccc}
 	0    & B_{12} - B_{21} & B_{20} - B_{02} & B_{01} - B_{10}\\ 
 	B_{12} - B_{21}   & 0 & B_{01} + B_{10}             & B_{20} + B_{02}  \\
 	B_{20} - B_{02} & B_{01} + B_{10}              & 0 & B_{12} + B_{21}   \\ 
 	B_{01} - B_{10}  & B_{20} + B_{02}             & B_{12} + B_{21}              & 0\\ 
 \end{array}\right]$}
-\STATE{$H_{00} = S^T S + Tr(B)$}
-\STATE{$H_{11} = 2 B_{00} + S^T S - Tr(B)$}
-\STATE{$H_{22} = 2 B_{11} + S^T S - Tr(B)$}
-\STATE{$H_{33} = 2 B_{22} + S^T S - Tr(B)$}
+\STATE{$M_{00} = S^T S + Tr(B)$}
+\STATE{$M_{11} = 2 B_{00} + S^T S - Tr(B)$}
+\STATE{$M_{22} = 2 B_{11} + S^T S - Tr(B)$}
+\STATE{$M_{33} = 2 B_{22} + S^T S - Tr(B)$}
 \FOR{$i = 1$ \TO $12$}
-\STATE{$H^{i+1} = \frac{H^i H^i}{ Tr(H^i) }$}
+\STATE{$M^{i+1} = \frac{M^i M^i}{ Tr(M^i) }$}
 \ENDFOR
-\STATE{$\mathcal C_j = H_{j0}, \forall j = 0, ..., 3 $}
+\STATE{$\mathcal C_j = M_{j0}, \forall j = 0, ..., 3 $}
 \STATE{$ R = normalize( \mathcal C_j )$}
 \RETURN { $R(0) + R(1) e_{12} + R(2) e_{13} + R(3) e_{23}$ }
 \end{algorithmic}
 \caption{Fast Rotor Estimation}\label{alg:FastRotorEstimation}
 \end{algorithm}
-The C++ code using the Eigen library can be found in Listing~\ref{lst:cppcode}.
+The C++ code using the Eigen library \cite{Eigen} can be found in Listing~\ref{lst:cppcode}.
 
 \section{Comparisons}
 
-We select several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Horn1987} and QUEST \cite{Shuster1981} to implement the algorithm. The Eigen library is employed to implement the SVD and QUEST. Another version of QUEST using the Newton iteration is also added for comparison. The tests are ran on a MacBook Pro 13' 2017 computer with the CPU of Intel 3.1GHz 4-core i5. The Visual Studio 2019 C++ compiler is used in our experiments. %The results are listed below (Table \ref{tab:roll}, \ref{tab:pitch}, \ref{tab:yaw}):
+We select several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Horn1987} and QUEST \cite{Shuster1981} to implement the algorithm. The Eigen library \cite{Eigen} is employed to implement the SVD and QUEST. Another version of QUEST using the Newton iteration is also added for comparison. The tests are ran on a MacBook Pro 13' 2017 computer with the CPU of Intel 3.1GHz 4-core i5. The Visual Studio 2019 C++ compiler is used in our experiments. %The results are listed below (Table \ref{tab:roll}, \ref{tab:pitch}, \ref{tab:yaw}):
 
 % \begin{table} [H]
 % \centering
@@ -455,7 +391,7 @@ Quaterniond GAFastRotorEstimator(
     const vector<Vector3d>& Q, 
     const vector<double>& w)
 {
-    Matrix4d H;
+    Matrix4d M;
     Matrix3d B;
     Vector3d S;
     const size_t N = P.size();
@@ -467,23 +403,23 @@ Quaterniond GAFastRotorEstimator(
         B.noalias() += (w[j] * P[j]) * Q[j].transpose();
     }
     double diag = S.dot(S);
-    H(3, 3) = diag + B.trace(); 
+    M(3, 3) = diag + B.trace(); 
     diag = diag - B.trace();
-    H(3, 0) = (B(1, 2) - B(2, 1));
-    H(3, 1) = (B(2, 0) - B(0, 2));
-    H(3, 2) = (B(0, 1) - B(1, 0));
-    H(0, 0) = 2.0 * B(0, 0) + diag;
-    H(1, 0) = (B(0, 1) + B(1, 0)); 
-    H(2, 0) = (B(2, 0) + B(0, 2));
-    H(1, 1) = 2.0 * B(1, 1) + diag; 
-    H(2, 1) = (B(1, 2) + B(2, 1));
-    H(2, 2) = 2.0 * B(2, 2) + diag;
-    H.selfadjointView<Eigen::Lower>().evalTo(H);
+    M(3, 0) = (B(1, 2) - B(2, 1));
+    M(3, 1) = (B(2, 0) - B(0, 2));
+    M(3, 2) = (B(0, 1) - B(1, 0));
+    M(0, 0) = 2.0 * B(0, 0) + diag;
+    M(1, 0) = (B(0, 1) + B(1, 0)); 
+    M(2, 0) = (B(2, 0) + B(0, 2));
+    M(1, 1) = 2.0 * B(1, 1) + diag; 
+    M(2, 1) = (B(1, 2) + B(2, 1));
+    M(2, 2) = 2.0 * B(2, 2) + diag;
+    M.selfadjointView<Eigen::Lower>().evalTo(H);
     for (size_t j = 0; j < MAX_STEPS; ++j) {
-        H *= H;
-        H *= 1.0 / H.trace();
+        M *= M;
+        M *= 1.0 / M.trace();
     }
-    return Quaterniond(H.col(0).normalized());
+    return Quaterniond(M.col(0).normalized());
 }
 \end{lstlisting}
 

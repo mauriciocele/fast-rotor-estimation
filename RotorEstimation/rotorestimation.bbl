@@ -22,6 +22,11 @@ D.~Eggert, A.~Lorusso, and R.~Fisher.
   algorithms.
 \newblock {\em Machine Vision and Applications}, 9(5):272--290, Mar 1997.
 
+\bibitem{Eigen}
+G.~Guennebaud, B.~Jacob, et~al.
+\newblock Eigen v3.
+\newblock http://eigen.tuxfamily.org, 2010.
+
 \bibitem{Horn1987}
 B.~K.~P. Horn.
 \newblock Closed-form solution of absolute orientation using unit quaternions.
@@ -105,5 +110,10 @@ Y.~Yang.
   manifold}.
 \newblock {\em Proceedings of the Institution of Mechanical Engineers, Part G:
   Journal of Aerospace Engineering}, 229(14):2737--2742, 2015.
+
+\bibitem{Yang2013}
+Y.~Yang and Z.~Zhou.
+\newblock An analytic solution to wahba's problem.
+\newblock {\em Aerospace Science and Technology}, 30(1):46–49, Oct 2013.
 
 \end{thebibliography}

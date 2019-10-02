@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7050) (preloaded format=pdflatex 2019.9.28)  30 SEP 2019 01:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7050) (preloaded format=pdflatex 2019.9.28)  2 OCT 2019 20:36
 entering extended mode
 **./rotorestimation.tex
 (rotorestimation.tex
@@ -471,9 +471,6 @@ rs i.e., equivalent
  []
 
 
-LaTeX Warning: Citation `Eigen' on page 2 undefined on input line 107.
-
-
 Overfull \hbox (6.76274pt too wide) in paragraph at lines 109--110
 \OT1/cmr/m/n/10 algebra. Geo-met-ric algebra rotors are closely related to quat
 ernions (quaternion
@@ -500,50 +497,31 @@ Overfull \hbox (8.25505pt too wide) has occurred while \output is active
 etric Algebra []
  []
 
-[3]
-Overfull \hbox (1.96445pt too wide) in paragraph at lines 139--141
-\OT1/cmr/m/n/10 minimization is a non-linear least squares problem with a non-l
-inear constraint
- []
-
-[4]
+[3] [4]
 Overfull \hbox (8.25505pt too wide) has occurred while \output is active
  \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
 etric Algebra []
  []
 
 [5]
-Overfull \hbox (6.601pt too wide) in paragraph at lines 222--223
-[]\OT1/cmr/m/n/10 Where $\OML/cmm/m/it/10 $ \OT1/cmr/m/n/10 is a small real va
-lue $0 \OML/cmm/m/it/10 <  < \OT1/cmr/m/n/10 1$. The use of Tikhonov regulariz
-ation
- []
-
-
-Overfull \hbox (17.63121pt too wide) in paragraph at lines 228--230
-\OT1/cmr/m/n/10 That is a non-linear qua-drat-ic maximization problem with a no
-n-linear constraint.
- []
-
-[6]
-Overfull \hbox (18.77666pt too wide) in paragraph at lines 283--284
+Overfull \hbox (18.77666pt too wide) in paragraph at lines 219--220
 \OT1/cmr/m/n/10 and Jacobi iteration among others. However those algorithms fin
 ds all eigenvectors
  []
 
+[6]
+Overfull \hbox (6.83224pt too wide) in paragraph at lines 296--297
+\OT1/cmr/m/n/10 [12] to implement the algorithm. The Eigen library [5] is emplo
+yed to implement
+ []
+
 
 Overfull \hbox (8.25505pt too wide) has occurred while \output is active
  \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
 etric Algebra []
  []
 
-[7] [8]
-Overfull \hbox (8.25505pt too wide) has occurred while \output is active
- \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
-etric Algebra []
- []
-
-[9]
+[7]
 ("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l
 istings/lstlang1.sty"
 File: lstlang1.sty 2019/09/10 1.8c listings language file
@@ -556,7 +534,7 @@ File: lstlang1.sty 2019/09/10 1.8c listings language file
 istings/lstmisc.sty"
 File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
 )
-LaTeX Font Info:    Try loading font information for OML+cmr on input line 454.
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 390.
 
 
 ("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
@@ -564,8 +542,8 @@ ase/omlcmr.fd"
 File: omlcmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <6> not available
-(Font)              Font shape `OML/cmm/m/it' tried instead on input line 454.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 457.
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 390.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 393.
 
 
 ("/Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/tex/latex/b
@@ -573,72 +551,68 @@ ase/omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 457.
- (rotorestimation.bbl [10]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 393.
+ [8] (rotorestimation.bbl
 Underfull \hbox (badness 4205) in paragraph at lines 20--24
 []\OT1/cmr/m/n/9 D. Eggert, A. Lorusso, and R. Fisher. Estimating 3-d rigid bod
 y
  []
 
 
-Underfull \hbox (badness 1199) in paragraph at lines 71--76
-\OT1/cmr/m/it/9 of the fifth Eurographics symposium on Geometry processing\OT1/
-cmr/m/n/9 , SGP '07,
- []
-
-)
 Overfull \hbox (8.25505pt too wide) has occurred while \output is active
  \OT1/cmr/m/n/10 A High-Performance Singularity-Free Rotation Estimator in Geom
 etric Algebra []
  []
 
-[11] (rotorestimation.aux)
+[9]
+Underfull \hbox (badness 1199) in paragraph at lines 76--81
+\OT1/cmr/m/it/9 of the fifth Eurographics symposium on Geometry processing\OT1/
+cmr/m/n/9 , SGP '07,
+ []
 
-LaTeX Warning: There were undefined references.
-
- ) 
+) [10] (rotorestimation.aux) ) 
 Here is how much of TeX's memory you used:
- 6542 strings out of 494857
- 95487 string characters out of 3176364
- 361337 words of memory out of 3000000
- 9943 multiletter control sequences out of 15000+200000
+ 6545 strings out of 494857
+ 95509 string characters out of 3176364
+ 357896 words of memory out of 3000000
+ 9946 multiletter control sequences out of 15000+200000
  13601 words of font info for 52 fonts, out of 3000000 for 9000
  162 hyphenation exceptions out of 8191
- 41i,13n,60p,1208b,1430s stack positions out of 5000i,500n,10000p,200000b,50000s
-</Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type
-1/public/amsfonts/cm/cmb10.pfb></Users/maurlope/Library/Application Support/MiK
-TeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></Users/maurlope/
-Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/c
-m/cmex10.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install
-/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/maurlope/Library/Application
- Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users
-/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/
-amsfonts/cm/cmmi6.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmf
-s/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/maurlope/Library/App
-lication Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr10.pfb
-></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1
-/public/amsfonts/cm/cmr12.pfb></Users/maurlope/Library/Application Support/MiKT
-eX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/maurlope/Libr
-ary/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cm
-r6.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts
-/type1/public/amsfonts/cm/cmr7.pfb></Users/maurlope/Library/Application Support
-/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/maurlope
-/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/
-cm/cmr9.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/
-fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/maurlope/Library/Application 
-Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy6.pfb></Users/
+ 41i,13n,60p,1208b,1779s stack positions out of 5000i,500n,10000p,200000b,50000s
+</Users/maurlope/Library/Application Support/MiKT
+eX/texmfs/install/fonts/type1/public/amsfonts/cm/cmb10.pfb></Users/maurlope/Lib
+rary/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/c
+mcsc10.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/f
+onts/type1/public/amsfonts/cm/cmex10.pfb></Users/maurlope/Library/Application S
+upport/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/
 maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/a
-msfonts/cm/cmsy7.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs
-/install/fonts/type1/public/amsfonts/cm/cmti10.pfb></Users/maurlope/Library/App
-lication Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti9.pfb
-></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1
-/public/amsfonts/cm/cmtt9.pfb></Users/maurlope/Library/Application Support/MiKT
-eX/texmfs/install/fonts/type1/public/amsfonts/symbols/msbm10.pfb></Users/maurlo
-pe/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfont
-s/symbols/msbm7.pfb>
-Output written on rotorestimation.pdf (11 pages, 297123 bytes).
+msfonts/cm/cmmi5.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs
+/install/fonts/type1/public/amsfonts/cm/cmmi6.pfb></Users/maurlope/Library/Appl
+ication Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmmi7.pfb>
+</Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/
+public/amsfonts/cm/cmr10.pfb></Users/maurlope/Library/Application Support/MiKTe
+X/texmfs/install/fonts/type1/public/amsfonts/cm/cmr12.pfb></Users/maurlope/Libr
+ary/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cm
+r5.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts
+/type1/public/amsfonts/cm/cmr6.pfb></Users/maurlope/Library/Application Support
+/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmr7.pfb></Users/maurlope
+/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/
+cm/cmr8.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/
+fonts/type1/public/amsfonts/cm/cmr9.pfb></Users/maurlope/Library/Application Su
+pport/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/m
+aurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public/am
+sfonts/cm/cmsy6.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/
+install/fonts/type1/public/amsfonts/cm/cmsy7.pfb></Users/maurlope/Library/Appli
+cation Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+</Users/maurlope/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/
+public/amsfonts/cm/cmti9.pfb></Users/maurlope/Library/Application Support/MiKTe
+X/texmfs/install/fonts/type1/public/amsfonts/cm/cmtt9.pfb></Users/maurlope/Libr
+ary/Application Support/MiKTeX/texmfs/install/fonts/type1/public/amsfonts/symbo
+ls/msbm10.pfb></Users/maurlope/Library/Application Support/MiKTeX/texmfs/instal
+l/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
+Output written on rotorestimation.pdf (10 pages, 292548 bytes).
 PDF statistics:
- 126 PDF objects out of 1000 (max. 8388607)
+ 123 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
