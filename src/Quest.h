@@ -6,3 +6,4 @@
 #include <vector>
 
 Eigen::Quaterniond Quest(const std::vector<Eigen::Vector3d>& P, const std::vector<Eigen::Vector3d>& Q, const std::vector<double>& w);
+Eigen::Matrix3d Foam(const std::vector<Eigen::Vector3d>& P, const std::vector<Eigen::Vector3d>& Q, const std::vector<double>& w);

@@ -119,6 +119,7 @@ int main(int argc, char* argv[])
 	Matrix3d FA3EIntM = FA3R_int(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQAVX = GAFastRotorEstimatorAVX(pointsOriginal, pointsTransformed, weights);
+	Quaterniond  GAQ = GARotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
 	for(size_t i = 0 ; i < 24 ; ++i) 
 		GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, GAFastQInc);
@@ -133,6 +134,7 @@ int main(int argc, char* argv[])
 	Quaterniond GAValkenburgQ = GAValkenburg(pointsOriginal, pointsTransformed, weights);
 	Quaterniond davenportQ = Davenport(pointsOriginal, pointsTransformed, weights);
 	Quaterniond questQ = Quest(pointsOriginal, pointsTransformed, weights);
+	Matrix3d foamQ = Foam(pointsOriginal, pointsTransformed, weights);
 
 	double errorGroundTruth = WahbaError(pointsOriginal, pointsTransformed, Q);
 	double errorFlae = WahbaError(pointsOriginal, pointsTransformed, flaeQ);
@@ -142,6 +144,7 @@ int main(int argc, char* argv[])
 	double errorFA3RInt = WahbaError(pointsOriginal, pointsTransformed, FA3EIntM);
 	double errorGAFast = WahbaError(pointsOriginal, pointsTransformed, GAFastQ);
 	double errorGAFastAVX = WahbaError(pointsOriginal, pointsTransformed, GAFastQAVX);
+	double errorGA = WahbaError(pointsOriginal, pointsTransformed, GAQ);
 	double errorGAFastInc = WahbaError(pointsOriginal, pointsTransformed, GAFastQInc);
 	double errorGAFast2 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ2);
 	double errorGAFast4 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ4);
@@ -154,6 +157,7 @@ int main(int argc, char* argv[])
 	double errorGANewton = WahbaError(pointsOriginal, pointsTransformed, GANewtonQ);
 	double errorDavenport = WahbaError(pointsOriginal, pointsTransformed, davenportQ);
 	double errorQuest = WahbaError(pointsOriginal, pointsTransformed, questQ);
+	double errorFoam = WahbaError(pointsOriginal, pointsTransformed, foamQ);
 
 	std::cout.precision(15);
 	//std::cout << "Ground Truth error                        " << errorGroundTruth << endl;
@@ -164,6 +168,7 @@ int main(int argc, char* argv[])
 	std::cout << "FA3R Int error                            " << errorFA3RInt << endl;
 	std::cout << "GA Fast Rotor Estimator AVX error         " << errorGAFastAVX << endl;
 	std::cout << "GA Fast Rotor Estimator error             " << errorGAFast << endl;
+	std::cout << "GA Rotor Estimator error                  " << errorGA << endl;
 	std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 2 error     " << errorGAFast2 << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 4 error     " << errorGAFast4 << endl;
@@ -172,6 +177,7 @@ int main(int argc, char* argv[])
 	std::cout << "GA Rotor Estimator Newton error           " << errorGANewton << endl;
 	std::cout << "Davenport error                           " << errorDavenport << endl;
 	std::cout << "Quest error                               " << errorQuest << endl;
+	std::cout << "Foam error                                " << errorFoam << endl;
 	std::cout << "GA Valkenburg error                       " << errorGAValkenburg << endl;
 	std::cout << "SVD McAdams error                         " << errorSVD << endl;
 	std::cout << "SVD error                                 " << errorSVDE << endl;
@@ -205,6 +211,9 @@ int main(int argc, char* argv[])
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
 	std::cout << "Exec time GAFastRotorEstimator:           " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
 
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GARotorEstimator);
+	std::cout << "Exec time GARotorEstimator:               " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
+
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorIncrQI);
 	std::cout << "Exec time GAFastRotorEstimator Incr.:     " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
@@ -228,6 +237,9 @@ int main(int argc, char* argv[])
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Quest);
 	std::cout << "Exec time QUEST:                          " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+
+	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, Foam);
+	std::cout << "Exec time FOAM:                           " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAValkenburg);
 	std::cout << "Exec time GA Valkenburg:                  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
