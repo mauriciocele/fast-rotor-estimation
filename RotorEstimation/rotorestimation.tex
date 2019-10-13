@@ -86,7 +86,7 @@
 
 \begin{abstract}
 
-Well known methods for solving the Wahba's problem are formulated in the linear algebra framework, mainly using the SVD or polar decomposition, or in quaternion's framework which leads to solve a max-eigenvalue problem. Those methods are based on well stablished numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed based on an analytic formula for solving the roots of the quartic polynomial associated with the eigenvalue problem. Closed form methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem  in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions.  The proposed method converges in a fixed number of iterations, its performance is competitive with closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
+Well known methods for solving the Wahba's problem are formulated in the linear algebra framework, mainly using the SVD or polar decomposition, or in quaternion's framework which leads to solve a max-eigenvalue problem. Those methods are based on well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed based on an analytic formula for solving the roots of the quartic polynomial associated with the eigenvalue problem. Closed form methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions. The proposed method converges in a fixed number of iterations, its performance is competitive with closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
 
 \end{abstract}
 
@@ -125,24 +125,24 @@ This is called a \emph{grading} of the algebra.
 Reversing the order of multiplication is called reversion, as expressed by $(a_1 a_2 ... a_k)\tilde{} = a_k ... a_2 a_1$ and $(a_1 \wedge a_2 \wedge ... \wedge a_k)\tilde{} = a_k \wedge ... \wedge a_2 \wedge a_1$, and the reverse of an arbitrary multivector is defined by $\tilde{X} = \sum_{k=0}^n { \langle \tilde{X} \rangle_k }$.
 
 Rotations are even grade multivectors known as rotors. We denote the subalgebra of rotors as $\mathbb{G}^{+}_3$. A rotor $R$ can be generated as the geometric product of an even number of vectors. A reflection of any $k$-vector $X$ in a plane with normal $n$ is expressed as the sandwitch product $(-1)^k n X n$. The most basic rotor $R$ is defined as the product of two unit vectors $a$ and $b$ with angle of $\frac{\theta}{2}$. The rotation plane is the bivector $B = \frac{a \wedge b}{\| a \wedge b \|}$.
-\begin{equation*}
+\begin{equation}
 a b = a \cdot b + a \wedge b = \cos\left( \frac{\theta}{2} \right) + B \sin\left( \frac{\theta}{2} \right).
-\end{equation*}
+\end{equation}
 Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, where $\tilde R$ is the reverse of $R$ and can be obtained by reversing the order of all the products of vectors.
 
 \section{Geometric Algebra Rotor Estimation}
 
 Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to maximize the following energy function:
-\begin{eqnarray*}
+\begin{eqnarray}
 	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j + \tilde R q_i R \|^2 }\\
 	s.t. \ R \tilde R = 1
-\end{eqnarray*}
+\end{eqnarray}
 where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. It is a non-linear quadratic maximization problem with a non-linear constraint in $R$. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to the traditional least squares error $\|q_j - R p_j \tilde R\|^2$. Duality in the sense that the optimal $R$ is a critical point of both energies.
 Notice also that $p_j + \tilde R q_i R$ is equivalent to $R p_j + q_j R$ by multiplying by $R$ on the left and using the fact that $R \tilde R = 1$. The equivalent problem is:
-\begin{eqnarray*}
+\begin{eqnarray}
 	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j + q_j R\|^2 }\\
 	s.t. \ R \tilde R = 1
-\end{eqnarray*}
+\end{eqnarray}
 which is a linear maximization problem with a non-linear constraint in $R$.
 
 We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors in the sense that the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. Recall that the inner product of bivectors is not the same as the inner product of vectors, since the square of bivectors is negative, the inner product of bivectors has the opposite sign e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
@@ -150,12 +150,12 @@ We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times
 For a pair of unit bivectors, $A$ and $B$, the rotor $R$ aligning them can be defined as $R = A \frac{(A + B)}{\|A + B\|}$. Defining the unit bivector $C = \frac{A + B}{\|A + B\|}$ the rotor $R$ is also $R = A C = w + L$ where $w = A \cdot C = \cos(\theta/2)$ and $L = A \times C = \sin(\theta/2) \frac{A \times B}{\|A \times B\|}$.
 
 The constraint $R p_j + q_j R$ can be rewriten as $(w + L) p_j  + q_j (w + L)$. Expanding the geometric product of bivectors in terms of the inner product and the communtator product we get:
-\begin{eqnarray*}
+\begin{eqnarray}
 	w  (p_j + q_j) + L \cdot (p_j + q_j)  + (q_j - p_j) \times L
-\end{eqnarray*}
+\end{eqnarray}
 
 In matrix language we can define the following matrix system $M_j R = 0$:
-\begin{eqnarray*}
+\begin{eqnarray}
 	M_j R =
 	\left[\begin{array}{cc}
 		0      &       -s_j^T \\
@@ -170,7 +170,7 @@ In matrix language we can define the following matrix system $M_j R = 0$:
 		w s_j + d_j \times L 
 	\end{array}\right]\\
 	d_j = q_j - p_j \ \ s_j = p_j + q_j
-\end{eqnarray*}
+\end{eqnarray}
 where $d_j$ and $s_j$ are $3 \times 1$ column vectors holding bivector's coefficients, $M_j$ is a skew-symmetric $4\times 4$ real matrix, so that $M_j^T = -M_j$. The rotor $R$ is represented as $4 \times 1$ column vector made of the scalar $w$ and the $3 \times 1$ column vector $L$ holding the bivector's components. The $3\times 3$ matrix $\left[ d_j \right]_\times$ is representing the skew-symmetric cross-product matrix as usually defined for vectors in $\mathbb R^3$.
 
 Let define the function $F^j$ representing the linear transformation:
@@ -190,47 +190,118 @@ E(R) = F^T F =
 \end{eqnarray*}
 
 We can express $E(R)$ as the following quadratic form:
-\begin{eqnarray*}
+\begin{eqnarray}
 E(R) = \max_R R^T M R\\
 s.t. \ R^T R = 1
-\end{eqnarray*}
+\end{eqnarray}
 where $M = \sum_j^n { c_j M_j^T M_j}$. Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite.
 Consequently the matrix $M$ is also symmetric positive semi-definite. It follows that all eigenvalues of $M$ are real and $\lambda_i \geq 0$.
-
-\begin{eqnarray*}
+\begin{eqnarray}
 	M_j^T M_j = 
 	\left[\begin{array}{cc}
 		\| s_j \|^2       &         (s_j \times d_j)^T \\
 		s_j \times d_j  &    s_j s_j^T - \left[ d_j \right]^2_\times \\
 	\end{array}\right]\\
 	d_j = q_j - p_j \ \ s_j = p_j + q_j
-\end{eqnarray*}
+\end{eqnarray}
 
 By the spectral theorem the maximizer of $E(R)$ is the eigenvector of $M$ associated with the largest eigenvalue which is a positive number.
-Typically it can be obtained with great precision using SVD or QR factorization.
-Nevertheless, in this work we seek for an efficient solution which allow us to take advantage of nowadays computing hardware.
 
 \section{Convexity}
 
 The convexity of the energy $E(R)$ can be proof by showing that its Hessian matrix of second partial derivatives is positive semi-definite. The Hessian matrix of $E(R)$ is $\frac{\partial^2 E(R)}{\partial R} = \sum_j^n { c_j M_j^T M_j}$ which is symmetric, moreover since $M_j$ is skew-symmetric matrix, the product $M_j^T M_j$ is symmetric positive semi-definite. Then follows that $\sum_j^n { c_j M_j^T M_j}$ is positive semi-definite and therefore convex, provided that the sum of weights is convex i.e., $\sum_j^n { c_j } = 1$.
 
-\section{Numerical Method}
+\section{Optimal Quaternion using 4D Geometric Algebra}
 
-The most time consuming task of the estimation is to compute the eigenvector of $M$ associated with the greatest eigenvalue. Sound numerical algorithms for computing eigenvectors of a real symmetric matrix are SVD, QR factorization and Jacobi iteration among others. However those algorithms finds all eigenvectors of a matrix. Since we are interested in finding an eigenvector with greatest eigenvalue, our best choice is to use the Power Iteration. Which have the following form:
+The most time consuming task of the estimation is to compute the eigenvector of $M$ associated with the greatest eigenvalue. Sound numerical algorithms for computing eigenvectors of a real symmetric matrix are SVD, QR factorization and Jacobi iteration among others. However those algorithms finds all eigenvectors of a matrix. In this section we show how to find the largest eigenvalue and its corresponding eigenvector i.e., the required quaternion, using the 4D Geometric Algebra $ \mathbb{G}_4$ which is efficient, accurate and suitable for high performance applications.
 
+Let us define four vectors $\textbf m_1$, $\textbf m_2$, $\textbf m_3$, $\textbf m_4$ corresponding to the columns of matrix $M$:
 \begin{eqnarray*}
-R_{i+1} = \frac{M R_i}{\| M R_i \|}
+	M = \sum_j^n { c_j M_j^T M_j} =
+	\left[\begin{array}{cccc}
+		\\
+		\textbf m_1 & \textbf m_2 & \textbf m_3 & \textbf m_4 \\
+		\\
+	\end{array}\right]
 \end{eqnarray*}
 
-It has been established that convergence of power iteration is linear or \emph{geometric}, depending on the ratio of the largest eigenvalue to the second eigenvalue $\lambda_2 / \lambda_{\max}$ i.e., the method converges slowly if there is an eigenvalue close in magnitude to the largest eigenvalue. A well-known algorithm for finding dominant eigenvectors of matrices consists of repeatedly squaring a matrix, renormalizing the matrix after each squaring. See \cite{Wilkinson1988}.
+The matrix system that we want to solve is $M R = \lambda R$ for $\lambda$ corresponding to the largest eigenvalue of $M$ and the corresponding $R$. We can write the system in the following form:
+\begin{eqnarray}
+	\left[\begin{array}{cccc}
+		\\
+		\textbf m_1 - \lambda e_1 & \textbf m_2 - \lambda e_2 & \textbf m_3 - \lambda e_3 & \textbf m_4- \lambda e_4 \\
+		\\
+		\\
+	\end{array}\right]
+	\left[\begin{array}{c} 
+		w \\
+		L_1\\
+		L_2\\
+		L_3
+	\end{array}\right] = 	
+	\left[\begin{array}{c} 
+		0 \\
+		0 \\
+		0 \\
+		0
+	\end{array}\right]
+	\label{eqn:eigensystem}
+\end{eqnarray}
 
+The matrix in equation~\ref{eqn:eigensystem}, called \emph{characteristic matrix}, is singular ie., the vectors $(\textbf m_1 - \lambda e_1)$, $(\textbf m_2 - \lambda e_2)$, $()\textbf m_3 - \lambda e_3)$ and $()\textbf m_4- \lambda e_4)$ are linearly dependent (the rank of the matrix is $3$). It follows that its outer product must be zero:
+\begin{eqnarray}
+(\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4) = 0
+	\label{eqn:characteristic_outer_product}
+\end{eqnarray}
+
+Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. We can find the largest root of the polynomial using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
 \begin{eqnarray*}
-	M_{i+1} = \frac{M_i M_i}{\| M_i \|_F}
+P'(\lambda) = 
+- e_1\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
+- (\textbf m_1 - \lambda e_1)\wedge e_2\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
+- (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge e_3\wedge(\textbf m_4- \lambda e_4)\\
+- (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge e_4
 \end{eqnarray*}
 
-In \cite{Kostlan1991} it is showed that the convergence of the repeated squaring is \emph{quadratic} and for real symmetric $N \times N$ matrices the average number of iterations required is O($\ln N + \ln \|\ln \epsilon\|$). Moreover, the following upper bound is provided $\frac{1}{\ln 2} [ \ln( 3 \sqrt{2} ( N ( N - 1 ) / 2 + N ) ) + 1 + \ln( 2 \ln N + \|\ln \epsilon\|) ] + 1$. Thus for a symmetric $4 \times 4$ matrix, taking a small $\epsilon = 10^{-13}$ the average number of iterations is $6$ and upper bound is $12$. That can be exploited for creating deterministic algorithms.
+We found that $Trace(M)$ is a robust guess for Newton-Raphson iteration because it is larger than the largest eigenvalue and is also close enough to converge in few iterations.
 
-Several mathematicians have proved bounds on eigenvalues in terms of the value of the matrix. A simple test in \cite{brauer1946}, is based on the L$1$-norm of the columns nd rows. Let $a_{ij}$ be the elements, $R_i = \sum_j |a_{ij}|$ be the L$1$-norm of the $i$th row and $C_j = \sum_i |a_{ij}|$ the L$1$-norm of the $j$th column. Let $\mathcal R$ be the largest $R_i$ and $\mathcal C$ the largest $C_j$. Then for all eigenvalues $|\lambda| \leq \min(\mathcal R, \mathcal C)$. Since our matrix is symmetric the upper bound is the same for rows and columns. Going back to the power method, we see that after a small number of repeated matrix squaring, the dominant eigenvector correspond to the $j$th column having the largest $C_j$ value.
+Following \cite{DeKeninck2019} we solve the system~\ref{eqn:eigensystem} using outer products. For a linear system $A \textbf x = b$ the authors in \cite{DeKeninck2019} defines $N$ linear equations of the form $A^T_j \textbf x = b_j$ each of which corresponds to a dual hyper-plane of the form $\textbf a_j \equiv A_j - b_j e_0$ where the solution $\textbf x$ must lie on. The $e_0$ is an \emph{homogeneous} basis vector needed for enabling projective geometry, enlarging the base space to $N+1$, which interpretation is to be the offset of the hyper-plane. So solution of the linear system is the intersection of $N$ dual hyper-planes, which is given by its outer product.
+\begin{eqnarray}
+\alpha (\textbf x + e_0)^* = \textbf a_1 \wedge \textbf a_2 \wedge ... \wedge \textbf a_N
+\end{eqnarray}
+
+Where the symbol $^*$ is the dual operator of the $N+1$ space and $\alpha$ is a weight factor. After taking the dual of $\alpha (\textbf x + e_0)^*$ and divide by the coefficient of $e_0$ (which is $\alpha$), the solution $\textbf x$ can be read off the coefficients of the $1$-vector.
+
+We know that the null space of $(M - \lambda I)$ is of rank one. Algebraically this means that one of its column vectors is redundant i.e., it can be written in term of the others. In linear algebra this means that the system has infinitely many solutions. The geometric interpretation is that all hyper-planes intersect in a line passing through the origin. Since all solutions lie on the same line and they only differ by a scaling term, a particular solution can be found by fixing the scale. Actually, it is enough to constrain the scale of a single hyper-plane. The homogeneous component $e_0$ can be interpreted as scale of solution (instead of hyper-plane's offset as in \cite{DeKeninck2019}) since it affects only that aspect of the solution. In linear algebra language it is equivalent to set one value at the right hand side of \ref{eqn:eigensystem}, however that system can't be solved in linear algebra because it requires to invert a singular matrix.
+
+We define the dual hyper-planes passing through the origin as:
+\begin{eqnarray}
+   \textbf a_i \equiv \textbf m_i - \lambda e_i
+\end{eqnarray}
+
+Although in most cases it is enough to set the scale of a single hyper-plane go get a solution it is inconvenient to do so, as will be explained in Section~\ref{section:robustness}. It is more robust to set the scale of all hyper-planes to some $\gamma \neq 0$ which is a scalar value. Intersection can then be found by taking the outer product as:
+\begin{eqnarray}
+\alpha (\textbf x + 1)^* = (\textbf a_1 + \gamma) \wedge  (\textbf a_2 + \gamma) \wedge  (\textbf a_3  + \gamma) \wedge (\textbf a_4 + \gamma)
+\label{eqn:hyperplanes_intersection}
+\end{eqnarray}
+
+Distributing the outer product and keeping the terms of grade-$3$ we get:
+\begin{eqnarray}
+\alpha (\textbf x + 1)^* =  \gamma (\textbf a_1 \wedge \textbf a_3 \wedge \textbf a_4
++ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_4
++ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_3
++ \textbf a_2 \wedge \textbf a_3 \wedge \textbf a_4)
+\end{eqnarray}
+
+Here the symbol $^*$ is the dual operator of the $4$D space (not $5$D as in \cite{DeKeninck2019} which allow us to be more efficient) and $\alpha$ is a weight factor. After taking the dual of $\alpha (\textbf x + 1)^*$ the eigenvector $\textbf x$ can be read off the coefficients of the $1$-vector. Notice that solution needs to be normalized.
+
+
+\section{Robustness and Singularities}
+\label{section:robustness}
+
+As stated before, setting the scale of a single hyperplane is enough to get a valid eigenvector in most cases. However, the choice of which hyper-plane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work when the angle of rotation is $\pi$ because $w = \cos(\pi/2)$ in that case. Similarly, constraining one of the hyper-planes corresponding to $L_1$, $L_4$ or $L_3$ won't work when the angle of rotation is $0$ or $4 \pi$, etc. So it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
+
+Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix. Since it is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
 
 \section{Optimal Computation of M}
 
@@ -259,37 +330,39 @@ All terms of the matrix $M_j^T M_j$ can be derived from the matrix $B = p_j q_j^
 
 \section{Algorithms}
 
-Our algorithm is based on the repeated squaring method, which is an iterative algorithm, although it always performs a fixed number of matrix squaring operations. Since the upper bound of iterations has been established and numerical tests confirms that no more iterations are needed to achieve the required accuracy. In contrast to the power iteration our method doesn't need a random initial guess i.e., the best $R$ is always calculated by matrix squaring.
-
-The proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}. 
+The pseudo-code of proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}. 
 
 \begin{algorithm}
 \begin{algorithmic}[1]
 \REQUIRE {$P = \{p_{j}\}_{j=1}^n, Q = \{q_{j}\}_{j=1}^n, C = \{c_{j}\}_{j=1}^n$}
+\STATE{$S = B = 0, \gamma = 1$}
 \FOR{$j = 1$ \TO $n$}
-\STATE{$S = S + c_j (p_j + q_j)$}
+\STATE{$S = S + c_j (p_j \cdot p_j + q_j \cdot q_j)$}
 \STATE{$B = B + c_j p_j q_j^T$}
 \ENDFOR
-\STATE{$M = \left[\begin{array}{cccc}
-	0    & B_{12} - B_{21} & B_{20} - B_{02} & B_{01} - B_{10}\\ 
-	B_{12} - B_{21}   & 0 & B_{01} + B_{10}             & B_{20} + B_{02}  \\
-	B_{20} - B_{02} & B_{01} + B_{10}              & 0 & B_{12} + B_{21}   \\ 
-	B_{01} - B_{10}  & B_{20} + B_{02}             & B_{12} + B_{21}              & 0\\ 
-\end{array}\right]$}
-\STATE{$M_{00} = S^T S + Tr(B)$}
-\STATE{$M_{11} = 2 B_{00} + S^T S - Tr(B)$}
-\STATE{$M_{22} = 2 B_{11} + S^T S - Tr(B)$}
-\STATE{$M_{33} = 2 B_{22} + S^T S - Tr(B)$}
-\FOR{$i = 1$ \TO $12$}
-\STATE{$M^{i+1} = \frac{M^i M^i}{ Tr(M^i) }$}
-\ENDFOR
-\STATE{$\mathcal C_j = M_{j0}, \forall j = 0, ..., 3 $}
-\STATE{$ R = normalize( \mathcal C_j )$}
+\STATE{$\textbf m_1 = (S + Tr(B)) e_1 + (B_{12} - B_{21}) e_2 + (B_{20} - B_{02}) e_3 + (B_{01} - B_{10}) e_4$}
+\STATE{$\textbf m_2 = (B_{12} - B_{21})e_1 + 2 (B_{00} + S - Tr(B)) e_2 + (B_{01} + B_{10}) e_3 + (B_{20} + B_{02}) e_4$}
+\STATE{$\textbf m_3 = (B_{20} - B_{02})e_1 + (B_{01} + B_{10}) e_2 + 2 (B_{11} + S - Tr(B)) e_3 + (B_{12} + B_{21}) e_4$}
+\STATE{$\textbf m_3 = (B_{01} - B_{10})e_1 + (B_{20} + B_{02} ) e_2 + (B_{12} + B_{21}) e_3 + 2 (B_{22} + S - Tr(B)) e_4$}
+\COMMENT{Newton-Raphson}
+\STATE{$\lambda_0 = 7 S - 3 Tr(B)$}
+\REPEAT
+\STATE{$\lambda_{i+1} = \lambda_i - P(\lambda_i) / P'(\lambda_i)$}
+\UNTIL{$\|\lambda_{i+1} - \lambda_i\| < \epsilon$}
+\STATE{$\textbf a_1 = \textbf m_1 - \lambda e_1$}
+\STATE{$\textbf a_2 = \textbf m_2 - \lambda e_2$}
+\STATE{$\textbf a_3 = \textbf m_3 - \lambda e_3$}
+\STATE{$\textbf a_4 = \textbf m_4 - \lambda e_4$}
+\STATE{$\textbf X = \gamma (\textbf a_1 \wedge \textbf a_3 \wedge \textbf a_4
+	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_4
+	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_3
+	+ \textbf a_2 \wedge \textbf a_3 \wedge \textbf a_4)$}
+\STATE{$R = normalize( \langle \textbf X^* \rangle_1 )$}
 \RETURN { $R(0) + R(1) e_{12} + R(2) e_{13} + R(3) e_{23}$ }
 \end{algorithmic}
 \caption{Fast Rotor Estimation}\label{alg:FastRotorEstimation}
 \end{algorithm}
-The C++ code using the Eigen library \cite{Eigen} can be found in Listing~\ref{lst:cppcode}.
+An optimized C++ code using the Eigen library \cite{Eigen} can be found in Listing~\ref{lst:cppcode}.
 
 \section{Comparisons}
 
@@ -391,36 +464,115 @@ Quaterniond GAFastRotorEstimator(
     const vector<Vector3d>& Q, 
     const vector<double>& w)
 {
-    Matrix4d M;
-    Matrix3d B;
-    Vector3d S;
-    const size_t N = P.size();
-    const size_t MAX_STEPS = 12;
-    B.setZero();
-    S.setZero();
-    for (size_t j = 0; j < N; ++j) {
-        S.noalias() += w[j] * (P[j] + Q[j]);
-        B.noalias() += (w[j] * P[j]) * Q[j].transpose();
-    }
-    double diag = S.dot(S);
-    M(3, 3) = diag + B.trace(); 
-    diag = diag - B.trace();
-    M(3, 0) = (B(1, 2) - B(2, 1));
-    M(3, 1) = (B(2, 0) - B(0, 2));
-    M(3, 2) = (B(0, 1) - B(1, 0));
-    M(0, 0) = 2.0 * B(0, 0) + diag;
-    M(1, 0) = (B(0, 1) + B(1, 0)); 
-    M(2, 0) = (B(2, 0) + B(0, 2));
-    M(1, 1) = 2.0 * B(1, 1) + diag; 
-    M(2, 1) = (B(1, 2) + B(2, 1));
-    M(2, 2) = 2.0 * B(2, 2) + diag;
-    M.selfadjointView<Eigen::Lower>().evalTo(H);
-    for (size_t j = 0; j < MAX_STEPS; ++j) {
-        M *= M;
-        M *= 1.0 / M.trace();
-    }
-    return Quaterniond(M.col(0).normalized());
+  array<double, 10> H;
+  Matrix3d Sx;
+  Vector3d S;
+  double wj;
+  const size_t N = P.size();
+  Sx.setZero();
+  S.setZero();
+  for (size_t j = 0; j < N; ++j) {
+    wj = w[j];
+    const Vector3d& Qj = Q[j];
+    const Vector3d& Pj = P[j];
+    S.noalias() += wj * (Pj + Qj);
+    Sx.noalias() += (wj * Pj) * Qj.transpose();
+  }
+  wj = S.dot(S);
+  H[0] = wj + 2.0 * Sx.trace();       // (3,3)
+  wj = wj - 2.0 * Sx.trace();
+  H[1] = 2.0 * (Sx(1, 2) - Sx(2, 1)); // (3,0)
+  H[2] = 2.0 * (Sx(2, 0) - Sx(0, 2)); // (3,1)
+  H[3] = 2.0 * (Sx(0, 1) - Sx(1, 0)); // (3,2)
+  H[4] = 4.0 * Sx(0, 0) + wj;         // (0,0)
+  H[5] = 2.0 * (Sx(0, 1) + Sx(1, 0)); // (1,0) 
+  H[6] = 2.0 * (Sx(2, 0) + Sx(0, 2)); // (2,0)
+  H[7] = 4.0 * Sx(1, 1) + wj;         // (1,1)
+  H[8] = 2.0 * (Sx(1, 2) + Sx(2, 1)); // (2,1)
+  H[9] = 4.0 * Sx(2, 2) + wj;         // (2,2)
+
+  double lambda = H[0]+H[4]+H[7]+H[9];
+  double lambda_prev = 0;
+  while(std::abs(lambda - lambda_prev) > 1e-5) {
+    lambda_prev = lambda;
+    lambda = lambda - characteristic(H, lambda) / deriv_characteristic(H, lambda);
+  };
+
+  Quaterniond R( hyperplanes_intersection(H, lambda) );
+  R.normalize();
+  return R;
 }
+
+/*
+a = H4 * e1 + H5 * e2 + H[6] * e3 + H1 * e4;
+b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+
+? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
+*/
+double characteristic(const array<double, 10>& H, double lambda){
+  return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
+  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
+  + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
+  + (-((((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3] + (-(((H[4] 
+  - lambda) * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * (H[7] 
+  - lambda)))) * H[6]) * H[3])) + (((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[3] 
+  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * (H[9] - lambda))) + (H[6] * H[2]
+  + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) 
+  * H[3] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * (H[9] - lambda))) 
+  + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1^e2^e3^e4
+}
+
+/*
+a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
+b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+
+? ddet = ((-1 * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4)) +
+((a - lambda * e1)^(-1 * e2)^(c - lambda * e3)^(d - lambda * e4)) +
+((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
+((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
+*/
+double deriv_characteristic(const array<double, 10>& H, double lambda){
+  return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] 
+  - lambda) + (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) 
+  * H[3] + (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] 
+  - lambda) + H[6] * H[6]) * (H[0] - lambda) + (-(((-(H[4] - lambda)) * H[3] + H[1] 
+  * H[6]) * H[3])) + (-((H[6] * H[3] + (-(H[1] * (H[9] - lambda)))) * H[1])) 
+  + (-((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5])))) * (H[0] - lambda) 
+  + ((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2] + (-((H[5] * H[2] + (-(H[1] 
+  * (H[7] - lambda)))) * H[1])) + (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] 
+  * H[5]))) * (H[9] - lambda) + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) 
+  * H[8])) + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6])); // e1^e2^e3^e4	
+}
+
+/*
+a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
+b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+
+? R0 = ((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3 + 1)^(d - lambda * e4)) . (e1^e2^e3^e4);
+*/
+Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda){
+  Vector4d R0;
+  R0[0] = (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * (H[0] - lambda) 
+  + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[3])) + (H[6] * H[2] 
+  + (-(H[1] * H[8]))) * H[2]; // e1
+  R0[1] = (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * (H[0] - lambda) 
+  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[3])) + (H[6] * H[2] 
+  + (-(H[1] * H[8]))) * H[1])); // e2
+  R0[2] = ((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[0] 
+  - lambda) + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2])) 
+  + (H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[1]; // e3
+  R0[3] = (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3]
+  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[2])) + (H[5] * H[8] 
+  + (-(H[6] * (H[7] - lambda)))) * H[1])); // e4
+  return R0;
+}
+
 \end{lstlisting}
 
 \bibliographystyle{abbrv}
