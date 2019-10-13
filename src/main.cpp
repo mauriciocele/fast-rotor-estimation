@@ -120,6 +120,7 @@ int main(int argc, char* argv[])
 	Quaterniond  GAFastQ = GAFastRotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQAVX = GAFastRotorEstimatorAVX(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAQ = GARotorEstimator(pointsOriginal, pointsTransformed, weights);
+	Quaterniond  LAQ = LARotorEstimator(pointsOriginal, pointsTransformed, weights);
 	Quaterniond  GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, QI);
 	for(size_t i = 0 ; i < 24 ; ++i) 
 		GAFastQInc = GAFastRotorEstimatorIncr(pointsOriginal, pointsTransformed, weights, GAFastQInc);
@@ -145,6 +146,7 @@ int main(int argc, char* argv[])
 	double errorGAFast = WahbaError(pointsOriginal, pointsTransformed, GAFastQ);
 	double errorGAFastAVX = WahbaError(pointsOriginal, pointsTransformed, GAFastQAVX);
 	double errorGA = WahbaError(pointsOriginal, pointsTransformed, GAQ);
+	double errorLA = WahbaError(pointsOriginal, pointsTransformed, LAQ);
 	double errorGAFastInc = WahbaError(pointsOriginal, pointsTransformed, GAFastQInc);
 	double errorGAFast2 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ2);
 	double errorGAFast4 = WahbaError(pointsOriginal, pointsTransformed, GAFastQ4);
@@ -169,6 +171,7 @@ int main(int argc, char* argv[])
 	std::cout << "GA Fast Rotor Estimator AVX error         " << errorGAFastAVX << endl;
 	std::cout << "GA Fast Rotor Estimator error             " << errorGAFast << endl;
 	std::cout << "GA Rotor Estimator error                  " << errorGA << endl;
+	std::cout << "LA Rotor Estimator error                  " << errorLA << endl;
 	std::cout << "GA Fast Rotor Estimator Incremental error " << errorGAFastInc << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 2 error     " << errorGAFast2 << endl;
 	std::cout << "GA Fast Rotor Estimator Aprox 4 error     " << errorGAFast4 << endl;
@@ -211,8 +214,8 @@ int main(int argc, char* argv[])
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimator);
 	std::cout << "Exec time GAFastRotorEstimator:           " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
 
-	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GARotorEstimator);
-	std::cout << "Exec time GARotorEstimator:               " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
+	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, LARotorEstimator);
+	std::cout << "Exec time LARotorEstimator:               " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAFastRotorEstimatorIncrQI);
 	std::cout << "Exec time GAFastRotorEstimator Incr.:     " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
