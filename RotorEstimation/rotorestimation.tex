@@ -60,8 +60,8 @@
 %
 
 
-\title[A High-Performance Singularity-Free Rotation Estimator in Geometric Algebra]
- {A High-Performance Singularity-Free Rotation Estimator in Geometric Algebra}
+\title[A Singularity-Free Rotation Estimator in Geometric Algebra]
+ {A Singularity-Free Rotation Estimator in Geometric Algebra}
 
 %----------Author 1
 \author[Mauricio Cele Lopez Belon]{Mauricio Cele Lopez Belon}
@@ -86,7 +86,7 @@
 
 \begin{abstract}
 
-Well known methods for solving the Wahba's problem are formulated in the linear algebra framework, mainly using the SVD or polar decomposition, or in quaternion's framework which leads to solve a max-eigenvalue problem. Those methods are based on well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed based on an analytic formula for solving the roots of the quartic polynomial associated with the eigenvalue problem. Closed form methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions. The proposed method converges in a fixed number of iterations, its performance is competitive with closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a singularity-free estimator of the optimal quaternion based on a formulation of the problem in the Geometric Algebra framework. The proposed method's performance is competitive with closed form solutions reported in literature and at the same time is accurate and simple to implement.
 
 \end{abstract}
 
@@ -96,19 +96,11 @@ Well known methods for solving the Wahba's problem are formulated in the linear 
 %\tableofcontents
 \section{Introduction}
 
-\indent Wahba's problem has been studied for over half a century since 1965 \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective methods have been developed to solving the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} mainly by formulating it in the quaternions framework, which lead us to solve an eigenvalue problem, or by formulating it in the linear algebra framework and using the Singular Value Decomposition (SVD) and recently by formulating it in the Geometric Algebra framework \cite{Perwass2009, Dorst2011} which at some point casts the solution into linear algebra framework and SVD due to the lack of geometric algebra numerical algorithms. More recently, closed form solutions for computing the optimal quaternion has been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R} based on solving the roots of the quartic polynomial associated with the eigenvalue problem with an analytic formula.
+\indent Rotation estimation problem has been studied for over half a century \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective methods have been developed to solving the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015}. Formulations based on quaternion's framework leads to solve a max-eigenvalue problem while formulations based on the linear algebra framework relies on the Singular Value Decomposition (SVD). In recent years formulations based on geometric algebra framework \cite{Perwass2009, Dorst2011} appeared but they also rely on the linear algebra framework and SVD due to the lack of native numerical algorithms. Closed form solutions for finding the optimal quaternion has been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R} based on analytic formulas for solving the roots of the quartic polynomial associated with eigenvalue problem.
 
-Accuracy and speed of most methods have been compared in previous works \cite{Eggert1997, Markley1999, Wu2017} where the trade-off between performance and robustness is assessed. In particular SVD based methods exhibit very good accuracy but low performance and quaternion based methods are in the other end depending on the implementation. Regarding the later methods, the proposed closed form solutions exhibit the best trade-off so far but they have singularities i.e., they completely fail on certain input data.
+Accuracy and speed of prominent methods have been compared in previous works \cite{Eggert1997, Markley1999, Wu2017} where the trade-off between performance and robustness has also been assessed. In particular SVD based methods exhibit the best accuracy but low performance and quaternion based methods are in the other end depending on the implementation. Regarding the later methods, the closed form solutions exhibit the best trade-off so far but they have singularities i.e., they completely fail on certain input data.
 
-In this paper we propose a high-performance, singularity-free estimator of the best quaternion aligning two sets of corresponding vectors i.e., equivalent to Wahba's problem. It is based on a new formulation of the problem  in the Geometric Algebra representation of rotations which is isomorphic to Hamilton's quaternions.  The proposed method converge in a fixed number of iterations being is as fast as the closed form solutions reported in literature and at the same time is free of singularities, robust to noise and simple to implement.
-
-In this work we propose a high-performance, singuarity-free method for solving the Wahba's problem. It is based on a maximizing a convex quadratic energy functional, which is equivalent to Wahba's problem, formulated in geometric algebra framework $\mathbb{G}_3$. The proposed method converges in a fixed number of iterations being is as fast as the closed form solutions reported in literature and at the same time is free of singularities and simple to implement.
-
-Applications of Wahba's solutions are diverse from aerospace engineering computation of spacecraft attitude \cite{Wu2017} to mesh deformation in computer graphics \cite{Sorkine2007, Sin2013} for accurate motion construction and restoration \cite{Nieto2012, Perwass2009}. An important characteristic of our method is that it is based almost entirely on symmetric-matrix multiplication so it can be hardware-accelerated using vector instructions or graphics hardware without effort. In engineering fields requiring high-performance vector alignment our method can lower down the time by taking advantage of the AVX (Advanced Vector Extensions) support available in modern microprocessors. Modern matrix packages such as Eigen \cite{Eigen} can produce apropriate AVX instructions automatically. In computer graphics applications our method can lower down the time even more by taking advantage of GPU vector instructions obtaining a performance boost not present in other numerical algorithms.
-
-Few work has been done on studying this problem using geometric algebra. Geometric algebra rotors are closely related to quaternions (quaternion algebra can be regarded as a geometric algebra defined on a set of imaginary basis vectors) we find geometric algebra to be a more natural choice for studying this problem since it is defined over a Euclidean vector space $\mathbb R^3$, where original data is defined. In contrast to previous works we base our formulation on bivectos instead of vectors for the sake of mathematical convenience. Due to mathematical duality of vector and bivectors in $\mathbb{G}_3$ our formulation is also valid for vectors. The implementation of our algorithm does not require any geometric algebra library, we present an implementation based on standard matrix and quaternion library. 
-
-\indent This paper is arranged as follows: Section II introduces the geometric algebra $\mathbb{G}_3$, Section III includes the presentation of our fast rotor estimation algorithm. Section IV demonstrates the experimental results.
+In this paper we propose a singularity-free estimator of the best quaternion aligning two sets of corresponding vectors. It is based on maximizing a convex quadratic energy functional using the geometric algebra framework $\mathbb{G}_3$ which allow us to find a robust solution without resorting to linear algebra numerical algorithms. Geometric algebra rotors are isomorphic to quaternions, we find geometric algebra to be a more natural choice for studying this problem since it integrates rotations with a larger set of subspaces inside the Euclidean vector space $\mathbb R^3$, where original data is defined. In contrast to previous works we work primarily with bivectos instead of vectors for the sake of mathematical convenience. Due to mathematical duality of vectors and bivectors in $\mathbb{G}_3$ our formulation is also valid for vectors.
 
 \section{Geometric Algebra $\mathbb{G}_3$}
 
@@ -130,26 +122,27 @@ a b = a \cdot b + a \wedge b = \cos\left( \frac{\theta}{2} \right) + B \sin\left
 \end{equation}
 Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, where $\tilde R$ is the reverse of $R$ and can be obtained by reversing the order of all the products of vectors.
 
+We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors in the sense that the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. The inner product of bivectors differs from the inner product of vectors on the sign, since the square of bivectors is negative, the inner product of bivectors is a negative scalar e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
+
+For a pair of unit bivectors, $A$ and $B$, the rotor $R$ aligning them can be defined as $R = A \frac{(A + B)}{\|A + B\|}$. Defining the unit bivector $C = \frac{A + B}{\|A + B\|}$ the rotor $R$ is also $R = A C = w + L$ where $w = A \cdot C = \cos(\theta/2)$ and $L = A \times C = \sin(\theta/2) \frac{A \times B}{\|A \times B\|}$.
+
 \section{Geometric Algebra Rotor Estimation}
 
 Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to maximize the following energy function:
 \begin{eqnarray}
 	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j + \tilde R q_i R \|^2 }\\
-	s.t. \ R \tilde R = 1
+	s.t. \ R \tilde R = 1 \nonumber
 \end{eqnarray}
-where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. It is a non-linear quadratic maximization problem with a non-linear constraint in $R$. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to the traditional least squares error $\|q_j - R p_j \tilde R\|^2$. Duality in the sense that the optimal $R$ is a critical point of both energies.
+where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. It is a quadratic maximization problem with a non-linear constraint in $R$. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to the traditional least squares error $\|q_j - R p_j \tilde R\|^2$. Duality in the sense that the optimal $R$ is a critical point of both energies.
 Notice also that $p_j + \tilde R q_i R$ is equivalent to $R p_j + q_j R$ by multiplying by $R$ on the left and using the fact that $R \tilde R = 1$. The equivalent problem is:
 \begin{eqnarray}
+	\label{eqn:max_energy}
 	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j + q_j R\|^2 }\\
-	s.t. \ R \tilde R = 1
+	s.t. \ R \tilde R = 1 \nonumber
 \end{eqnarray}
-which is a linear maximization problem with a non-linear constraint in $R$.
+which exposes the that $R$ is only quadratic in \ref{eqn:max_energy}.
 
-We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors in the sense that the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. Recall that the inner product of bivectors is not the same as the inner product of vectors, since the square of bivectors is negative, the inner product of bivectors has the opposite sign e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
-
-For a pair of unit bivectors, $A$ and $B$, the rotor $R$ aligning them can be defined as $R = A \frac{(A + B)}{\|A + B\|}$. Defining the unit bivector $C = \frac{A + B}{\|A + B\|}$ the rotor $R$ is also $R = A C = w + L$ where $w = A \cdot C = \cos(\theta/2)$ and $L = A \times C = \sin(\theta/2) \frac{A \times B}{\|A \times B\|}$.
-
-The constraint $R p_j + q_j R$ can be rewriten as $(w + L) p_j  + q_j (w + L)$. Expanding the geometric product of bivectors in terms of the inner product and the communtator product we get:
+The constraint $R p_j + q_j R$ can be rewriten as $(w + L) p_j  + q_j (w + L)$. For some a scalar $w$ and bivector $L$. Expanding the geometric product of bivectors in terms of the inner product and the communtator product we get:
 \begin{eqnarray}
 	w  (p_j + q_j) + L \cdot (p_j + q_j)  + (q_j - p_j) \times L
 \end{eqnarray}
@@ -169,30 +162,14 @@ In matrix language we can define the following matrix system $M_j R = 0$:
 		-s_j^T L \\
 		w s_j + d_j \times L 
 	\end{array}\right]\\
-	d_j = q_j - p_j \ \ s_j = p_j + q_j
+	d_j = q_j - p_j \ \ s_j = p_j + q_j  \nonumber
 \end{eqnarray}
 where $d_j$ and $s_j$ are $3 \times 1$ column vectors holding bivector's coefficients, $M_j$ is a skew-symmetric $4\times 4$ real matrix, so that $M_j^T = -M_j$. The rotor $R$ is represented as $4 \times 1$ column vector made of the scalar $w$ and the $3 \times 1$ column vector $L$ holding the bivector's components. The $3\times 3$ matrix $\left[ d_j \right]_\times$ is representing the skew-symmetric cross-product matrix as usually defined for vectors in $\mathbb R^3$.
-
-Let define the function $F^j$ representing the linear transformation:
-\begin{eqnarray*}
-F^j = \sqrt{c_j} M_j R\\
-\end{eqnarray*}
-
-Let $F$ be a column vector of $n$ stacked functions $F^j$
-\begin{eqnarray*}
-F = \left[\begin{array}{c}F^1 \\ \vdots \\ F^n\end{array}\right]
-\end{eqnarray*}
- such that the energy $E(R)$ can be expressed as matrix product
-\begin{eqnarray*}
-E(R) = F^T F =
-\left[\begin{array}{ccc}F^{1T} & \cdots & F^{nT}\end{array}\right]
-\left[\begin{array}{c}F^1 \\ \vdots \\ F^n\end{array}\right]
-\end{eqnarray*}
 
 We can express $E(R)$ as the following quadratic form:
 \begin{eqnarray}
 E(R) = \max_R R^T M R\\
-s.t. \ R^T R = 1
+s.t. \ R^T R = 1  \nonumber
 \end{eqnarray}
 where $M = \sum_j^n { c_j M_j^T M_j}$. Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite.
 Consequently the matrix $M$ is also symmetric positive semi-definite. It follows that all eigenvalues of $M$ are real and $\lambda_i \geq 0$.
@@ -202,7 +179,7 @@ Consequently the matrix $M$ is also symmetric positive semi-definite. It follows
 		\| s_j \|^2       &         (s_j \times d_j)^T \\
 		s_j \times d_j  &    s_j s_j^T - \left[ d_j \right]^2_\times \\
 	\end{array}\right]\\
-	d_j = q_j - p_j \ \ s_j = p_j + q_j
+	d_j = q_j - p_j \ \ s_j = p_j + q_j  \nonumber
 \end{eqnarray}
 
 By the spectral theorem the maximizer of $E(R)$ is the eigenvector of $M$ associated with the largest eigenvalue which is a positive number.
@@ -213,20 +190,21 @@ The convexity of the energy $E(R)$ can be proof by showing that its Hessian matr
 
 \section{Optimal Quaternion using 4D Geometric Algebra}
 
-The most time consuming task of the estimation is to compute the eigenvector of $M$ associated with the greatest eigenvalue. Sound numerical algorithms for computing eigenvectors of a real symmetric matrix are SVD, QR factorization and Jacobi iteration among others. However those algorithms finds all eigenvectors of a matrix. In this section we show how to find the largest eigenvalue and its corresponding eigenvector i.e., the required quaternion, using the 4D Geometric Algebra $ \mathbb{G}_4$ which is efficient, accurate and suitable for high performance applications.
+The most time consuming task of the estimation is to compute the eigenvector of $M$ associated with the greatest eigenvalue. In this section we show how to find the largest eigenvalue and its corresponding eigenvector i.e., the required quaternion, using the 4D Geometric Algebra $ \mathbb{G}_4$ which is robust, efficient and accurate.
 
 Let us define four vectors $\textbf m_1$, $\textbf m_2$, $\textbf m_3$, $\textbf m_4$ corresponding to the columns of matrix $M$:
-\begin{eqnarray*}
+\begin{eqnarray}
 	M = \sum_j^n { c_j M_j^T M_j} =
 	\left[\begin{array}{cccc}
 		\\
 		\textbf m_1 & \textbf m_2 & \textbf m_3 & \textbf m_4 \\
 		\\
 	\end{array}\right]
-\end{eqnarray*}
+\end{eqnarray}
 
-The matrix system that we want to solve is $M R = \lambda R$ for $\lambda$ corresponding to the largest eigenvalue of $M$ and the corresponding $R$. We can write the system in the following form:
+The matrix system that we want to solve is $M R = \lambda R$ for $\lambda$ corresponding to the largest eigenvalue of $M$. We can write the system in its homogeneous form:
 \begin{eqnarray}
+	\label{eqn:eigensystem}
 	\left[\begin{array}{cccc}
 		\\
 		\textbf m_1 - \lambda e_1 & \textbf m_2 - \lambda e_2 & \textbf m_3 - \lambda e_3 & \textbf m_4- \lambda e_4 \\
@@ -245,16 +223,15 @@ The matrix system that we want to solve is $M R = \lambda R$ for $\lambda$ corre
 		0 \\
 		0
 	\end{array}\right]
-	\label{eqn:eigensystem}
 \end{eqnarray}
 
-The matrix in equation~\ref{eqn:eigensystem}, called \emph{characteristic matrix}, is singular ie., the vectors $(\textbf m_1 - \lambda e_1)$, $(\textbf m_2 - \lambda e_2)$, $()\textbf m_3 - \lambda e_3)$ and $()\textbf m_4- \lambda e_4)$ are linearly dependent (the rank of the matrix is $3$). It follows that its outer product must be zero:
+The matrix in equation~\ref{eqn:eigensystem}, called \emph{characteristic matrix}, is of rank $3$ and thus singular i.e., the vectors $(\textbf m_1 - \lambda e_1)$, $(\textbf m_2 - \lambda e_2)$, $(\textbf m_3 - \lambda e_3)$ and $()\textbf m_4- \lambda e_4)$ are linearly dependent. It follows that its outer product must be zero:
 \begin{eqnarray}
+\label{eqn:characteristic_outer_product}
 (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4) = 0
-	\label{eqn:characteristic_outer_product}
 \end{eqnarray}
 
-Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. We can find the largest root of the polynomial using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
+Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. A simple, and yet popular, way to find the largest eigenvalue is using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
 \begin{eqnarray*}
 P'(\lambda) = 
 - e_1\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
@@ -281,8 +258,8 @@ We define the dual hyper-planes passing through the origin as:
 
 Although in most cases it is enough to set the scale of a single hyper-plane go get a solution it is inconvenient to do so, as will be explained in Section~\ref{section:robustness}. It is more robust to set the scale of all hyper-planes to some $\gamma \neq 0$ which is a scalar value. Intersection can then be found by taking the outer product as:
 \begin{eqnarray}
-\alpha (\textbf x + 1)^* = (\textbf a_1 + \gamma) \wedge  (\textbf a_2 + \gamma) \wedge  (\textbf a_3  + \gamma) \wedge (\textbf a_4 + \gamma)
 \label{eqn:hyperplanes_intersection}
+\alpha (\textbf x + 1)^* = (\textbf a_1 + \gamma) \wedge  (\textbf a_2 + \gamma) \wedge  (\textbf a_3  + \gamma) \wedge (\textbf a_4 + \gamma)
 \end{eqnarray}
 
 Distributing the outer product and keeping the terms of grade-$3$ we get:
@@ -299,9 +276,9 @@ Here the symbol $^*$ is the dual operator of the $4$D space (not $5$D as in \cit
 \section{Robustness and Singularities}
 \label{section:robustness}
 
-As stated before, setting the scale of a single hyperplane is enough to get a valid eigenvector in most cases. However, the choice of which hyper-plane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work when the angle of rotation is $\pi$ because $w = \cos(\pi/2)$ in that case. Similarly, constraining one of the hyper-planes corresponding to $L_1$, $L_4$ or $L_3$ won't work when the angle of rotation is $0$ or $4 \pi$, etc. So it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
+As stated before, setting the scale of a single hyperplane is enough to get a valid eigenvector in most cases. However, the choice of which hyper-plane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work because when the angle of rotation is $\pi$ the $w = \cos(\pi/2) = 0$ and so its scale cannot be constrained. Similarly, constraining one of the hyper-planes corresponding to $L_1$, $L_2$ or $L_3$ won't work because when the angle of rotation is $0$ or $4 \pi$ the $\sin(2 \pi) = 0$ and so on. Then, it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
 
-Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix. Since it is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
+Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
 
 \section{Optimal Computation of M}
 
@@ -316,19 +293,21 @@ The symmetric matrix $M_j^T M_j$ has a simple form:
 	d_j = q_j - p_j \ \ s_j = p_j + q_j
 \end{eqnarray*}
 
-In terms of $p_j$ and $q_j$ it is:
+Writing it in terms of $p_j$ and $q_j$ we get:
 
-\begin{eqnarray*}
-	M_j^T M_j = 2
+\begin{eqnarray}
+   \label{eqn:matrix_fast}
+   	M_j^T M_j = 2
 	\left[\begin{array}{cc}
 		p_j^T q_j       &         (p_j \times q_j)^T \\
 		p_j \times q_j  &    p_j q_j^T + q_j p_j^T - p_j^Tq_j I_{3\times3} \\
 	\end{array}\right]
-    + (\| p_j \|^2 + \| q_j \|^2) I_{4\times4}\\
-\end{eqnarray*}
-All terms of the matrix $M_j^T M_j$ can be derived from the matrix $B = p_j q_j^T$ plus the quantiry $\| p_j \|^2 + \| q_j \|^2$. Since $M_j^T M_j$ is symmetric, only $10$ out of $16$ elements need to be actually computed. Notice that the trace of $M_j^T M_j$ is $Tr(M_j^T M_j) = 4 \|p_j\|^2 + 4 \|q_j\|^2$ and $Tr(H) = 4 \sum_j {(\|p_j\|^2 + \|q_j\|^2)}$.
+    + (\| p_j \|^2 + \| q_j \|^2) I_{4\times4}
+\end{eqnarray}
+All terms of \ref{eqn:matrix_fast} can be derived from the covariance matrix $B = p_j q_j^T$ plus the quantity $\| p_j \|^2 + \| q_j \|^2$. Since matrix $B$ is of $3\times3$ its computation is more efficient than the whole \ref{eqn:matrix_fast}. Details can be found in Section~\ref{section:algoritms}.
 
 \section{Algorithms}
+\label{section:algoritms}
 
 The pseudo-code of proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}. 
 
@@ -362,11 +341,11 @@ The pseudo-code of proposed method is shown in Algorithm~\ref{alg:FastRotorEstim
 \end{algorithmic}
 \caption{Fast Rotor Estimation}\label{alg:FastRotorEstimation}
 \end{algorithm}
-An optimized C++ code using the Eigen library \cite{Eigen} can be found in Listing~\ref{lst:cppcode}.
+An optimized C++ code using the Eigen library \cite{Eigen} and GAALOP  \cite{Gaalop} is publicly available on GitHub \cite{GARotorEstimator}
 
 \section{Comparisons}
 
-We select several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Horn1987} and QUEST \cite{Shuster1981} to implement the algorithm. The Eigen library \cite{Eigen} is employed to implement the SVD and QUEST. Another version of QUEST using the Newton iteration is also added for comparison. The tests are ran on a MacBook Pro 13' 2017 computer with the CPU of Intel 3.1GHz 4-core i5. The Visual Studio 2019 C++ compiler is used in our experiments. %The results are listed below (Table \ref{tab:roll}, \ref{tab:pitch}, \ref{tab:yaw}):
+We selected several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Arun1987} and QUEST \cite{Shuster1981} for comparison. The Eigen library \cite{Eigen} was employed to implement all methods. The tests were ran on a MacBook Pro laptop with Intel Core i7 CPU running at 2,5 GHz. The Clang C++ compiler was used with -Ofast option enabled. Results are listed below: % (Table \ref{tab:roll}, \ref{tab:pitch}, \ref{tab:yaw}):
 
 % \begin{table} [H]
 % \centering
@@ -453,127 +432,128 @@ We select several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Horn
 % \end{figure}
 
 \section{Conclusion}
-In this paper, we solve the problem of estimating the best rotation for the alignment of two sets of corresponding 3D vectors. It is based on solving the linear equations derived from the formulation of the problem in Geometric Algebra. The method is fast, robust to noise, accurate and simpler than most other methods. Experimental validation of the performance of the proposed algorithm is presented. The results show that the slightly losing accuracy of the proposed method is well worth the huge advance in execution time consumption. For many applications the vector datasets are very huge i.e. the computation time would be more important than slight change of accuracy. Therefore, we hope that the proposed algorithm would be of benefit to such applications.
+
+In this paper, we presented a novel method for estimating the best rotation aligning two sets of corresponding 3D bivectors and vectors. It is based on maximizing a quadratic energy functional formulated in geometric algebra language. Our method is fast, robust and accurate. Experimental validation of the proposed algorithm was presented. Results shows that our method present increased robustness while keeping accuracy and competitive speed.
 
 
-\section{C++ code}
-
-\begin{lstlisting}[language=C++, caption=C++ code for rotor estimation, basicstyle=\tiny, keywordstyle=\bfseries, label=lst:cppcode, morekeywords={Matrix4d,Matrix3d,Vector4d,Vector3d,Quaterniond,sqrt,__m256d,__m128d}]
-Quaterniond GAFastRotorEstimator(
-    const vector<Vector3d>& P, 
-    const vector<Vector3d>& Q, 
-    const vector<double>& w)
-{
-  array<double, 10> H;
-  Matrix3d Sx;
-  Vector3d S;
-  double wj;
-  const size_t N = P.size();
-  Sx.setZero();
-  S.setZero();
-  for (size_t j = 0; j < N; ++j) {
-    wj = w[j];
-    const Vector3d& Qj = Q[j];
-    const Vector3d& Pj = P[j];
-    S.noalias() += wj * (Pj + Qj);
-    Sx.noalias() += (wj * Pj) * Qj.transpose();
-  }
-  wj = S.dot(S);
-  H[0] = wj + 2.0 * Sx.trace();       // (3,3)
-  wj = wj - 2.0 * Sx.trace();
-  H[1] = 2.0 * (Sx(1, 2) - Sx(2, 1)); // (3,0)
-  H[2] = 2.0 * (Sx(2, 0) - Sx(0, 2)); // (3,1)
-  H[3] = 2.0 * (Sx(0, 1) - Sx(1, 0)); // (3,2)
-  H[4] = 4.0 * Sx(0, 0) + wj;         // (0,0)
-  H[5] = 2.0 * (Sx(0, 1) + Sx(1, 0)); // (1,0) 
-  H[6] = 2.0 * (Sx(2, 0) + Sx(0, 2)); // (2,0)
-  H[7] = 4.0 * Sx(1, 1) + wj;         // (1,1)
-  H[8] = 2.0 * (Sx(1, 2) + Sx(2, 1)); // (2,1)
-  H[9] = 4.0 * Sx(2, 2) + wj;         // (2,2)
-
-  double lambda = H[0]+H[4]+H[7]+H[9];
-  double lambda_prev = 0;
-  while(std::abs(lambda - lambda_prev) > 1e-5) {
-    lambda_prev = lambda;
-    lambda = lambda - characteristic(H, lambda) / deriv_characteristic(H, lambda);
-  };
-
-  Quaterniond R( hyperplanes_intersection(H, lambda) );
-  R.normalize();
-  return R;
-}
-
-/*
-a = H4 * e1 + H5 * e2 + H[6] * e3 + H1 * e4;
-b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-
-? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
-*/
-double characteristic(const array<double, 10>& H, double lambda){
-  return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
-  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
-  + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
-  + (-((((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3] + (-(((H[4] 
-  - lambda) * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * (H[7] 
-  - lambda)))) * H[6]) * H[3])) + (((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[3] 
-  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * (H[9] - lambda))) + (H[6] * H[2]
-  + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) 
-  * H[3] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * (H[9] - lambda))) 
-  + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1^e2^e3^e4
-}
-
-/*
-a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-
-? ddet = ((-1 * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-((a - lambda * e1)^(-1 * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
-((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
-*/
-double deriv_characteristic(const array<double, 10>& H, double lambda){
-  return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] 
-  - lambda) + (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) 
-  * H[3] + (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] 
-  - lambda) + H[6] * H[6]) * (H[0] - lambda) + (-(((-(H[4] - lambda)) * H[3] + H[1] 
-  * H[6]) * H[3])) + (-((H[6] * H[3] + (-(H[1] * (H[9] - lambda)))) * H[1])) 
-  + (-((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5])))) * (H[0] - lambda) 
-  + ((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2] + (-((H[5] * H[2] + (-(H[1] 
-  * (H[7] - lambda)))) * H[1])) + (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] 
-  * H[5]))) * (H[9] - lambda) + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) 
-  * H[8])) + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6])); // e1^e2^e3^e4	
-}
-
-/*
-a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-
-? R0 = ((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3 + 1)^(d - lambda * e4)) . (e1^e2^e3^e4);
-*/
-Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda){
-  Vector4d R0;
-  R0[0] = (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * (H[0] - lambda) 
-  + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[3])) + (H[6] * H[2] 
-  + (-(H[1] * H[8]))) * H[2]; // e1
-  R0[1] = (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * (H[0] - lambda) 
-  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[3])) + (H[6] * H[2] 
-  + (-(H[1] * H[8]))) * H[1])); // e2
-  R0[2] = ((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[0] 
-  - lambda) + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2])) 
-  + (H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[1]; // e3
-  R0[3] = (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3]
-  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[2])) + (H[5] * H[8] 
-  + (-(H[6] * (H[7] - lambda)))) * H[1])); // e4
-  return R0;
-}
-
-\end{lstlisting}
+%\section{C++ code}
+%
+%\begin{lstlisting}[language=C++, caption=C++ code for rotor estimation, basicstyle=\tiny, keywordstyle=\bfseries, label=lst:cppcode, morekeywords={Matrix4d,Matrix3d,Vector4d,Vector3d,Quaterniond,sqrt,__m256d,__m128d}]
+%Quaterniond GAFastRotorEstimator(
+%    const vector<Vector3d>& P, 
+%    const vector<Vector3d>& Q, 
+%    const vector<double>& w)
+%{
+%  array<double, 10> H;
+%  Matrix3d Sx;
+%  Vector3d S;
+%  double wj;
+%  const size_t N = P.size();
+%  Sx.setZero();
+%  S.setZero();
+%  for (size_t j = 0; j < N; ++j) {
+%    wj = w[j];
+%    const Vector3d& Qj = Q[j];
+%    const Vector3d& Pj = P[j];
+%    S.noalias() += wj * (Pj + Qj);
+%    Sx.noalias() += (wj * Pj) * Qj.transpose();
+%  }
+%  wj = S.dot(S);
+%  H[0] = wj + 2.0 * Sx.trace();       // (3,3)
+%  wj = wj - 2.0 * Sx.trace();
+%  H[1] = 2.0 * (Sx(1, 2) - Sx(2, 1)); // (3,0)
+%  H[2] = 2.0 * (Sx(2, 0) - Sx(0, 2)); // (3,1)
+%  H[3] = 2.0 * (Sx(0, 1) - Sx(1, 0)); // (3,2)
+%  H[4] = 4.0 * Sx(0, 0) + wj;         // (0,0)
+%  H[5] = 2.0 * (Sx(0, 1) + Sx(1, 0)); // (1,0) 
+%  H[6] = 2.0 * (Sx(2, 0) + Sx(0, 2)); // (2,0)
+%  H[7] = 4.0 * Sx(1, 1) + wj;         // (1,1)
+%  H[8] = 2.0 * (Sx(1, 2) + Sx(2, 1)); // (2,1)
+%  H[9] = 4.0 * Sx(2, 2) + wj;         // (2,2)
+%
+%  double lambda = H[0]+H[4]+H[7]+H[9];
+%  double lambda_prev = 0;
+%  while(std::abs(lambda - lambda_prev) > 1e-5) {
+%    lambda_prev = lambda;
+%    lambda = lambda - characteristic(H, lambda) / deriv_characteristic(H, lambda);
+%  };
+%
+%  Quaterniond R( hyperplanes_intersection(H, lambda) );
+%  R.normalize();
+%  return R;
+%}
+%
+%/*
+%a = H4 * e1 + H5 * e2 + H[6] * e3 + H1 * e4;
+%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+%
+%? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
+%*/
+%double characteristic(const array<double, 10>& H, double lambda){
+%  return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
+%  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
+%  + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
+%  + (-((((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3] + (-(((H[4] 
+%  - lambda) * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * (H[7] 
+%  - lambda)))) * H[6]) * H[3])) + (((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[3] 
+%  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * (H[9] - lambda))) + (H[6] * H[2]
+%  + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) 
+%  * H[3] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * (H[9] - lambda))) 
+%  + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1^e2^e3^e4
+%}
+%
+%/*
+%a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
+%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+%
+%? ddet = ((-1 * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4)) +
+%((a - lambda * e1)^(-1 * e2)^(c - lambda * e3)^(d - lambda * e4)) +
+%((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
+%((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
+%*/
+%double deriv_characteristic(const array<double, 10>& H, double lambda){
+%  return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] 
+%  - lambda) + (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) 
+%  * H[3] + (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] 
+%  - lambda) + H[6] * H[6]) * (H[0] - lambda) + (-(((-(H[4] - lambda)) * H[3] + H[1] 
+%  * H[6]) * H[3])) + (-((H[6] * H[3] + (-(H[1] * (H[9] - lambda)))) * H[1])) 
+%  + (-((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5])))) * (H[0] - lambda) 
+%  + ((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2] + (-((H[5] * H[2] + (-(H[1] 
+%  * (H[7] - lambda)))) * H[1])) + (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] 
+%  * H[5]))) * (H[9] - lambda) + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) 
+%  * H[8])) + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6])); // e1^e2^e3^e4	
+%}
+%
+%/*
+%a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
+%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
+%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
+%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
+%
+%? R0 = ((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3 + 1)^(d - lambda * e4)) . (e1^e2^e3^e4);
+%*/
+%Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda){
+%  Vector4d R0;
+%  R0[0] = (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * (H[0] - lambda) 
+%  + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[3])) + (H[6] * H[2] 
+%  + (-(H[1] * H[8]))) * H[2]; // e1
+%  R0[1] = (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * (H[0] - lambda) 
+%  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[3])) + (H[6] * H[2] 
+%  + (-(H[1] * H[8]))) * H[1])); // e2
+%  R0[2] = ((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[0] 
+%  - lambda) + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2])) 
+%  + (H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[1]; // e3
+%  R0[3] = (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3]
+%  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[2])) + (H[5] * H[8] 
+%  + (-(H[6] * (H[7] - lambda)))) * H[1])); // e4
+%  return R0;
+%}
+%
+%\end{lstlisting}
 
 \bibliographystyle{abbrv}
 \bibliography{rotorestimation}

@@ -29,11 +29,22 @@ G.~Guennebaud, B.~Jacob, et~al.
 \newblock Eigen v3.
 \newblock http://eigen.tuxfamily.org, 2010.
 
+\bibitem{Gaalop}
+D.~Hildenbrand, P.~Charrier, C.~Steinmetz, and J.~Pitt.
+\newblock {Gaalop} home page.
+\newblock Available at {http://www.gaalop.de}, 2014.
+
 \bibitem{Horn1987}
 B.~K.~P. Horn.
 \newblock Closed-form solution of absolute orientation using unit quaternions.
 \newblock {\em Journal of the Optical Society of America A}, 4(4):629--642,
   1987.
+
+\bibitem{GARotorEstimator}
+M.~C. Lopez~Belon.
+\newblock Project on github.
+\newblock Available at {https://github.com/mauriciocele/fast-rotor-estimation},
+  2019.
 
 \bibitem{Markley1993}
 L.~Markley.
