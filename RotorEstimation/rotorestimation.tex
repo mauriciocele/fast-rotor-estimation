@@ -231,7 +231,7 @@ The matrix in equation~\ref{eqn:eigensystem}, called \emph{characteristic matrix
 (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4) = 0
 \end{eqnarray}
 
-Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. A simple, and yet popular, way to find the largest eigenvalue is using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
+Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. A simple way to find the largest eigenvalue is using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. This method is indeed robust given that all eigenvalues are non-negative real numbers, it wasn't however for methods based on Davenport's matrix \cite{Davenport1968} which eigenvalues can be negative. We found that $Trace(M)$ is a robust guess for Newton-Raphson iteration because it is larger than the largest eigenvalue and is also close enough to converge in few iterations. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
 \begin{eqnarray*}
 P'(\lambda) = 
 - e_1\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
@@ -239,8 +239,6 @@ P'(\lambda) =
 - (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge e_3\wedge(\textbf m_4- \lambda e_4)\\
 - (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge e_4
 \end{eqnarray*}
-
-We found that $Trace(M)$ is a robust guess for Newton-Raphson iteration because it is larger than the largest eigenvalue and is also close enough to converge in few iterations.
 
 Following \cite{DeKeninck2019} we solve the system~\ref{eqn:eigensystem} using outer products. For a linear system $A \textbf x = b$ the authors in \cite{DeKeninck2019} defines $N$ linear equations of the form $A^T_j \textbf x = b_j$ each of which corresponds to a dual hyper-plane of the form $\textbf a_j \equiv A_j - b_j e_0$ where the solution $\textbf x$ must lie on. The $e_0$ is an \emph{homogeneous} basis vector needed for enabling projective geometry, enlarging the base space to $N+1$, which interpretation is to be the offset of the hyper-plane. So solution of the linear system is the intersection of $N$ dual hyper-planes, which is given by its outer product.
 \begin{eqnarray}
@@ -278,7 +276,7 @@ Here the symbol $^*$ is the dual operator of the $4$D space (not $5$D as in \cit
 
 As stated before, setting the scale of a single hyperplane is enough to get a valid eigenvector in most cases. However, the choice of which hyper-plane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work because when the angle of rotation is $\pi$ the $w = \cos(\pi/2) = 0$ and so its scale cannot be constrained. Similarly, constraining one of the hyper-planes corresponding to $L_1$, $L_2$ or $L_3$ won't work because when the angle of rotation is $0$ or $4 \pi$ the $\sin(2 \pi) = 0$ and so on. Then, it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
 
-Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
+Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix \cite{Davenport1968}. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
 
 \section{Optimal Computation of M}
 
