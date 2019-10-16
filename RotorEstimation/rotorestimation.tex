@@ -60,24 +60,18 @@
 %
 
 
-\title[A Singularity-Free Rotation Estimator in Geometric Algebra]
- {A Singularity-Free Rotation Estimator in Geometric Algebra}
+\title[Robust Quaternion Estimation with Geometric Algebra]
+ {Robust Quaternion Estimation with \\Geometric Algebra}
 
 %----------Author 1
 \author[Mauricio Cele Lopez Belon]{Mauricio Cele Lopez Belon}
 \address{Madrid, España}
 \email{mclopez@outlook.com}
 
-%\thanks{This work was completed with the support of our \TeX-pert.}
-%----------Author 2
-%\author[Jin Wu]{Jin Wu}
-%\address{University of Electronic Science and Technology of China, Chengdu, China}
-%\email{jin\_wu\_uestc@hotmail.com}
-
 %----------classification, keywords, date
 \subjclass{Parallel algorithms 68W10; Clifford algebras, spinors 15A66}
 
-\keywords{Geometric Algebra, Rotation Estimation, Wahba Problem}
+\keywords{Geometric Algebra, Quaternion Estimation, Wahba Problem}
 
 \date{October 31, 2016}
 %----------additions
@@ -86,7 +80,7 @@
 
 \begin{abstract}
 
-Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a singularity-free estimator of the optimal quaternion based on a formulation of the problem in the Geometric Algebra framework. The proposed method's performance is competitive with closed form solutions reported in literature and at the same time is accurate and simple to implement.
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a robust estimator of the optimal quaternion based on a formulation of the problem in Geometric Algebra. The proposed method is accurate and its performance competitive with the fastest methods reported in literature.
 
 \end{abstract}
 
@@ -96,17 +90,17 @@ Robust methods for finding the best rotation aligning two sets of corresponding 
 %\tableofcontents
 \section{Introduction}
 
-\indent Rotation estimation problem has been studied for over half a century \cite{Wahba1965}. The problem looks for the optimal rotation between two sets of corresponding vectors. Many effective methods have been developed to solving the problem \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015}. Formulations based on quaternion's framework leads to solve a max-eigenvalue problem while formulations based on the linear algebra framework relies on the Singular Value Decomposition (SVD). In recent years formulations based on geometric algebra framework \cite{Perwass2009, Dorst2011} appeared but they also rely on the linear algebra framework and SVD due to the lack of native numerical algorithms. Closed form solutions for finding the optimal quaternion has been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R} based on analytic formulas for solving the roots of the quartic polynomial associated with eigenvalue problem.
+\indent The estimation of rotations has been studied for over half a century \cite{Wahba1965}. The problem consist on finding the optimal rotation aligning two sets of corresponding vectors. Many effective methods have been developed \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} using $3\times3$ matrices and quaternions. Formulations based on quaternions solves a max-eigenvalue problem, while formulations based on linear algebra relies on Singular Value Decomposition (SVD). In the last decade formulations based on geometric algebra \cite{Perwass2009, Dorst2011} were introduced but they also rely on linear algebra numerical algorithms such as SVD due to the lack of native numerical algorithms. Closed form solutions for finding the optimal quaternion has been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R} based on analytic formulas for solving the roots of the quartic polynomial associated with eigenvalue problem.
 
-Accuracy and speed of prominent methods have been compared in previous works \cite{Eggert1997, Markley1999, Wu2017} where the trade-off between performance and robustness has also been assessed. In particular SVD based methods exhibit the best accuracy but low performance and quaternion based methods are in the other end depending on the implementation. Regarding the later methods, the closed form solutions exhibit the best trade-off so far but they have singularities i.e., they completely fail on certain input data.
+Accuracy and speed of prominent methods have been compared in  \cite{Eggert1997, Markley1999, Wu2017} evidencing a trade-off between performance and robustness. In particular SVD based methods exhibit the best accuracy but low performance and quaternion based methods are faster but less accurate. Regarding the later methods, the closed form solutions exhibit the best performance so far but they have singularities i.e., they completely fail on certain input data.
 
-In this paper we propose a singularity-free estimator of the best quaternion aligning two sets of corresponding vectors. It is based on maximizing a convex quadratic energy functional using the geometric algebra framework $\mathbb{G}_3$ which allow us to find a robust solution without resorting to linear algebra numerical algorithms. Geometric algebra rotors are isomorphic to quaternions, we find geometric algebra to be a more natural choice for studying this problem since it integrates rotations with a larger set of subspaces inside the Euclidean vector space $\mathbb R^3$, where original data is defined. In contrast to previous works we work primarily with bivectos instead of vectors for the sake of mathematical convenience. Due to mathematical duality of vectors and bivectors in $\mathbb{G}_3$ our formulation is also valid for vectors.
+In this paper we propose a robust estimator of the best quaternion aligning two sets of corresponding vectors. We maximize a convex quadratic energy functional formulated in the $\mathbb{G}_{3,0,0}$ geometric algebra which allow us to find an optimal quaternion in a robust way without resorting to linear algebra numerical algorithms. Geometric algebra rotors are isomorphic to quaternions, we find geometric algebra to be a more natural choice for studying this problem since rotations and subspaces of $\mathbb R^3$ are treated in the same manner, facilitating meaningful algebraic manipulations. We primarily work with bivectos instead of vectors for the sake of mathematical convenience. Due to mathematical duality of vectors and bivectors in $\mathbb{G}_3$ our formulation is also valid for vectors.
 
 \section{Geometric Algebra $\mathbb{G}_3$}
 
-A geometric algebra $\mathbb{G}_3$ is constructed over a real vector space $\mathbb R^3$, with basis vectors $\{e_1, e_2, e_3\}$. The associative geometric product is defined so that the square of any vector is a scalar $a a = a^2 \in \mathbb{R}$. From the vector space $\mathbb R^3$, the geometric product generates the geometric algebra $\mathbb{G}_3$ with elements $\{ X, R, A...\}$ called multivectors.
+A geometric algebra $\mathbb{G}_3$ is constructed over a real vector space $\mathbb R^3$, with basis vectors $\{e_1, e_2, e_3\}$. The associative geometric product is defined on vectors so that the square of any vector $a$ is a scalar $a a = a^2 \in \mathbb{R}$ and the geometric product of two vectors $a$ and $b$ is $a b = a \cdot b + a \wedge b$ and $b a = b \cdot a - a \wedge b$. From the vector space $\mathbb R^3$, the geometric product generates the geometric algebra $\mathbb{G}_3$ with elements $\{ X, R, A...\}$ called multivectors.
 
-For a pair of vectors, a symmetric inner product $a \cdot b = b \cdot a$ and antisymmetric outer product $a \wedge b = -b \wedge a$ can be defined implicitly by the geometric product $a b = a \cdot b + a \wedge b$ and $b a = b \cdot a + b \wedge a$. It is easy to prove that $a \cdot b = \frac{1}{2}(a b + b a)$ is scalar, while the quantity $a \wedge b = \frac{1}{2}(a b - b a)$, called a bivector or $2$-vector, is a new algebraic entity that can be visualized as the two-dimensional analogue of a direction, that is, a planar direction. Similar to vectors, bivectors can be decomposed in a bivector basis $\{ e_{12}, e_{13}, e_{23} \}$ where $e_{ij} = e_i \wedge e_j$.
+For a pair of vectors $a$ and $b$, a symmetric inner product $a \cdot b = b \cdot a$ and antisymmetric outer product $a \wedge b = -b \wedge a$ can be defined implicitly by the geometric product. It is easy to prove that $a \cdot b = \frac{1}{2}(a b + b a)$ is a scalar, while the quantity $a \wedge b = \frac{1}{2}(a b - b a)$, called a bivector or $2$-vector, is a new algebraic entity that can be visualized as the two-dimensional analogue of a direction i.e., a planar direction. Similar to vectors, bivectors can be decomposed in a bivector basis $\{ e_{12}, e_{13}, e_{23} \}$ where $e_{ij} = e_i \wedge e_j$.
 
 The outer product of three vectors $a \wedge b \wedge c$ generates a $3$-vector also known as the pseudoscalar, because the trivector basis consist of single element $e_{123} = e_1 \wedge e_2 \wedge e_3$. Similarly, the scalars are regarded as $0$-vectors whose basis is the number $1$. It follows that the outer product of $k$-vectors is the completely antisymmetric part of their geometric product: $a_1 \wedge a_2 \wedge ... \wedge a_k = \langle a_1 a_2 ... a_k \rangle_k$ where the angle bracket means $k$-vector part, and $k$ is its grade. The term grade is used to refer to the number of vectors in any exterior product. This product vanishes if and only if the vectors are linearly dependent. Consequently, the maximal grade for nonzero $k$-vectors is $3$. It follows that every multivector $X$ can be expanded into its $k$-vector parts and the entire algebra can be decomposed into $k$-vector subspaces:
 \begin{equation*}
@@ -116,15 +110,26 @@ This is called a \emph{grading} of the algebra.
 
 Reversing the order of multiplication is called reversion, as expressed by $(a_1 a_2 ... a_k)\tilde{} = a_k ... a_2 a_1$ and $(a_1 \wedge a_2 \wedge ... \wedge a_k)\tilde{} = a_k \wedge ... \wedge a_2 \wedge a_1$, and the reverse of an arbitrary multivector is defined by $\tilde{X} = \sum_{k=0}^n { \langle \tilde{X} \rangle_k }$.
 
-Rotations are even grade multivectors known as rotors. We denote the subalgebra of rotors as $\mathbb{G}^{+}_3$. A rotor $R$ can be generated as the geometric product of an even number of vectors. A reflection of any $k$-vector $X$ in a plane with normal $n$ is expressed as the sandwitch product $(-1)^k n X n$. The most basic rotor $R$ is defined as the product of two unit vectors $a$ and $b$ with angle of $\frac{\theta}{2}$. The rotation plane is the bivector $B = \frac{a \wedge b}{\| a \wedge b \|}$.
+\subsection{Rotors}
+
+Rotations are even grade multivectors known as rotors. We denote the subalgebra of rotors as $\mathbb{G}^{+}_3$. A rotor $R$ can be generated as the geometric product of an even number of vectors. A reflection of any $k$-vector $X$ in a plane with normal $n$ is expressed as the sandwitch product $(-1)^k n X n$. The most basic rotor $R$ is defined as the product of two unit vectors $a$ and $b$ with angle of $\frac{\theta}{2}$. The rotation plane is the bivector $L = \frac{a \wedge b}{\| a \wedge b \|}$.
 \begin{equation}
-a b = a \cdot b + a \wedge b = \cos\left( \frac{\theta}{2} \right) + B \sin\left( \frac{\theta}{2} \right).
+a b = a \cdot b + a \wedge b = \cos\left( \frac{\theta}{2} \right) + L \sin\left( \frac{\theta}{2} \right).
 \end{equation}
 Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, where $\tilde R$ is the reverse of $R$ and can be obtained by reversing the order of all the products of vectors.
 
-We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors in the sense that the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. The inner product of bivectors differs from the inner product of vectors on the sign, since the square of bivectors is negative, the inner product of bivectors is a negative scalar e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
+\subsection{Bivector products}
 
-For a pair of unit bivectors, $A$ and $B$, the rotor $R$ aligning them can be defined as $R = A \frac{(A + B)}{\|A + B\|}$. Defining the unit bivector $C = \frac{A + B}{\|A + B\|}$ the rotor $R$ is also $R = A C = w + L$ where $w = A \cdot C = \cos(\theta/2)$ and $L = A \times C = \sin(\theta/2) \frac{A \times B}{\|A \times B\|}$.
+We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors i.e., the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. The inner product of bivectors differs from the inner product of vectors on the sign, since the square of bivectors is negative, the inner product of bivectors is a negative scalar e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
+
+\subsection{Quaternions}
+
+A quaternion $Q = w + \vec v$ consists of two parts: a scalar part $w$ and vector part $\vec v$ which denotes the axis of rotation. The vector part $\vec v$ is defined in a basis of complex vectors $\{ i, j, k \}$ that squares to $-1$ and anticommute i.e., $i^2 = j^2 = k^2 = -1$ and $i j k = -1$. In geometric algebra they corresponds to bivectors:
+\begin{eqnarray}
+i = e_{23} \ \ \ j = e_{13} \ \ \  k = e_{12} \\
+ijk = e_{23} e_{13} e_{12} = -1 \nonumber
+\end{eqnarray}
+Rotors can easily be transformed to quaternions and vice versa. A rotor $R = w + L$ corresponds with a quaternion $Q = w + \vec v$, where $L = \alpha e_{12} + \beta e_{13} + \gamma e_{23}$ and $\vec v = \gamma i + \beta j + \alpha k$.
 
 \section{Geometric Algebra Rotor Estimation}
 
