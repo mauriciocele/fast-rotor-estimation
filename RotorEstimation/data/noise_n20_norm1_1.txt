@@ -1,0 +1,31 @@
+Params: 
+       --name=noise_n20_norm1_1.txt --plane=[x|y|z] --n=20 --noise=true --norm=1 --axis=[double,double,double] --angle=[double]
+
+Axis                                      : 0.509298427698363, 0.496642078331542, 0.702824129903422
+Angle                                     : 0.434006066045373
+Comparisons: 
+
+FLAE error                                12.1936377950235
+FLAE Symbolic error                       12.1936377950235
+FLAE Newton error                         12.1936377950235
+FA3R Double error                         12.1936377950235
+FA3R Int error                            12.1936201397177
+GA Rotor Estimator error                  12.1936377950235
+LA Rotor Estimator error                  12.1936377950235
+Davenport error                           12.1936377950235
+Quest error                               12.1936377950235
+Foam error                                12.1936377686338
+SVD error                                 12.1936377950235
+Horn error                                12.1936377950235
+Exec time FLAE:                           1.031946 sec.
+Exec time FLAE Symbolic:                  0.862765 sec.
+Exec time FLAE Newton:                    0.858714 sec.
+Exec time FA3R Double:                    0.9316 sec.
+Exec time FA3R Int:                       1.007283 sec.
+Exec time LARotorEstimator:               0.985653 sec.
+Exec time Davenport Q-Method:             1.705025 sec.
+Exec time QUEST:                          0.84112 sec.
+Exec time FOAM:                           0.877638 sec.
+Exec time SVD:                            1.430153 sec.
+Exec time Horn:                           1.795024 sec.
+FINISHED...

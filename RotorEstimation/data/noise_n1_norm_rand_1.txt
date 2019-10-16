@@ -1,0 +1,3 @@
+Params: 
+       --name=noise_n1_norm_rand_1.txt --plane=[x|y|z] --n=1 --noise=true --norm=[double] --axis=[double,double,double] --angle=[double]
+

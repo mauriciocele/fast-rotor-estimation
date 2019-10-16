@@ -1,0 +1,19 @@
+Params: 
+       --name=noise_x_plane_2.txt --plane=[x|y|z] --n=1000 --noise=false --norm=[double] --axis=[double,double,double] --angle=3.14159265358979
+
+Axis                                      : 0.321654386693928, 0.898520704494647, 0.29866201485123
+Angle                                     : 3.14159265358979
+Comparisons: 
+
+FLAE error                                9.89531809960081e-23
+FLAE Symbolic error                       3.08540503128791e-20
+FLAE Newton error                         9.89531809960081e-23
+FA3R Double error                         4.45530911671098e-23
+FA3R Int error                            1181811303.87321
+GA Rotor Estimator error                  1.527159188088e-21
+LA Rotor Estimator error                  2.11610701121961e-21
+Davenport error                           4.98857337897178e-23
+Quest error                               190877420.011703
+Foam error                                1.41592971884982e-22
+SVD error                                 7.12766206733088e-23
+Horn error                                1.0299145021494e-22

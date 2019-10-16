@@ -1,0 +1,31 @@
+Params: 
+       --name=pidiv2_angle_2.txt --plane=[x|y|z] --n=1000 --noise=false --norm=1 --axis=[double,double,double] --angle=1.5707963267949
+
+Axis                                      : 0.718127275925603, 0.693822300048432, 0.0538872111653145
+Angle                                     : 1.5707963267949
+Comparisons: 
+
+FLAE error                                2.21010991396684e-27
+FLAE Symbolic error                       8.43592535352261e-24
+FLAE Newton error                         1.83310290895543e-26
+FA3R Double error                         2.11569579316395e-28
+FA3R Int error                            4.75826626873964e-08
+GA Rotor Estimator error                  2.09249964871568e-17
+LA Rotor Estimator error                  2.0925028797656e-17
+Davenport error                           2.66809345797941e-28
+Quest error                               1.09338059229912e-28
+Foam error                                9.84287270136655e-28
+SVD error                                 3.29779040846753e-28
+Horn error                                2.97680677021522e-28
+Exec time FLAE:                           2.707766 sec.
+Exec time FLAE Symbolic:                  3.524036 sec.
+Exec time FLAE Newton:                    2.431327 sec.
+Exec time FA3R Double:                    2.500914 sec.
+Exec time FA3R Int:                       2.623415 sec.
+Exec time LARotorEstimator:               3.642447 sec.
+Exec time Davenport Q-Method:             3.514601 sec.
+Exec time QUEST:                          2.454269 sec.
+Exec time FOAM:                           3.508183 sec.
+Exec time SVD:                            7.869416 sec.
+Exec time Horn:                           7.960654 sec.
+FINISHED...

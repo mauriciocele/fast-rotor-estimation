@@ -1,0 +1,31 @@
+Params: 
+       --name=0_angle_2.txt --plane=[x|y|z] --n=1000 --noise=false --norm=1 --axis=[double,double,double] --angle=0
+
+Axis                                      : 0.413607387451736, 0.0171689077423066, 0.910293445902081
+Angle                                     : 0
+Comparisons: 
+
+FLAE error                                nan
+FLAE Symbolic error                       1035.17078421247
+FLAE Newton error                         nan
+FA3R Double error                         2.58152107306841e-30
+FA3R Int error                            1.04624051666118e-09
+GA Rotor Estimator error                  3.54156571911654e-18
+LA Rotor Estimator error                  3.54156571911654e-18
+Davenport error                           0
+Quest error                               0
+Foam error                                1.50645048372166e-28
+SVD error                                 1.86405378785723e-28
+Horn error                                0
+Exec time FLAE:                           2.707452 sec.
+Exec time FLAE Symbolic:                  3.485049 sec.
+Exec time FLAE Newton:                    2.433102 sec.
+Exec time FA3R Double:                    2.488932 sec.
+Exec time FA3R Int:                       2.585937 sec.
+Exec time LARotorEstimator:               3.612423 sec.
+Exec time Davenport Q-Method:             3.231825 sec.
+Exec time QUEST:                          2.458094 sec.
+Exec time FOAM:                           3.463993 sec.
+Exec time SVD:                            7.739005 sec.
+Exec time Horn:                           7.783521 sec.
+FINISHED...

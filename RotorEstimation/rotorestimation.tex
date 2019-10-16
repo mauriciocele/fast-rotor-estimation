@@ -317,19 +317,23 @@ The pseudo-code of proposed method is shown in Algorithm~\ref{alg:FastRotorEstim
 \STATE{$S = S + c_j (p_j \cdot p_j + q_j \cdot q_j)$}
 \STATE{$B = B + c_j p_j q_j^T$}
 \ENDFOR
-\STATE{$\textbf m_1 = (S + Tr(B)) e_1 + (B_{12} - B_{21}) e_2 + (B_{20} - B_{02}) e_3 + (B_{01} - B_{10}) e_4$}
-\STATE{$\textbf m_2 = (B_{12} - B_{21})e_1 + 2 (B_{00} + S - Tr(B)) e_2 + (B_{01} + B_{10}) e_3 + (B_{20} + B_{02}) e_4$}
-\STATE{$\textbf m_3 = (B_{20} - B_{02})e_1 + (B_{01} + B_{10}) e_2 + 2 (B_{11} + S - Tr(B)) e_3 + (B_{12} + B_{21}) e_4$}
-\STATE{$\textbf m_3 = (B_{01} - B_{10})e_1 + (B_{20} + B_{02} ) e_2 + (B_{12} + B_{21}) e_3 + 2 (B_{22} + S - Tr(B)) e_4$}
+\STATE{$\textbf m_1 = (\frac{1}{2}S + Tr(B)) e_1 + (B_{12} - B_{21}) e_2 + (B_{20} - B_{02}) e_3 + (B_{01} - B_{10}) e_4$}
+\STATE{$\textbf m_2 = (B_{12} - B_{21})e_1 + (2 B_{00} + \frac{1}{2}S - Tr(B)) e_2 + (B_{01} + B_{10}) e_3 + (B_{20} + B_{02}) e_4$}
+\STATE{$\textbf m_3 = (B_{20} - B_{02})e_1 + (B_{01} + B_{10}) e_2 + (2 B_{11} + \frac{1}{2}S - Tr(B)) e_3 + (B_{12} + B_{21}) e_4$}
+\STATE{$\textbf m_3 = (B_{01} - B_{10})e_1 + (B_{20} + B_{02} ) e_2 + (B_{12} + B_{21}) e_3 + (2 B_{22} + \frac{1}{2}S - Tr(B)) e_4$}
 \COMMENT{Newton-Raphson}
 \STATE{$\lambda_0 = 7 S - 3 Tr(B)$}
 \REPEAT
 \STATE{$\lambda_{i+1} = \lambda_i - P(\lambda_i) / P'(\lambda_i)$}
 \UNTIL{$\|\lambda_{i+1} - \lambda_i\| < \epsilon$}
-\STATE{$\textbf a_1 = \textbf m_1 - \lambda e_1$}
-\STATE{$\textbf a_2 = \textbf m_2 - \lambda e_2$}
-\STATE{$\textbf a_3 = \textbf m_3 - \lambda e_3$}
-\STATE{$\textbf a_4 = \textbf m_4 - \lambda e_4$}
+\STATE{$\textbf a_1 = \textbf m_1 - \lambda e_1$
+}
+\STATE{$\textbf a_2 = \textbf m_2 - \lambda e_2$
+}
+\STATE{$\textbf a_3 = \textbf m_3 - \lambda e_3$
+}
+\STATE{$\textbf a_4 = \textbf m_4 - \lambda e_4$
+}
 \STATE{$\textbf X = \gamma (\textbf a_1 \wedge \textbf a_3 \wedge \textbf a_4
 	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_4
 	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_3
@@ -489,7 +493,8 @@ In this paper, we presented a novel method for estimating the best rotation alig
 %
 %? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
 %*/
-%double characteristic(const array<double, 10>& H, double lambda){
+%double characteristic(const array<double, 10>& H, double lambda)
+{
 %  return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
 %  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
 %  + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
@@ -513,7 +518,8 @@ In this paper, we presented a novel method for estimating the best rotation alig
 %((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
 %((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
 %*/
-%double deriv_characteristic(const array<double, 10>& H, double lambda){
+%double deriv_characteristic(const array<double, 10>& H, double lambda)
+{
 %  return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] 
 %  - lambda) + (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) 
 %  * H[3] + (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] 
@@ -534,7 +540,8 @@ In this paper, we presented a novel method for estimating the best rotation alig
 %
 %? R0 = ((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3 + 1)^(d - lambda * e4)) . (e1^e2^e3^e4);
 %*/
-%Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda){
+%Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda)
+{
 %  Vector4d R0;
 %  R0[0] = (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * (H[0] - lambda) 
 %  + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[3])) + (H[6] * H[2] 

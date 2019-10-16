@@ -13,7 +13,7 @@
                 "-Ofast",
                 "-march=native",
                 "-funroll-loops",
-                // "-ffast-math",
+                "-ffast-math",
                 "ArunSVD.cpp",
                 "BasisBlade.cpp",
                 "Davenport.cpp",
@@ -28,7 +28,7 @@
                 "stdafx.cpp",
                 "-o",
                 "Estimator.out",
-                "--debug",
+                // "--debug",
             ],
             "group": {
                 "kind": "build",

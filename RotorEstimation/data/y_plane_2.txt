@@ -1,0 +1,31 @@
+Params: 
+       --name=y_plane_2.txt --plane=y --n=1000 --noise=false --norm=1 --axis=0,1,0 --angle=[double]
+
+Axis                                      : 0, 1, 0
+Angle                                     : 10.7686780333018
+Comparisons: 
+
+FLAE error                                411.866826115906
+FLAE Symbolic error                       411.92779371698
+FLAE Newton error                         411.866826115906
+FA3R Double error                         1.7848771900106e-28
+FA3R Int error                            4.04422205733609e-08
+GA Rotor Estimator error                  2.07538991619991e-27
+LA Rotor Estimator error                  3.90870329571553e-28
+Davenport error                           1.31881100041249e-28
+Quest error                               1.31881100041249e-28
+Foam error                                1.02188689124991e-28
+SVD error                                 1.66944817241144e-28
+Horn error                                1.31881100041249e-28
+Exec time FLAE:                           2.684124 sec.
+Exec time FLAE Symbolic:                  3.491384 sec.
+Exec time FLAE Newton:                    2.463917 sec.
+Exec time FA3R Double:                    2.527887 sec.
+Exec time FA3R Int:                       2.592551 sec.
+Exec time LARotorEstimator:               3.57823 sec.
+Exec time Davenport Q-Method:             3.103157 sec.
+Exec time QUEST:                          2.485462 sec.
+Exec time FOAM:                           3.536267 sec.
+Exec time SVD:                            7.320446 sec.
+Exec time Horn:                           7.635119 sec.
+FINISHED...

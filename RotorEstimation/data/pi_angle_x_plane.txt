@@ -1,0 +1,31 @@
+Params: 
+       --name=pi_angle_x_plane.txt --plane=x --n=1000 --noise=false --norm=1 --axis=1,0,0 --angle=3.14159265358979
+
+Axis                                      : 1, 0, 0
+Angle                                     : 3.14159265358979
+Comparisons: 
+
+FLAE error                                436.916977398954
+FLAE Symbolic error                       436.916977398954
+FLAE Newton error                         436.916977398954
+FA3R Double error                         1.41930267962493e-29
+FA3R Int error                            8.270641224773e-10
+GA Rotor Estimator error                  1.63028453874865e-29
+LA Rotor Estimator error                  1.63028453874865e-29
+Davenport error                           2.10201162661534e-29
+Quest error                               2.10201162661534e-29
+Foam error                                5.7569865914773e-28
+SVD error                                 3.7514642746581e-29
+Horn error                                2.10201162661534e-29
+Exec time FLAE:                           2.720721 sec.
+Exec time FLAE Symbolic:                  3.65741 sec.
+Exec time FLAE Newton:                    2.515747 sec.
+Exec time FA3R Double:                    2.533898 sec.
+Exec time FA3R Int:                       2.599938 sec.
+Exec time LARotorEstimator:               3.751873 sec.
+Exec time Davenport Q-Method:             3.007382 sec.
+Exec time QUEST:                          2.501025 sec.
+Exec time FOAM:                           3.539045 sec.
+Exec time SVD:                            7.361623 sec.
+Exec time Horn:                           7.521173 sec.
+FINISHED...

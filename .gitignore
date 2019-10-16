@@ -41,3 +41,8 @@ Debug/*
 Release/*
 x64/*
 src/x64/*
+.DS_Store
+*.synctex.gz
+*.aux
+*.bbl
+*.blg

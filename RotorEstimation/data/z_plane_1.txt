@@ -1,0 +1,31 @@
+Params: 
+       --name=z_plane_1.txt --plane=z --n=1000 --noise=false --norm=1 --axis=0,0,1 --angle=[double]
+
+Axis                                      : 0, 0, 1
+Angle                                     : 1.64695955272872
+Comparisons: 
+
+FLAE error                                3.25236022146291e-28
+FLAE Symbolic error                       4.70047188140267e-27
+FLAE Newton error                         3.25236022146291e-28
+FA3R Double error                         1.38626411597049e-28
+FA3R Int error                            4.98795193191267e-08
+GA Rotor Estimator error                  2.22152839146048e-24
+LA Rotor Estimator error                  7.67319975889594e-27
+Davenport error                           9.57500863748423e-29
+Quest error                               8.3611842723329e-29
+Foam error                                1.19991228371486e-28
+SVD error                                 1.09899741025044e-28
+Horn error                                9.57500863748423e-29
+Exec time FLAE:                           2.6978 sec.
+Exec time FLAE Symbolic:                  3.46794 sec.
+Exec time FLAE Newton:                    2.450593 sec.
+Exec time FA3R Double:                    2.519775 sec.
+Exec time FA3R Int:                       2.589067 sec.
+Exec time LARotorEstimator:               3.60424 sec.
+Exec time Davenport Q-Method:             3.217541 sec.
+Exec time QUEST:                          2.488519 sec.
+Exec time FOAM:                           3.508167 sec.
+Exec time SVD:                            7.31786 sec.
+Exec time Horn:                           7.636001 sec.
+FINISHED...

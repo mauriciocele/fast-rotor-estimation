@@ -1,0 +1,31 @@
+Params: 
+       --name=3pi_angle_2.txt --plane=[x|y|z] --n=1000 --noise=false --norm=1 --axis=[double,double,double] --angle=9.42477796076938
+
+Axis                                      : 0.763016960531207, 0.634045938043808, 0.125661714105237
+Angle                                     : 9.42477796076938
+Comparisons: 
+
+FLAE error                                1.82040705140721e-28
+FLAE Symbolic error                       4.11664155732655e-25
+FLAE Newton error                         1.82040705140721e-28
+FA3R Double error                         2.67277982667646e-28
+FA3R Int error                            8.20013538485408e-08
+GA Rotor Estimator error                  1.54009960720177e-16
+LA Rotor Estimator error                  1.540098472656e-16
+Davenport error                           3.7678300561597e-28
+Quest error                               327.790893002903
+Foam error                                4.06273721271372e-28
+SVD error                                 2.86510933746538e-28
+Horn error                                2.65720625249189e-28
+Exec time FLAE:                           2.743917 sec.
+Exec time FLAE Symbolic:                  3.529595 sec.
+Exec time FLAE Newton:                    2.421662 sec.
+Exec time FA3R Double:                    2.5285 sec.
+Exec time FA3R Int:                       2.594511 sec.
+Exec time LARotorEstimator:               3.625816 sec.
+Exec time Davenport Q-Method:             3.397129 sec.
+Exec time QUEST:                          2.465279 sec.
+Exec time FOAM:                           3.492594 sec.
+Exec time SVD:                            7.775436 sec.
+Exec time Horn:                           7.877788 sec.
+FINISHED...
