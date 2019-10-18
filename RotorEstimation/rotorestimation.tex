@@ -80,7 +80,7 @@
 
 \begin{abstract}
 
-Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a robust estimator of the optimal quaternion based on a formulation of the problem in Geometric Algebra. The proposed method is accurate and its performance competitive with the fastest methods reported in literature.
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a robust attitude estimator based on a formulation of the problem in Geometric Algebra. We find the optimal eigen-quaternion in closed form with high accuracy and with competitive performance respect to the fastest methods reported in literature.
 
 \end{abstract}
 
@@ -281,7 +281,7 @@ Here the symbol $^*$ is the dual operator of the $4$D space (not $5$D as in \cit
 
 As stated before, setting the scale of a single hyperplane is enough to get a valid eigenvector in most cases. However, the choice of which hyper-plane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work because when the angle of rotation is $\pi$ the $w = \cos(\pi/2) = 0$ and so its scale cannot be constrained. Similarly, constraining one of the hyper-planes corresponding to $L_1$, $L_2$ or $L_3$ won't work because when the angle of rotation is $0$ or $4 \pi$ the $\sin(2 \pi) = 0$ and so on. Then, it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
 
-Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOAM \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix \cite{Davenport1968}. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
+Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOMA \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix \cite{Davenport1968}. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigen-vector.
 
 \section{Optimal Computation of M}
 
@@ -352,96 +352,52 @@ An optimized C++ code using the Eigen library \cite{Eigen} and GAALOP  \cite{Gaa
 
 \section{Comparisons}
 
-We selected several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Arun1987} and QUEST \cite{Shuster1981} for comparison. The Eigen library \cite{Eigen} was employed to implement all methods. The tests were ran on a MacBook Pro laptop with Intel Core i7 CPU running at 2,5 GHz. The Clang C++ compiler was used with -Ofast option enabled. Results are listed below: % (Table \ref{tab:roll}, \ref{tab:pitch}, \ref{tab:yaw}):
+We selected several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Arun1987}, QUEST \cite{Shuster1981}, FA3R \cite{Wu2018FA3R}, Symbolic \cite{Wu2018FS3R}, Q-Method \cite{Shuster1981} and FOMA \cite{Markley1993} for comparison. The Eigen library \cite{Eigen} was employed to implement all of them. The tests were ran on a MacBook Pro laptop with Intel Core i7 CPU running at 2,5 GHz. The Clang C++ compiler was used with -Ofast option enabled.
 
-% \begin{table} [H]
-% \centering
-% \begin{minipage}[b]{1.0\textwidth}
-% \caption{Roll RMSE (deg)}  
-%  \label{tab:roll}
-% \resizebox{1.0\textwidth}{!}{ 
-% \begin{tabular}{cccccc}
-% \toprule
-% {Case}&{Proposed}&{SVD Horn 1987}&{FLAE 2017}&{QUEST Eigen 1981}&{QUEST Newton 1981}\\
-% \midrule
-% {1}&{$4.9426 \times 10^{-04}$}&{$4.3068 \times 10^{-05}$}&{$4.3068 \times 10^{-05}$}&{$4.3068 \times 10^{-05}$}&{$4.3068 \times 10^{-05}$}\\
-% {2}&{$3.3673 \times 10^{-04}$}&{$5.9781 \times 10^{-05}$}&{$5.9781 \times 10^{-05}$}&{$5.9781 \times 10^{-05}$}&{$5.9781 \times 10^{-05}$}\\
-% {3}&{$2.4912 \times 10^{+00}$}&{$4.3420 \times 10^{-01}$}&{$4.3420 \times 10^{-01}$}&{$4.3420 \times 10^{-01}$}&{$4.3420 \times 10^{-01}$}\\
-% {4}&{$3.4014 \times 10^{+00}$}&{$5.9978 \times 10^{-01}$}&{$5.9978 \times 10^{-01}$}&{$5.9978 \times 10^{-01}$}&{$5.9978 \times 10^{-01}$}\\
-% {5}&{$3.9992 \times 10^{+00}$}&{$4.3545 \times 10^{-01}$}&{$2.1560 \times 10^{+01}$}&{$4.3545 \times 10^{-01}$}&{$4.3649 \times 10^{-01}$}\\
-% {6}&{$4.9857 \times 10^{-02}$}&{$4.9792 \times 10^{-03}$}&{$4.9792 \times 10^{-03}$}&{$4.9792 \times 10^{-03}$}&{$4.9792 \times 10^{-03}$}\\
-% {7}&{$8.7731 \times 10^{-02}$}&{$8.1146 \times 10^{-03}$}&{$8.1146 \times 10^{-03}$}&{$8.1146 \times 10^{-03}$}&{$8.1146 \times 10^{-03}$}\\
-% {8}&{$3.4008 \times 10^{+02}$}&{$5.9402 \times 10^{+01}$}&{$5.9402 \times 10^{+01}$}&{$5.9402 \times 10^{+01}$}&{$5.9402 \times 10^{+01}$}\\
-% {9}&{$5.3870 \times 10^{+02}$}&{$7.7637 \times 10^{+01}$}&{$7.7638 \times 10^{+01}$}&{$7.7637 \times 10^{+01}$}&{$7.7637 \times 10^{+01}$}\\
-% {10}&{$1.3513 \times 10^{+01}$}&{$1.4641 \times 10^{+00}$}&{$1.5824 \times 10^{+00}$}&{$1.4641 \times 10^{+00}$}&{$1.4641 \times 10^{+00}$}\\
-% {11}&{$1.9366 \times 10^{+01}$}&{$2.0427 \times 10^{+00}$}&{$2.9300 \times 10^{+00}$}&{$2.0427 \times 10^{+00}$}&{$2.0427 \times 10^{+00}$}\\
-% {12}&{$1.2517 \times 10^{+01}$}&{$2.0712 \times 10^{+00}$}&{$1.7328 \times 10^{+01}$}&{$2.0712 \times 10^{+00}$}&{$3.3679 \times 10^{+01}$}\\
-% \bottomrule
-% \end{tabular}}
-% \end{minipage}
+We first show that some methods fails on producing meaningful rotations when certain input data is provided. Table~\ref{tab:failure_cases} shows four cases which causes error. First two cases consist of having input vectors rotated $\pi/2$ and $\pi$ radians without noise. Other case is when the 3D vectors are projected to the $YZ$-plane and rotated  around the $X$-axis without noise. The last case is similar but projected to the $XZ$-plane. The root mean-squared error (RMSE) is used to describe the difference of accuracy.
 
-% \begin{minipage}[b]{1.0\textwidth}
-% \caption{Pitch RMSE (deg)}  
-%  \label{tab:pitch}
-% \resizebox{1.0\textwidth}{!}{ 
-% \begin{tabular}{cccccc}
-% \toprule
-% {Case}&{Proposed}&{SVD Horn 1987}&{FLAE 2017}&{QUEST Eigen 1981}&{QUEST Newton 1981}\\
-% \midrule
-% {1}&{$4.0745 \times 10^{-04}$}&{$4.0500 \times 10^{-05}$}&{$4.0500 \times 10^{-05}$}&{$4.0500 \times 10^{-05}$}&{$4.0500 \times 10^{-05}$}\\
-% {2}&{$4.1322 \times 10^{-04}$}&{$5.3106 \times 10^{-05}$}&{$5.3106 \times 10^{-05}$}&{$5.3106 \times 10^{-05}$}&{$5.3106 \times 10^{-05}$}\\
-% {3}&{$4.0623 \times 10^{+00}$}&{$4.0205 \times 10^{-01}$}&{$4.0205 \times 10^{-01}$}&{$4.0205 \times 10^{-01}$}&{$4.0205 \times 10^{-01}$}\\
-% {4}&{$6.0567 \times 10^{+00}$}&{$5.2600 \times 10^{-01}$}&{$5.2600 \times 10^{-01}$}&{$5.2600 \times 10^{-01}$}&{$5.2600 \times 10^{-01}$}\\
-% {5}&{$2.4391 \times 10^{+00}$}&{$3.9376 \times 10^{-01}$}&{$1.1799 \times 10^{+01}$}&{$3.9376 \times 10^{-01}$}&{$3.9469 \times 10^{-01}$}\\
-% {6}&{$3.6311 \times 10^{-04}$}&{$4.0168 \times 10^{-05}$}&{$4.0168 \times 10^{-05}$}&{$4.0168 \times 10^{-05}$}&{$4.0168 \times 10^{-05}$}\\
-% {7}&{$6.2653 \times 10^{-04}$}&{$5.3300 \times 10^{-05}$}&{$5.3300 \times 10^{-05}$}&{$5.3300 \times 10^{-05}$}&{$5.3300 \times 10^{-05}$}\\
-% {8}&{$4.3060 \times 10^{+00}$}&{$3.6817 \times 10^{-01}$}&{$3.6817 \times 10^{-01}$}&{$3.6817 \times 10^{-01}$}&{$3.6817 \times 10^{-01}$}\\
-% {9}&{$5.9480 \times 10^{+00}$}&{$4.5583 \times 10^{-01}$}&{$4.5583 \times 10^{-01}$}&{$4.5583 \times 10^{-01}$}&{$4.5583 \times 10^{-01}$}\\
-% {10}&{$4.3860 \times 10^{-04}$}&{$5.8427 \times 10^{-05}$}&{$5.8427 \times 10^{-05}$}&{$5.8427 \times 10^{-05}$}&{$5.8432 \times 10^{-05}$}\\
-% {11}&{$4.3787 \times 10^{-04}$}&{$5.7149 \times 10^{-05}$}&{$5.7150 \times 10^{-05}$}&{$5.7149 \times 10^{-05}$}&{$5.7146 \times 10^{-05}$}\\
-% {12}&{$2.6414 \times 10^{+00}$}&{$4.8955 \times 10^{-01}$}&{$3.9323 \times 10^{+00}$}&{$4.8955 \times 10^{-01}$}&{$4.8405 \times 10^{+00}$}\\
-% \bottomrule
-% \end{tabular}}
-% \end{minipage}
+ \begin{table} [H]
+ \centering
+ \resizebox{1.0\textwidth}{!}{ 
+ \begin{tabular}{cccccc}
+ \toprule
+ {Algo}&{$\pi/2$}&{$\pi$}&{$YZ$Plane}&{$XZ$Plane}&{$XY$Plane}\\
+ \midrule
+ {FLAE}&{$4.41 \times 10^{-28}$}&{$696$}&{$392$}&{$1328$}&{$3.25 \times 10^{-28}$}\\
+ {Symbolic}&{$1.78 \times 10^{-26}$}&{$1053$}&{$392$}&{$1321$}&{$4.70 \times 10^{-27}$}\\
+ {FA3R}&{$4.00 \times 10^{-28}$}&{$5.41 \times 10^{-29}$}&{$2.25 \times 10^{-09}$}&{$2.76 \times 10^{-08}$}&{$4.98 \times 10^{-08}$}\\
+ {Proposed}&{$7.32 \times 10^{+18}$}&{$1.79 \times 10^{-18}$}&{$4.05 \times 10^{-28}$}&{$3.43 \times 10^{-28}$}&{$2.22 \times 10^{-24}$}\\
+ {Q-Method}&{$3.78 \times 10^{-28}$}&{$2.89 \times 10^{-29}$}&{$7.10 \times 10^{-28}$}&{$1.45 \times 10^{-28}$}&{$9.57 \times 10^{-29}$}\\
+ {QUEST}&{$82.6$}&{$2.18 \times 10^{-29}$}&{$6.09 \times 10^{-26}$}&{$9.93 \times 10^{-28}$}&{$8.36 \times 10^{-29}$}\\
+ {FOMA}&{$6.08 \times 10^{-28}$}&{$2.95 \times 10^{-28}$}&{$3.93 \times 10^{-26}$}&{$2.13 \times 10^{-27}$}&{$1.19 \times 10^{-28}$}\\
+ {SVD}&{$4.41 \times 10^{-28}$}&{$7.51 \times 10^{-29}$}&{$3.35 \times 10^{-28}$}&{$9.83 \times 10^{-29}$}&{$1.09 \times 10^{-28}$}\\
+\bottomrule
+ \end{tabular}}
+ \caption{RMSE of one million vector alignments of a thousand input vectors without noise. Some methods failed when 3D vectors were rotated $\pi/2$ and $\pi$  and when vectors are projected to the coordinate planes}  
+ \label{tab:failure_cases}
+ \end{table}
 
-% \begin{minipage}[b]{1.0\textwidth}
-% \caption{Yaw RMSE (deg)}  
-%  \label{tab:yaw}
-% \resizebox{1.0\textwidth}{!}{ 
-% \begin{tabular}{cccccc}
-% \toprule
-% {Case}&{Proposed}&{SVD Horn 1987}&{FLAE 2017}&{QUEST Eigen 1981}&{QUEST Newton 1981}\\
-% \midrule
-% {1}&{$8.3214 \times 10^{-04}$}&{$4.2976 \times 10^{-05}$}&{$4.2976 \times 10^{-05}$}&{$4.2976 \times 10^{-05}$}&{$4.2976 \times 10^{-05}$}\\
-% {2}&{$4.6383 \times 10^{-04}$}&{$4.8484 \times 10^{-05}$}&{$4.8484 \times 10^{-05}$}&{$4.8484 \times 10^{-05}$}&{$4.8484 \times 10^{-05}$}\\
-% {3}&{$3.9084 \times 10^{+00}$}&{$4.3773 \times 10^{-01}$}&{$4.3773 \times 10^{-01}$}&{$4.3773 \times 10^{-01}$}&{$4.3773 \times 10^{-01}$}\\
-% {4}&{$2.4989 \times 10^{+00}$}&{$4.8366 \times 10^{-01}$}&{$4.8366 \times 10^{-01}$}&{$4.8366 \times 10^{-01}$}&{$4.8366 \times 10^{-01}$}\\
-% {5}&{$1.9721 \times 10^{+00}$}&{$2.5312 \times 10^{-01}$}&{$1.5349 \times 10^{+01}$}&{$2.5312 \times 10^{-01}$}&{$2.5373 \times 10^{-01}$}\\
-% {6}&{$2.2129 \times 10^{-04}$}&{$3.6325 \times 10^{-05}$}&{$3.6325 \times 10^{-05}$}&{$3.6325 \times 10^{-05}$}&{$3.6325 \times 10^{-05}$}\\
-% {7}&{$3.5209 \times 10^{-04}$}&{$4.9660 \times 10^{-05}$}&{$4.9660 \times 10^{-05}$}&{$4.9660 \times 10^{-05}$}&{$4.9660 \times 10^{-05}$}\\
-% {8}&{$2.7013 \times 10^{+00}$}&{$3.9770 \times 10^{-01}$}&{$3.9770 \times 10^{-01}$}&{$3.9770 \times 10^{-01}$}&{$3.9770 \times 10^{-01}$}\\
-% {9}&{$4.9757 \times 10^{+00}$}&{$4.9710 \times 10^{-01}$}&{$4.9710 \times 10^{-01}$}&{$4.9710 \times 10^{-01}$}&{$4.9710 \times 10^{-01}$}\\
-% {10}&{$5.5605 \times 10^{-04}$}&{$6.1117 \times 10^{-05}$}&{$6.1114 \times 10^{-05}$}&{$6.1117 \times 10^{-05}$}&{$6.1118 \times 10^{-05}$}\\
-% {11}&{$4.7411 \times 10^{-04}$}&{$6.0821 \times 10^{-05}$}&{$6.0831 \times 10^{-05}$}&{$6.0821 \times 10^{-05}$}&{$6.0820 \times 10^{-05}$}\\
-% {12}&{$3.3917 \times 10^{+00}$}&{$3.1503 \times 10^{-01}$}&{$2.8467 \times 10^{+00}$}&{$3.1503 \times 10^{-01}$}&{$6.1232 \times 10^{+00}$}\\
-% \bottomrule
-% \end{tabular}}
-% \end{minipage}
-% \end{table}
-% In these tables, the Euler angles i.e. roll, pitch and yaw angles are listed for comparisons. The root mean-squared error (RMSE) is presented to describe the difference of accuracy. It is observed that the proposed algorithm has worse accuracy than that from the conventional Wahba's solutions. The time consumption is summarized in Figure \ref{fig:time}. We can also see that the loss of accuracy well worth the computation time. The computation time here from the proposed approach is almost 50\% of that of the known best algorithm FLAE.
+We also compared the robustness of the methods when input data has extreme noise applied to the length of input vectors. Figure~\ref{fig:robustness} shows that some methods often fails to find meaningful rotations. We took SVD as reference. Notice that the amount of RMSE is almost the same on successes and on failures, evidencing that almost all methods builds, in essence, the Q-Method's matrix.
+ 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{robustness.png}
+\caption{Sum of RMSE of one million vector alignments of a thousand input vectors. We applied Gaussian random noise to angles and random noise to lengths}
+\label{fig:robustness}
+\end{figure}
 
+Among the compared methods SVD, Q-Method and the ours are the most robust. Performance is shown in Figure~\ref{fig:time} compared to the other methods. Our experiments shows that when the number of input vectors is up to 1000 our method is faster than Q-Method. Beyond that point the trend shows that Q-Method is faster.
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=1.0\textwidth]{time.jpg}
-% \caption{Execution time consumption of various algorithms.}
-% \label{fig:time}
-% \end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{time.png}
+	\caption{Performance comparison: number of vectors v.s. execution time ($\mu$s)}
+	\label{fig:time}
+\end{figure}
 
 \section{Conclusion}
 
-In this paper, we presented a novel method for estimating the best rotation aligning two sets of corresponding 3D bivectors and vectors. It is based on maximizing a quadratic energy functional formulated in geometric algebra language. Our method is fast, robust and accurate. Experimental validation of the proposed algorithm was presented. Results shows that our method present increased robustness while keeping accuracy and competitive speed.
-
+We presented a novel method for estimating the best quaternion aligning two sets of corresponding vectors and bivectors. Since we maximize a convex energy functional we only deal with non-negative eigenvalues, which makes Newton-Raphson iteration robust. We find the eigenvector corresponding to the largest eigenvalue intersecting hyper-planes in the language of geometric algebra. Results shows that our method is a good alternative in terms of robustness and accuracy. Its speed is competitive when the number of input vectors is relatively small. 
 
 %\section{C++ code}
 %
