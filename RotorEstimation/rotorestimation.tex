@@ -366,7 +366,7 @@ We first show that some methods fails on producing meaningful rotations when cer
  {FLAE}&{$4.41 \times 10^{-28}$}&{$696$}&{$392$}&{$1328$}&{$3.25 \times 10^{-28}$}\\
  {Symbolic}&{$1.78 \times 10^{-26}$}&{$1053$}&{$392$}&{$1321$}&{$4.70 \times 10^{-27}$}\\
  {FA3R}&{$4.00 \times 10^{-28}$}&{$5.41 \times 10^{-29}$}&{$2.25 \times 10^{-09}$}&{$2.76 \times 10^{-08}$}&{$4.98 \times 10^{-08}$}\\
- {Proposed}&{$7.32 \times 10^{+18}$}&{$1.79 \times 10^{-18}$}&{$4.05 \times 10^{-28}$}&{$3.43 \times 10^{-28}$}&{$2.22 \times 10^{-24}$}\\
+ {Proposed}&{$7.32 \times 10^{-18}$}&{$1.79 \times 10^{-18}$}&{$4.05 \times 10^{-28}$}&{$3.43 \times 10^{-28}$}&{$2.22 \times 10^{-24}$}\\
  {Q-Method}&{$3.78 \times 10^{-28}$}&{$2.89 \times 10^{-29}$}&{$7.10 \times 10^{-28}$}&{$1.45 \times 10^{-28}$}&{$9.57 \times 10^{-29}$}\\
  {QUEST}&{$82.6$}&{$2.18 \times 10^{-29}$}&{$6.09 \times 10^{-26}$}&{$9.93 \times 10^{-28}$}&{$8.36 \times 10^{-29}$}\\
  {FOMA}&{$6.08 \times 10^{-28}$}&{$2.95 \times 10^{-28}$}&{$3.93 \times 10^{-26}$}&{$2.13 \times 10^{-27}$}&{$1.19 \times 10^{-28}$}\\
@@ -399,127 +399,6 @@ Among the compared methods SVD, Q-Method and the ours are the most robust. Perfo
 
 We presented a novel method for estimating the best quaternion aligning two sets of corresponding vectors and bivectors. Since we maximize a convex energy functional we only deal with non-negative eigenvalues, which makes Newton-Raphson iteration robust. We find the eigenvector corresponding to the largest eigenvalue intersecting hyper-planes in the language of geometric algebra. Results shows that our method is a good alternative in terms of robustness and accuracy. Its speed is competitive when the number of input vectors is relatively small. 
 
-%\section{C++ code}
-%
-%\begin{lstlisting}[language=C++, caption=C++ code for rotor estimation, basicstyle=\tiny, keywordstyle=\bfseries, label=lst:cppcode, morekeywords={Matrix4d,Matrix3d,Vector4d,Vector3d,Quaterniond,sqrt,__m256d,__m128d}]
-%Quaterniond GAFastRotorEstimator(
-%    const vector<Vector3d>& P, 
-%    const vector<Vector3d>& Q, 
-%    const vector<double>& w)
-%{
-%  array<double, 10> H;
-%  Matrix3d Sx;
-%  Vector3d S;
-%  double wj;
-%  const size_t N = P.size();
-%  Sx.setZero();
-%  S.setZero();
-%  for (size_t j = 0; j < N; ++j) {
-%    wj = w[j];
-%    const Vector3d& Qj = Q[j];
-%    const Vector3d& Pj = P[j];
-%    S.noalias() += wj * (Pj + Qj);
-%    Sx.noalias() += (wj * Pj) * Qj.transpose();
-%  }
-%  wj = S.dot(S);
-%  H[0] = wj + 2.0 * Sx.trace();       // (3,3)
-%  wj = wj - 2.0 * Sx.trace();
-%  H[1] = 2.0 * (Sx(1, 2) - Sx(2, 1)); // (3,0)
-%  H[2] = 2.0 * (Sx(2, 0) - Sx(0, 2)); // (3,1)
-%  H[3] = 2.0 * (Sx(0, 1) - Sx(1, 0)); // (3,2)
-%  H[4] = 4.0 * Sx(0, 0) + wj;         // (0,0)
-%  H[5] = 2.0 * (Sx(0, 1) + Sx(1, 0)); // (1,0) 
-%  H[6] = 2.0 * (Sx(2, 0) + Sx(0, 2)); // (2,0)
-%  H[7] = 4.0 * Sx(1, 1) + wj;         // (1,1)
-%  H[8] = 2.0 * (Sx(1, 2) + Sx(2, 1)); // (2,1)
-%  H[9] = 4.0 * Sx(2, 2) + wj;         // (2,2)
-%
-%  double lambda = H[0]+H[4]+H[7]+H[9];
-%  double lambda_prev = 0;
-%  while(std::abs(lambda - lambda_prev) > 1e-5) {
-%    lambda_prev = lambda;
-%    lambda = lambda - characteristic(H, lambda) / deriv_characteristic(H, lambda);
-%  };
-%
-%  Quaterniond R( hyperplanes_intersection(H, lambda) );
-%  R.normalize();
-%  return R;
-%}
-%
-%/*
-%a = H4 * e1 + H5 * e2 + H[6] * e3 + H1 * e4;
-%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-%
-%? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
-%*/
-%double characteristic(const array<double, 10>& H, double lambda)
-{
-%  return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
-%  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
-%  + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
-%  + (-((((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3] + (-(((H[4] 
-%  - lambda) * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * (H[7] 
-%  - lambda)))) * H[6]) * H[3])) + (((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[3] 
-%  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * (H[9] - lambda))) + (H[6] * H[2]
-%  + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) 
-%  * H[3] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * (H[9] - lambda))) 
-%  + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1^e2^e3^e4
-%}
-%
-%/*
-%a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-%
-%? ddet = ((-1 * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-%((a - lambda * e1)^(-1 * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-%((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
-%((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
-%*/
-%double deriv_characteristic(const array<double, 10>& H, double lambda)
-{
-%  return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] 
-%  - lambda) + (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) 
-%  * H[3] + (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] 
-%  - lambda) + H[6] * H[6]) * (H[0] - lambda) + (-(((-(H[4] - lambda)) * H[3] + H[1] 
-%  * H[6]) * H[3])) + (-((H[6] * H[3] + (-(H[1] * (H[9] - lambda)))) * H[1])) 
-%  + (-((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5])))) * (H[0] - lambda) 
-%  + ((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2] + (-((H[5] * H[2] + (-(H[1] 
-%  * (H[7] - lambda)))) * H[1])) + (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] 
-%  * H[5]))) * (H[9] - lambda) + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) 
-%  * H[8])) + (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6])); // e1^e2^e3^e4	
-%}
-%
-%/*
-%a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-%b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-%c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-%d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-%
-%? R0 = ((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3 + 1)^(d - lambda * e4)) . (e1^e2^e3^e4);
-%*/
-%Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda)
-{
-%  Vector4d R0;
-%  R0[0] = (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * (H[0] - lambda) 
-%  + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[3])) + (H[6] * H[2] 
-%  + (-(H[1] * H[8]))) * H[2]; // e1
-%  R0[1] = (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * (H[0] - lambda) 
-%  + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[3])) + (H[6] * H[2] 
-%  + (-(H[1] * H[8]))) * H[1])); // e2
-%  R0[2] = ((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[0] 
-%  - lambda) + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[2])) 
-%  + (H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[1]; // e3
-%  R0[3] = (-(((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3]
-%  + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[2])) + (H[5] * H[8] 
-%  + (-(H[6] * (H[7] - lambda)))) * H[1])); // e4
-%  return R0;
-%}
-%
-%\end{lstlisting}
 
 \bibliographystyle{abbrv}
 \bibliography{rotorestimation}
