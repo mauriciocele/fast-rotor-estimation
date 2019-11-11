@@ -22,6 +22,7 @@
 #include "FA3R.h"
 #include "Davenport.h"
 #include "Quest.h"
+#include "QuaternionDirect.h"
 
 using namespace std;
 using namespace Eigen;
@@ -260,6 +261,7 @@ int main(int argc, char* argv[])
 	Quaterniond davenportQ = Davenport(pointsOriginal, pointsTransformed, weights);
 	Quaterniond questQ = Quest(pointsOriginal, pointsTransformed, weights);
 	Matrix3d foamQ = Foam(pointsOriginal, pointsTransformed, weights);
+	Quaterniond qDirect = QuaternionDirect(pointsOriginal, pointsTransformed, weights);
 
 	double errorGroundTruth = WahbaError(pointsOriginal, pointsTransformed, Q);
 	double errorFlae = WahbaError(pointsOriginal, pointsTransformed, flaeQ);
@@ -276,6 +278,7 @@ int main(int argc, char* argv[])
 	double errorDavenport = WahbaError(pointsOriginal, pointsTransformed, davenportQ);
 	double errorQuest = WahbaError(pointsOriginal, pointsTransformed, questQ);
 	double errorFoam = WahbaError(pointsOriginal, pointsTransformed, foamQ);
+	double errorQDirect = WahbaError(pointsOriginal, pointsTransformed, qDirect);
 
 	log << "Axis                                      : " << axis.x() << ", " << axis.y() << ", " << axis.z() << std::endl;
 	log << "Angle                                     : " << angle << std::endl;
@@ -296,6 +299,7 @@ int main(int argc, char* argv[])
 	log << "SVD McAdams error                         " << errorSVD << endl;
 	log << "SVD error                                 " << errorSVDE << endl;
 	log << "Horn error                                " << errorHorn << endl;
+	log << "Quaternion Direct error                   " << errorQDirect << endl;
 
 	double total;
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Flae);
