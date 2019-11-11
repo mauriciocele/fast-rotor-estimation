@@ -1,4 +1,4 @@
-#include "Davenport.h"
+#include "QuaternionDirect.h"
 
 using Eigen::Matrix4d;
 using Eigen::Matrix3d;
