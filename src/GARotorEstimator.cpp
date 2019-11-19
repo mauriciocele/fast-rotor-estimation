@@ -124,10 +124,8 @@ Quaterniond GARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 	H(2, 1) = 2.0 * (Sx(1, 2) + Sx(2, 1));
 	H(2, 2) = 4.0 * Sx(2, 2) + S;
 	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	Eigen::SelfAdjointEigenSolver<Matrix4d> eigen(H);
-	Vector4d V = eigen.eigenvalues();
-
-	static Multivector e0 = getBasisVector(0), e1 = getBasisVector(1), e2 = getBasisVector(2), e3 = getBasisVector(3), e4 = getBasisVector(4);
+	
+	static Multivector e0 = getBasisVector(0), e1 = getBasisVector(1), e2 = getBasisVector(2), e3 = getBasisVector(3);
 	static Multivector e0123 = e0^e1^e2^e3;
 
 	Multivector a = H(0,0) * e0 + H(1,0) * e1 + H(2,0) * e2 + H(3,0) * e3;
