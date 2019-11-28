@@ -17,18 +17,26 @@ using std::array;
 	c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
 	d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
 
-	? det = (a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4);
+	x1 = (a - (lambda * e1));
+	x2 = (b - (lambda * e2));
+	x3 = (c - (lambda * e3));
+	x4 = (d - (lambda * e4));
+
+	? det = x1^x2^x3^x4;
 */
 double characteristic(const array<double, 10>& H, double lambda)
 {
-	return (((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * (H[9] - lambda) 
-		+ (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
-		+ (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6]) * (H[0] - lambda) 
-		+ (-((((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5]))) * H[3] + (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * H[8])) 
-		+ (H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[6]) * H[3])) + (((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[3] 
-		+ (-(((H[4] - lambda) * H[2] + (-(H[1] * H[5]))) * (H[9] - lambda))) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[6]) * H[2] 
-		+ (-(((H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[3] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * (H[9] - lambda))) 
-		+ (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1 ^ (e2 ^ (e3 ^ e4))	
+	Vector4d x;
+	x[0] = H[4] - lambda; // e1
+	x[1] = H[7] - lambda; // e2
+	x[2] = H[9] - lambda; // e3
+	x[3] = H[0] - lambda; // e4
+	return ((x[0] * x[1] + (-(H[5] * H[5]))) * x[2] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[8])) 
+		+ (H[5] * H[8] + (-(H[6] * x[1]))) * H[6]) * x[3] + (-(((x[0] * x[1] + (-(H[5] * H[5]))) * H[3] 
+		+ (-((x[0] * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * x[1]))) * H[6]) * H[3])) 
+		+ ((x[0] * H[8] + (-(H[6] * H[5]))) * H[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * x[2])) 
+		+ (H[6] * H[2] + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * x[1]))) * H[3] 
+		+ (-((H[5] * H[2] + (-(H[1] * x[1]))) * x[2])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1 ^ (e2 ^ (e3 ^ e4))		
 }
 
 /*
@@ -37,21 +45,27 @@ double characteristic(const array<double, 10>& H, double lambda)
 	c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
 	d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
 
-	? ddet = ((-1 * e1)^(b - lambda * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-	((a - lambda * e1)^(-1 * e2)^(c - lambda * e3)^(d - lambda * e4)) +
-	((a - lambda * e1)^(b - lambda * e2)^(-1 * e3)^(d - lambda * e4)) +
-	((a - lambda * e1)^(b - lambda * e2)^(c - lambda * e3)^(-1 * e4));
+	x1 = (a - (lambda * e1));
+	x2 = (b - (lambda * e2));
+	x3 = (c - (lambda * e3));
+	x4 = (d - (lambda * e4));
+
+	? ddet = -e1^x2^x3^x4 - x1^e2^x3^x4 - x1^x2^e3^x4 - x1^x2^x3^e4;	
 */
 double deriv_characteristic(const array<double, 10>& H, double lambda)
 {
-	return ((-(H[7] - lambda)) * (H[9] - lambda) + (-((-H[8]) * H[8]))) * (H[0] - lambda) 
-		+ (-(((-(H[7] - lambda)) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) * H[3] 
-		+ (-((-H[2]) * (H[9] - lambda)))) * H[2] + ((-(H[4] - lambda)) * (H[9] - lambda) + H[6] * H[6]) * (H[0] - lambda) 
-		+ (-(((-(H[4] - lambda)) * H[3] + H[1] * H[6]) * H[3])) + (-((H[6] * H[3] + (-(H[1] * (H[9] - lambda)))) * H[1])) 
-		+ (-((H[4] - lambda) * (H[7] - lambda) + (-(H[5] * H[5])))) * (H[0] - lambda) + ((H[4] - lambda) * H[2] 
-		+ (-(H[1] * H[5]))) * H[2] + (-((H[5] * H[2] + (-(H[1] * (H[7] - lambda)))) * H[1])) + (-(((H[4] - lambda) * (H[7] - lambda) 
-		+ (-(H[5] * H[5]))) * (H[9] - lambda) + (-(((H[4] - lambda) * H[8] + (-(H[6] * H[5]))) * H[8])) 
-		+ (H[5] * H[8] + (-(H[6] * (H[7] - lambda)))) * H[6])); // e1 ^ (e2 ^ (e3 ^ e4))	
+	Vector4d x;
+	x[0] = H[4] - lambda; // e1
+	x[1] = H[7] - lambda; // e2
+	x[2] = H[9] - lambda; // e3
+	x[3] = H[0] - lambda; // e4
+	return (((-x[1]) * x[2] + (-((-H[8]) * H[8]))) * x[3] 
+		+ (-(((-x[1]) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) * H[3] + (-((-H[2]) * x[2]))) * H[2]) 
+		- ((x[0] * x[2] + (-H[6]) * H[6]) * x[3] + (-((x[0] * H[3] + (-H[1]) * H[6]) * H[3])) 
+		+ (-(((-H[6]) * H[3] + (-((-H[1]) * x[2]))) * H[1]))) - ((x[0] * x[1] + (-(H[5] * H[5]))) * x[3] 
+		+ (-(x[0] * H[2] + (-(H[1] * H[5])))) * H[2] + (-((-(H[5] * H[2] + (-(H[1] * x[1])))) * H[1]))) 
+		- ((x[0] * x[1] + (-(H[5] * H[5]))) * x[2] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[8])) 
+		+ (H[5] * H[8] + (-(H[6] * x[1]))) * H[6]); // e1 ^ (e2 ^ (e3 ^ e4))
 }
 
 /*
