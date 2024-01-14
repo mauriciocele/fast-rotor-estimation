@@ -6,20 +6,21 @@
     "configurations": [
         {
             "name": "(lldb) Launch",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/Estimator.out",
-            "args": ["--name=out.txt", "--plane=x", "--n=10", "--noise=false", "--norm=1", "--axis=1,0,0", "--angle=3.141592653589793"],
+            "args": ["--name=out.txt", "--n=10", "--noise=false", "--norm=1", "--axis=1,0,0", "--angle=3.141592653589793"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "lldb",
             "logging": {
                 "trace": true,
                 "traceResponse": true,
                 "engineLogging": true
-            }
+            },
+            "preLaunchTask": "Build with Clang"
         }
     ]
 }

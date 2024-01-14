@@ -96,6 +96,35 @@ Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda)
 	return R0;
 }
 
+Vector4d MultivectorDerivative(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, const Multivector& R) {
+
+	static Multivector e1 = getBasisVector(0), e2 = getBasisVector(1), e3 = getBasisVector(2);
+	static Multivector e12 = e1^e2;
+	static Multivector e31 = e3^e1;
+	static Multivector e23 = e2^e3;
+	const size_t N = P.size();
+	Multivector derivativeAccum;
+	for (size_t j = 0; j < N; ++j) {
+		const double wj = w[j];
+		const Vector3d& Qj = Q[j];
+		const Vector3d& Pj = P[j];
+		Multivector qBivector =  Qj.z() * e12 + Qj.y() * e31 + Qj.x() * e23;
+		Multivector pBivector =  Pj.z() * e12 + Pj.y() * e31 + Pj.x() * e23;
+		//q q ~R + 2 q ~R p + ~R p p
+		Multivector derivative = -1.0 * (qBivector * qBivector * R) + 
+			-2.0 * (qBivector * R * pBivector) +
+			-1.0 * (R * pBivector * pBivector);
+		if (j == 0) {
+			derivativeAccum = wj * derivative;	
+		} else {
+			derivativeAccum = derivativeAccum + wj * derivative;
+		}
+	}
+	Vector4d column( scp(e23,derivativeAccum), scp(e31,derivativeAccum), scp(e12,derivativeAccum), scalarPart(derivativeAccum));
+
+	return column;
+}
+
 /*
 
 max | p + R* q R |^2
@@ -121,40 +150,26 @@ w (p + q) + L . (p + q) + (q - p) x L = 0
 */
 Quaterniond GARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
-	Matrix4d H;
-	Matrix3d Sx;
 	const size_t N = P.size();
-	Sx.setZero();
-	double S = 0;
-	for (size_t j = 0; j < N; ++j) {
-		const double wj = w[j];
-		const Vector3d& Qj = Q[j];
-		const Vector3d& Pj = P[j];
-		S += wj * (Pj.dot(Pj) + Qj.dot(Qj));
-		Sx.noalias() += (wj * Pj) * Qj.transpose();
-	}
-	H(3, 3) = S + 2.0 * Sx.trace(); 
-	S = S - 2.0 * Sx.trace();
-	H(3, 0) = 2.0 * (Sx(1, 2) - Sx(2, 1));
-	H(3, 1) = 2.0 * (Sx(2, 0) - Sx(0, 2));
-	H(3, 2) = 2.0 * (Sx(0, 1) - Sx(1, 0));
-	H(0, 0) = 4.0 * Sx(0, 0) + S;
-	H(1, 0) = 2.0 * (Sx(0, 1) + Sx(1, 0)); 
-	H(2, 0) = 2.0 * (Sx(2, 0) + Sx(0, 2));
-	H(1, 1) = 4.0 * Sx(1, 1) + S; 
-	H(2, 1) = 2.0 * (Sx(1, 2) + Sx(2, 1));
-	H(2, 2) = 4.0 * Sx(2, 2) + S;
-	H.selfadjointView<Eigen::Lower>().evalTo(H);
-	
+
 	static Multivector e0 = getBasisVector(0), e1 = getBasisVector(1), e2 = getBasisVector(2), e3 = getBasisVector(3);
 	static Multivector e0123 = e0^e1^e2^e3;
+	static Multivector e12 = e0^e1;
+	static Multivector e31 = e2^e0;
+	static Multivector e23 = e1^e2;
+	static Multivector one = BasisBlade(1.0);
 
-	Multivector a = H(0,0) * e0 + H(1,0) * e1 + H(2,0) * e2 + H(3,0) * e3;
-	Multivector b = H(0,1) * e0 + H(1,1) * e1 + H(2,1) * e2 + H(3,1) * e3;
-	Multivector c = H(0,2) * e0 + H(1,2) * e1 + H(2,2) * e2 + H(3,2) * e3;
-	Multivector d = H(0,3) * e0 + H(1,3) * e1 + H(2,3) * e2 + H(3,3) * e3;
+	Vector4d H_0 = MultivectorDerivative(P, Q, w, one);
+	Vector4d H_1 = MultivectorDerivative(P, Q, w, -1.0*e12);
+	Vector4d H_2 = MultivectorDerivative(P, Q, w, -1.0*e31);
+	Vector4d H_3 = MultivectorDerivative(P, Q, w, -1.0*e23);
 
-	double lambda = H.trace();
+	Multivector a = H_3(0) * e0 + H_3(1) * e1 + H_3(2) * e2 + H_3(3) * e3;
+	Multivector b = H_2(0) * e0 + H_2(1) * e1 + H_2(2) * e2 + H_2(3) * e3;
+	Multivector c = H_1(0) * e0 + H_1(1) * e1 + H_1(2) * e2 + H_1(3) * e3;
+	Multivector d = H_0(0) * e0 + H_0(1) * e1 + H_0(2) * e2 + H_0(3) * e3;
+
+	double lambda = H_3(0) + H_2(1) + H_1(2) + H_0(3); // trace of matrix
 	double lambda_prev;
 	double det;
 	double ddet;

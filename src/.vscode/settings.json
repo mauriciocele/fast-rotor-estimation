@@ -75,6 +75,14 @@
         "*.tcc": "cpp",
         "hash_map": "cpp",
         "cinttypes": "cpp",
-        "hashtable": "cpp"
+        "hashtable": "cpp",
+        "optional": "cpp",
+        "__errc": "cpp",
+        "__node_handle": "cpp",
+        "__verbose_abort": "cpp",
+        "charconv": "cpp",
+        "unordered_set": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp"
     }
 }
