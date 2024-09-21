@@ -228,7 +228,23 @@ Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 	H[8] = (Sx(1, 2) + Sx(2, 1)); // (2,1)
 	H[9] = 2.0 * Sx(2, 2) + wj;   // (2,2)
 
-	double lambda = H[0]+H[4]+H[7]+H[9];
+	/**
+	 * Multivector derivative is: 
+	 *   d_R |q + ~R p R|^2 = d_R (R q + p R)~(R q + p R) 
+	 *   d_R |q + ~R p R|^2 = -2 q q ~R - 4 q ~R p - 2 ~R p p
+	 * 
+	 *   Which implies the following eigen-rotor problem
+	 * 
+	 *   2 q ~R p  = lambda ~R
+	 * 
+	 *   where lambda = -(q q + p p)
+	 *   
+	 *   NOTE: lambda is positive value since square of bivectors p and q is negative
+	 *   
+	 *   Lambda is the exact eigenvalue when input bivectors Ps and Qs don't have noise
+	 *   In general, in presence of noise, Lambda is the best initial guess to the newton iteration.
+	 */
+	double lambda = S;
 	double lambda_prev;
 	do {
 		lambda_prev = lambda;
