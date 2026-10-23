@@ -70,10 +70,10 @@ namespace {
         return 31 - numberOfLeadingZeroBits(i);
     }
     
-    /** sorts by bitmap only */
+    /** sorts by bitmap only (std::sort needs a strict weak ordering, i.e. "less than") */
     struct BladesComperator {
-        int operator()(const BasisBlade& b1, const BasisBlade& b2) const {
-            return b1.bitmap - b2.bitmap;
+        bool operator()(const BasisBlade& b1, const BasisBlade& b2) const {
+            return b1.bitmap < b2.bitmap;
         }
     };
 

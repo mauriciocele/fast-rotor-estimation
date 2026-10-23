@@ -1,4 +1,5 @@
 #include "FLAE.h"
+#include "AdjugateNullVector.h"
 #include <complex>
 
 using Eigen::Vector3d;
@@ -9,6 +10,21 @@ using Eigen::Quaterniond;
 using std::vector;
 using std::complex;
 using std::max;
+
+/*
+	FLAE fixes the last quaternion component (q_z = -1) and eliminates the first three
+	rows of G = W - lambda I. That breaks down when q_z ~ 0 (e.g. any rotation whose axis
+	lies in the xy-plane): the leading 3x3 block of G becomes singular and the result is
+	rounding noise. Since adj(G) = -p'(lambda) q q^T for the characteristic polynomial p,
+	that block's determinant is -p'(lambda) q_z^2, which tells when q_z^2 < 0.01. Then the
+	eigenvector is read from the column of adj(G) with the largest diagonal entry instead,
+	the best conditioned one (AdjugateNullVector.h).
+*/
+static bool NeedsAdjugate(double leadingMinor, double dp)
+{
+	// NaN fails the comparison
+	return !(std::abs(leadingMinor) >= 0.01 * std::abs(dp));
+}
 
 Quaterniond FlaeSymbolic(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
@@ -57,6 +73,13 @@ Quaterniond FlaeSymbolic(const vector<Vector3d>& P, const vector<Vector3d>& Q, c
 		G13 * G13 * G24 + G12 * G14 * G33 - G11 * G24 * G33 + G11 * G23 * G34 - G13 * G14 * G23 - G13 * G12 * G34,
 		G13 * G14 * G22 - G12 * G14 * G23 - G12 * G13 * G24 + G11 * G23 * G24 + G12 * G12 * G34 - G11 * G22 * G34,
 		-(G13 * G13 * G22 - 2 * G12 * G13 * G23 + G11 * G23 * G23 + G12 * G12 * G33 - G11 * G22 * G33));
+	// qRes.z() is the leading 3x3 minor of G; p'(lambda) = 4 lambda^3 + 2 a lambda + b
+	if (NeedsAdjugate(qRes.z(), 4.0 * lambda * lambda * lambda + 2.0 * a * lambda + b)) {
+		Matrix4d G = QQ;
+		G.diagonal().array() -= lambda;
+		const Vector4d v = AdjugateNullVector(G);
+		qRes = Quaterniond(v[0], v[1], v[2], v[3]);
+	}
 	qRes.normalize();
 	return qRes;
 }
@@ -118,6 +141,12 @@ Quaterniond Flae(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vec
 	lambda = max(lambda1.real(), max(lambda2.real(), max(lambda3.real(), lambda4.real())));
 
 	W(0, 0) -= lambda;	W(1, 1) -= lambda;	W(2, 2) -= lambda;	W(3, 3) -= lambda;
+	if (NeedsAdjugate(Minor3(W, 3, 3), 4.0 * lambda * lambda * lambda + 2.0 * a * lambda + b)) {
+		const Vector4d v = AdjugateNullVector(W);
+		Quaterniond q(v[0], v[1], v[2], v[3]);
+		q.normalize();
+		return q;
+	}
 	W0 = W.row(0);	W1 = W.row(1);	W2 = W.row(2);	//W3 = W.row(3);
 
 	W0.noalias() = W0 / W0(0);
@@ -149,10 +178,12 @@ Quaterniond FlaeNewton(const vector<Vector3d>& P, const vector<Vector3d>& Q, con
 	Vector4d W0, W1, W2;// , W3;
 	const size_t N = P.size();
 
+	double lambdaBound = 0.0;
 	MM.setZero();
 	for (size_t j = 0; j < N; ++j)
 	{
 		MM.noalias() += (w[j] * Q[j]) * P[j].transpose();
+		lambdaBound += w[j] * (P[j].squaredNorm() + Q[j].squaredNorm());
 	}
 
 	Hx1 = MM(0, 0);    Hx2 = MM(0, 1);    Hx3 = MM(0, 2);
@@ -169,8 +200,12 @@ Quaterniond FlaeNewton(const vector<Vector3d>& P, const vector<Vector3d>& Q, con
 	b = 8 * Hx3*Hy2*Hz1 - 8 * Hx2*Hy3*Hz1 - 8 * Hx3*Hy1*Hz2 + 8 * Hx1*Hy3*Hz2 + 8 * Hx2*Hy1*Hz3 - 8 * Hx1*Hy2*Hz3;
 	a = -2 * Hx1*Hx1 - 2 * Hx2*Hx2 - 2 * Hx3*Hx3 - 2 * Hy1*Hy1 - 2 * Hy2*Hy2 - 2 * Hy3*Hy3 - 2 * Hz1*Hz1 - 2 * Hz2*Hz2 - 2 * Hz3*Hz3;
 
-	lambda = 1.0;
-	double old_lambda = 0.0;
+	// Newton starts from an upper bound of the largest eigenvalue,
+	// lambda_max = max_R sum w q.(R p) <= sum w (|p|^2 + |q|^2) / 2, so it converges
+	// monotonically to the largest root (starting at 1 it can stop at a smaller one).
+	// Without noise |p| = |q| and the bound is exact (the start of LARotorEstimator).
+	lambda = 0.5 * lambdaBound;
+	double old_lambda = lambda + 1.0;
 	double lamnda2, lamnda3;
 	while (fabs(old_lambda - lambda) > 1e-5) {
 		old_lambda = lambda;
@@ -180,6 +215,12 @@ Quaterniond FlaeNewton(const vector<Vector3d>& P, const vector<Vector3d>& Q, con
 	}
 
 	W(0, 0) -= lambda;	W(1, 1) -= lambda;	W(2, 2) -= lambda;	W(3, 3) -= lambda;
+	if (NeedsAdjugate(Minor3(W, 3, 3), 4.0 * lambda * lambda * lambda + 2.0 * a * lambda + b)) {
+		const Vector4d v = AdjugateNullVector(W);
+		Quaterniond q(v[0], v[1], v[2], v[3]);
+		q.normalize();
+		return q;
+	}
 	W0 = W.row(0);	W1 = W.row(1);	W2 = W.row(2);	//W3 = W.row(3);
 
 	W0.noalias() = W0 / W0(0);

@@ -107,7 +107,7 @@ static BasisBlade innerProductFilter(int ga, int gb, const BasisBlade& r, InnerP
               if (std::abs(ga - gb) == r.grade()) return r;
               else return BasisBlade();
     default:
-        return BasisBlade(0);
+        return BasisBlade();
   }
 }
 

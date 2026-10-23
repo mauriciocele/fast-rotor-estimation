@@ -1,7 +1,6 @@
 #include "GARotorEstimator.h"
 #include "Multivector.h"
 #include <array>
-#include <iostream>
 
 using Eigen::Vector3d;
 using Eigen::Vector4d;
@@ -22,79 +21,42 @@ using std::array;
 	x3 = (c - (lambda * e3));
 	x4 = (d - (lambda * e4));
 
-	? det = x1^x2^x3^x4;
+	are the columns x1..x4 of M - lambda I, M being the 4x4 matrix of LARotorEstimator.
+
+	Blades of the 4D algebra with basis e1..e4: a bivector holds its coefficients on
+	e12, e13, e14, e23, e24, e34 and a trivector on e123, e124, e134, e234.
 */
-double characteristic(const array<double, 10>& H, double lambda)
+struct Bivector4 { double e12, e13, e14, e23, e24, e34; };
+struct Trivector4 { double e123, e124, e134, e234; };
+
+/* a ^ b */
+static inline Bivector4 wedge(const Vector4d& a, const Vector4d& b)
 {
-	Vector4d x;
-	x[0] = H[4] - lambda; // e1
-	x[1] = H[7] - lambda; // e2
-	x[2] = H[9] - lambda; // e3
-	x[3] = H[0] - lambda; // e4
-	return ((x[0] * x[1] + (-(H[5] * H[5]))) * x[2] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[8])) 
-		+ (H[5] * H[8] + (-(H[6] * x[1]))) * H[6]) * x[3] + (-(((x[0] * x[1] + (-(H[5] * H[5]))) * H[3] 
-		+ (-((x[0] * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * x[1]))) * H[6]) * H[3])) 
-		+ ((x[0] * H[8] + (-(H[6] * H[5]))) * H[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * x[2])) 
-		+ (H[6] * H[2] + (-(H[1] * H[8]))) * H[6]) * H[2] + (-(((H[5] * H[8] + (-(H[6] * x[1]))) * H[3] 
-		+ (-((H[5] * H[2] + (-(H[1] * x[1]))) * x[2])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8]) * H[1])); // e1 ^ (e2 ^ (e3 ^ e4))		
+	return { a[0] * b[1] - a[1] * b[0], a[0] * b[2] - a[2] * b[0], a[0] * b[3] - a[3] * b[0],
+	         a[1] * b[2] - a[2] * b[1], a[1] * b[3] - a[3] * b[1], a[2] * b[3] - a[3] * b[2] };
 }
 
-/*
-	a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-	b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-	c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-	d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-
-	x1 = (a - (lambda * e1));
-	x2 = (b - (lambda * e2));
-	x3 = (c - (lambda * e3));
-	x4 = (d - (lambda * e4));
-
-	? ddet = -e1^x2^x3^x4 - x1^e2^x3^x4 - x1^x2^e3^x4 - x1^x2^x3^e4;	
-*/
-double deriv_characteristic(const array<double, 10>& H, double lambda)
+/* B ^ c (= c ^ B) */
+static inline Trivector4 wedge(const Bivector4& B, const Vector4d& c)
 {
-	Vector4d x;
-	x[0] = H[4] - lambda; // e1
-	x[1] = H[7] - lambda; // e2
-	x[2] = H[9] - lambda; // e3
-	x[3] = H[0] - lambda; // e4
-	return (((-x[1]) * x[2] + (-((-H[8]) * H[8]))) * x[3] 
-		+ (-(((-x[1]) * H[3] + (-((-H[2]) * H[8]))) * H[3])) + ((-H[8]) * H[3] + (-((-H[2]) * x[2]))) * H[2]) 
-		- ((x[0] * x[2] + (-H[6]) * H[6]) * x[3] + (-((x[0] * H[3] + (-H[1]) * H[6]) * H[3])) 
-		+ (-(((-H[6]) * H[3] + (-((-H[1]) * x[2]))) * H[1]))) - ((x[0] * x[1] + (-(H[5] * H[5]))) * x[3] 
-		+ (-(x[0] * H[2] + (-(H[1] * H[5])))) * H[2] + (-((-(H[5] * H[2] + (-(H[1] * x[1])))) * H[1]))) 
-		- ((x[0] * x[1] + (-(H[5] * H[5]))) * x[2] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[8])) 
-		+ (H[5] * H[8] + (-(H[6] * x[1]))) * H[6]); // e1 ^ (e2 ^ (e3 ^ e4))
+	return { B.e12 * c[2] - B.e13 * c[1] + B.e23 * c[0],
+	         B.e12 * c[3] - B.e14 * c[1] + B.e24 * c[0],
+	         B.e13 * c[3] - B.e14 * c[2] + B.e34 * c[0],
+	         B.e23 * c[3] - B.e24 * c[2] + B.e34 * c[1] };
 }
 
-/*
-	a = H4 * e1 + H5 * e2 + H6 * e3 + H1 * e4;
-	b = H5 * e1 + H7 * e2 + H8 * e3 + H2 * e4;
-	c = H6 * e1 + H8 * e2 + H9 * e3 + H3 * e4;
-	d = H1 * e1 + H2 * e2 + H3 * e3 + H0 * e4;
-
-	x1 = (a - (lambda * e1));
-	x2 = (b - (lambda * e2));
-	x3 = (c - (lambda * e3));
-	x4 = (d - (lambda * e4));
-
-	? R0 = (x1^x3^x4 + x1^x2^x4 + x1^x2^x3 + x2^x3^x4) . (e1^e2^e3^e4);
-*/
-Vector4d hyperplanes_intersection(const array<double, 10>& H, double lambda)
+/* (A ^ C) . (e1^e2^e3^e4)^-1, the scalar of the 4-vector A ^ C */
+static inline double wedge(const Bivector4& A, const Bivector4& C)
 {
-	Vector4d R0, x;
-	x[0] = H[4] - lambda; // e1
-	x[1] = H[7] - lambda; // e2
-	x[2] = H[9] - lambda; // e3
-	x[3] = H[0] - lambda; // e4
-	R0[0] = (H[5] * x[2] + (-(H[6] * H[8]))) * x[3] + (-((H[5] * H[3] + (-(H[1] * H[8]))) * H[3])) + (H[6] * H[3] + (-(H[1] * x[2]))) * H[2] + (H[5] * H[8] + (-(H[6] * x[1]))) * x[3] + (-((H[5] * H[2] + (-(H[1] * x[1]))) * H[3])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[2] + (H[5] * H[8] + (-(H[6] * x[1]))) * H[3] + (-((H[5] * H[2] + (-(H[1] * x[1]))) * x[2])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[8] + (x[1] * x[2] + (-(H[8] * H[8]))) * x[3] + (-((x[1] * H[3] + (-(H[2] * H[8]))) * H[3])) + (H[8] * H[3] + (-(H[2] * x[2]))) * H[2]; // e1
-	R0[1] = (-((x[0] * x[2] + (-(H[6] * H[6]))) * x[3] + (-((x[0] * H[3] + (-(H[1] * H[6]))) * H[3])) + (H[6] * H[3] + (-(H[1] * x[2]))) * H[1] + (x[0] * H[8] + (-(H[6] * H[5]))) * x[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * H[3])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[1] + (x[0] * H[8] + (-(H[6] * H[5]))) * H[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * x[2])) + (H[6] * H[2] + (-(H[1] * H[8]))) * H[6] + (H[5] * x[2] + (-(H[8] * H[6]))) * x[3] + (-((H[5] * H[3] + (-(H[2] * H[6]))) * H[3])) + (H[8] * H[3] + (-(H[2] * x[2]))) * H[1])); // e2
-	R0[2] = (x[0] * H[8] + (-(H[5] * H[6]))) * x[3] + (-((x[0] * H[3] + (-(H[1] * H[6]))) * H[2])) + (H[5] * H[3] + (-(H[1] * H[8]))) * H[1] + (x[0] * x[1] + (-(H[5] * H[5]))) * x[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * H[2])) + (H[5] * H[2] + (-(H[1] * x[1]))) * H[1] + (x[0] * x[1] + (-(H[5] * H[5]))) * H[3] + (-((x[0] * H[2] + (-(H[1] * H[5]))) * H[8])) + (H[5] * H[2] + (-(H[1] * x[1]))) * H[6] + (H[5] * H[8] + (-(x[1] * H[6]))) * x[3] + (-((H[5] * H[3] + (-(H[2] * H[6]))) * H[2])) + (x[1] * H[3] + (-(H[2] * H[8]))) * H[1]; // e3
-	R0[3] = (-((x[0] * H[8] + (-(H[5] * H[6]))) * H[3] + (-((x[0] * x[2] + (-(H[6] * H[6]))) * H[2])) + (H[5] * x[2] + (-(H[6] * H[8]))) * H[1] + (x[0] * x[1] + (-(H[5] * H[5]))) * H[3] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[2])) + (H[5] * H[8] + (-(H[6] * x[1]))) * H[1] + (x[0] * x[1] + (-(H[5] * H[5]))) * x[2] + (-((x[0] * H[8] + (-(H[6] * H[5]))) * H[8])) + (H[5] * H[8] + (-(H[6] * x[1]))) * H[6] + (H[5] * H[8] + (-(x[1] * H[6]))) * H[3] + (-((H[5] * x[2] + (-(H[8] * H[6]))) * H[2])) + (x[1] * x[2] + (-(H[8] * H[8]))) * H[1])); // e4
-
-	return R0;
+	return A.e12 * C.e34 - A.e13 * C.e24 + A.e14 * C.e23 + A.e23 * C.e14 - A.e24 * C.e13 + A.e34 * C.e12;
 }
+
+/* T . (e1^e2^e3^e4)^-1, the vector dual to T */
+static inline Vector4d dual(const Trivector4& T)
+{
+	return Vector4d(T.e234, -T.e134, T.e124, -T.e123);
+}
+
 
 Vector4d MultivectorDerivative(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, const Multivector& R) {
 
@@ -185,13 +147,25 @@ Quaterniond GARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 		lambda = lambda - det / ddet;
 	} while(std::abs(lambda_prev - lambda) > 1e-5);
 
-	Multivector R0 = ((a - lambda * e0)^(c - lambda * e2)^(d - lambda * e3))
-		+ ((a - lambda * e0)^(b - lambda * e1)^(d - lambda * e3))
-		+ ((a - lambda * e0)^(b - lambda * e1)^(c - lambda * e2))
-		+ ((b - lambda * e1)^(c - lambda * e2)^(d - lambda * e3));
-			
-	Multivector R3 = dual(R0, 4);
-	std::cout << "R3: " << R3.toString() << std::endl;
+	// The dual of each triple wedge is one column of adj(M - lambda I), parallel to the
+	// eigenrotor and scaled by its component along the missing column. Summing them
+	// cancels for a whole family of rotations (see AdjugateNullVector.h), so keep the one
+	// with the largest component along its own missing column.
+	const Multivector x[4] = { a - lambda * e0, b - lambda * e1, c - lambda * e2, d - lambda * e3 };
+	const Multivector* basis[4] = { &e0, &e1, &e2, &e3 };
+	Multivector R3;
+	double bestScale = -1.0;
+	for (int k = 0; k < 4; ++k) {
+		const Multivector& u = x[(k + 1) % 4];
+		const Multivector& v = x[(k + 2) % 4];
+		const Multivector& t = x[(k + 3) % 4];
+		Multivector candidate = dual(u^v^t, 4);
+		const double scale = std::abs(scp(*basis[k], candidate));
+		if (scale > bestScale) {
+			bestScale = scale;
+			R3 = candidate;
+		}
+	}
 	Vector4d RR( scp(e0,R3), scp(e1,R3), scp(e2,R3), scp(e3,R3) );
 	Quaterniond QQ( RR );
 	QQ.normalize();
@@ -200,33 +174,29 @@ Quaterniond GARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 
 Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
-	array<double, 10> H;
+	// S = sum w (|p|^2 + |q|^2) and Sx = sum w p q^T
 	Matrix3d Sx;
-	double wj;
-	const size_t N = P.size();
 	Sx.setZero();
 	double S = 0;
+	const size_t N = P.size();
 	for (size_t j = 0; j < N; ++j) {
-		wj = w[j];
-		const Vector3d& Qj = Q[j];
+		const double wj = w[j];
 		const Vector3d& Pj = P[j];
-		S += wj * Pj.dot(Pj);
-		S += wj * Qj.dot(Qj);
+		const Vector3d& Qj = Q[j];
+		S += wj * (Pj.squaredNorm() + Qj.squaredNorm());
 		Sx.noalias() += (wj * Pj) * Qj.transpose();
 	}
 
-	wj = 0.5 * S;
- 	H[0] = wj + Sx.trace();       // (3,3)
-	wj = wj - Sx.trace();
-	H[1] = (Sx(1, 2) - Sx(2, 1)); // (3,0)
-	H[2] = (Sx(2, 0) - Sx(0, 2)); // (3,1)
-	H[3] = (Sx(0, 1) - Sx(1, 0)); // (3,2)
-	H[4] = 2.0 * Sx(0, 0) + wj;   // (0,0)
-	H[5] = (Sx(0, 1) + Sx(1, 0)); // (1,0) 
-	H[6] = (Sx(2, 0) + Sx(0, 2)); // (2,0)
-	H[7] = 2.0 * Sx(1, 1) + wj;   // (1,1)
-	H[8] = (Sx(1, 2) + Sx(2, 1)); // (2,1)
-	H[9] = 2.0 * Sx(2, 2) + wj;   // (2,2)
+	/*
+		M = K + (S / 2) I, where K is Davenport's matrix of Sx, with columns k1..k4 (basis
+		e1..e4). The shift does not change the eigenvectors, so we work with K and
+		mu = lambda - S / 2.
+	*/
+	const double tr = Sx.trace();
+	const Vector4d k1(2.0 * Sx(0, 0) - tr, Sx(0, 1) + Sx(1, 0), Sx(2, 0) + Sx(0, 2), Sx(1, 2) - Sx(2, 1));
+	const Vector4d k2(Sx(0, 1) + Sx(1, 0), 2.0 * Sx(1, 1) - tr, Sx(1, 2) + Sx(2, 1), Sx(2, 0) - Sx(0, 2));
+	const Vector4d k3(Sx(2, 0) + Sx(0, 2), Sx(1, 2) + Sx(2, 1), 2.0 * Sx(2, 2) - tr, Sx(0, 1) - Sx(1, 0));
+	const Vector4d k4(Sx(1, 2) - Sx(2, 1), Sx(2, 0) - Sx(0, 2), Sx(0, 1) - Sx(1, 0), tr);
 
 	/**
 	 * Multivector derivative is: 
@@ -244,14 +214,54 @@ Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 	 *   Lambda is the exact eigenvalue when input bivectors Ps and Qs don't have noise
 	 *   In general, in presence of noise, Lambda is the best initial guess to the newton iteration.
 	 */
-	double lambda = S;
-	double lambda_prev;
+	/*
+		The characteristic outer product (x1 ^ x2 ^ x3 ^ x4) . (e1^e2^e3^e4)^-1 = det(K - mu I)
+		is the quartic mu^4 + a mu^2 + b mu + c, since K is traceless: a = -2 |Sx|^2,
+		b = -8 det(Sx) and c = det K = (k1 ^ k2) ^ (k3 ^ k4). With the coefficients computed
+		once, each Newton step is a few operations. lambda_0 = S, i.e. mu_0 = S / 2.
+	*/
+	const double a = -2.0 * Sx.squaredNorm();
+	const double b = -8.0 * Sx.determinant();
+	const double c = wedge(wedge(k1, k2), wedge(k3, k4));
+	double mu = 0.5 * S;
+	double mu_prev;
 	do {
-		lambda_prev = lambda;
-		lambda = lambda - characteristic(H, lambda) / deriv_characteristic(H, lambda);
-	} while(std::abs(lambda_prev - lambda) > 1e-5);
+		mu_prev = mu;
+		const double mu2 = mu * mu;
+		mu -= ((mu2 + a) * mu2 + b * mu + c) / ((4.0 * mu2 + 2.0 * a) * mu + b);
+	} while(std::abs(mu_prev - mu) > 1e-5);
 
-	Quaterniond R( hyperplanes_intersection(H, lambda) );
+	/*
+		Eigenrotor, as in GARotorEstimator: the dual of each triple wedge of the columns
+		x1..x4 of K - mu I (= M - lambda I) is parallel to the eigenrotor, scaled by its component along
+		the missing column. Keep the one where that component is largest (summing them
+		cancels for a family of rotations).
+
+		? A = x1 ^ x2;  C = x3 ^ x4;
+		? T1 = x2 ^ C;  T2 = x1 ^ C;  T3 = A ^ x4;  T4 = A ^ x3;   (Tk misses xk)
+		? R = dual(Tk) for the k with the largest |dual(Tk) . ek|
+	*/
+	const Vector4d x1 = k1 - mu * Vector4d::UnitX();
+	const Vector4d x2 = k2 - mu * Vector4d::UnitY();
+	const Vector4d x3 = k3 - mu * Vector4d::UnitZ();
+	const Vector4d x4 = k4 - mu * Vector4d::UnitW();
+	const Bivector4 A = wedge(x1, x2);
+	const Bivector4 C = wedge(x3, x4);
+
+	// dual(Tk) . ek is the coefficient of Tk on the blade without ek
+	const double own[4] = {
+		C.e23 * x2[3] - C.e24 * x2[2] + C.e34 * x2[1],   // (x2 ^ C) . e234
+		C.e13 * x1[3] - C.e14 * x1[2] + C.e34 * x1[0],   // (x1 ^ C) . e134
+		A.e12 * x4[3] - A.e14 * x4[1] + A.e24 * x4[0],   // (A ^ x4) . e124
+		A.e12 * x3[2] - A.e13 * x3[1] + A.e23 * x3[0] }; // (A ^ x3) . e123
+	int best = 0;
+	for (int k = 1; k < 4; ++k)
+		if (std::abs(own[k]) > std::abs(own[best]))
+			best = k;
+	const Trivector4 T = best == 0 ? wedge(C, x2) : best == 1 ? wedge(C, x1) : best == 2 ? wedge(A, x4) : wedge(A, x3);
+
+	// basis order e1, e2, e3, e4, which Quaterniond(Vector4d) reads as x, y, z, w
+	Quaterniond R( dual(T) );
 	R.normalize();
 	return R;
 }

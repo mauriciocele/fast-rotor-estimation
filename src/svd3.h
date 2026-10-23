@@ -240,7 +240,9 @@ static void jacobiEigenanlysis( // symmetric matrix
                                 double * qV)
 {
     qV[3]=1; qV[0]=0;qV[1]=0;qV[2]=0; // follow same indexing convention as GLM
-    for (int i=0;i<4;i++)
+    // The paper's 4 sweeps are tuned for single precision; doubles need 6 to
+    // reach full precision on ill-conditioned matrices.
+    for (int i=0;i<6;i++)
 	{
 		// we wish to eliminate the maximum off-diagonal element
         // on every iteration, but cycling over all 3 possible rotations
@@ -263,7 +265,7 @@ static void sortSingularValues(// matrix that we want to decompose
                             double &v31, double &v32, double &v33)
 {
     double rho1 = dist2(b11,b21,b31);
-    double rho2 = dist2(b12,b22,b23);
+    double rho2 = dist2(b12,b22,b32);
     double rho3 = dist2(b13,b23,b33);
 	bool c;
     c = rho1 < rho2;

@@ -29,6 +29,9 @@
     <ClInclude Include="GARotorEstimator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AdjugateNullVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ArunSVD.h">
       <Filter>Header Files</Filter>
     </ClInclude>

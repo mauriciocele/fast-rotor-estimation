@@ -155,6 +155,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AdjugateNullVector.h" />
     <ClInclude Include="ArunSVD.h" />
     <ClInclude Include="BasisBlade.h" />
     <ClInclude Include="Davenport.h" />

@@ -46,6 +46,11 @@ Matrix3d FA3R_int(const vector<Vector3d>& P, const vector<Vector3d>& Q, const ve
 	for (size_t i = 0; i < N; ++i) {
 		sigma_.noalias() += (w[i] * Q[i]) * P[i].transpose();
 	}
+	// The iteration is tuned for |H| ~ 1 (k = 2 / (|H|^2 + 1)), and in fixed point a
+	// large |H| overflows int64. The rotation does not depend on the scale of H.
+	const double sigmaNorm = sigma_.norm();
+	if (sigmaNorm > 0.0)
+		sigma_ /= sigmaNorm;
 	hx1 = (int64_t)(sigma_(0, 0) * d2l);  hx2 = (int64_t)(sigma_(0, 1) * d2l);  hx3 = (int64_t)(sigma_(0, 2) * d2l);
 	hy1 = (int64_t)(sigma_(1, 0) * d2l);  hy2 = (int64_t)(sigma_(1, 1) * d2l);  hy3 = (int64_t)(sigma_(1, 2) * d2l);
 	hz1 = (int64_t)(sigma_(2, 0) * d2l);  hz2 = (int64_t)(sigma_(2, 1) * d2l);  hz3 = (int64_t)(sigma_(2, 2) * d2l);
@@ -89,6 +94,11 @@ Matrix3d FA3R_double(const vector<Vector3d>& P, const vector<Vector3d>& Q, const
 	for (size_t i = 0; i < N; ++i) {
 		sigma_.noalias() += (w[i] * Q[i]) * P[i].transpose();
 	}
+	// The iteration is tuned for |H| ~ 1 (k = 2 / (|H|^2 + 1)), and in fixed point a
+	// large |H| overflows int64. The rotation does not depend on the scale of H.
+	const double sigmaNorm = sigma_.norm();
+	if (sigmaNorm > 0.0)
+		sigma_ /= sigmaNorm;
 
 	Vector3d hx(sigma_(0, 0), sigma_(1, 0), sigma_(2, 0));
 	Vector3d hy(sigma_(0, 1), sigma_(1, 1), sigma_(2, 1));

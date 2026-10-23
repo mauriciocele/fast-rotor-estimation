@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 #include <time.h>
+#include <chrono>
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -72,15 +73,15 @@ double benchmark(
 	const vector<double>& weights, 
 	function<ResultType(const vector<Vector3d>&, const vector<Vector3d>&, const vector<double>&)> estimator)
 {
+	// One wall-clock measurement around the whole loop, in seconds: timing each call
+	// with clock() adds two clock() calls per iteration and rounds to its resolution.
 	ResultType result;
-	double total = 0;
+	const auto start = std::chrono::steady_clock::now();
 	for (int i = 0; i < 1000000; ++i) {
-		clock_t time1 = clock();
 		result = estimator(P, Q, weights);
-		clock_t time2 = clock();
-		total += time2 - time1;
 	}
-	return total;
+	const auto stop = std::chrono::steady_clock::now();
+	return std::chrono::duration<double>(stop - start).count();
 }
 
 
@@ -123,18 +124,20 @@ public:
 		set_defaults();
 		for(size_t i = 1 ; i < argc ; ++i) {
 			string param(argv[i]);
-			string key, value;
+			string key, value, rawValue;
 			int pos = param.find('=', 0);
 			if(pos > 0) {
 				key = param.substr(0, pos);
 				std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-				value = param.substr(pos+1, param.length()-pos-1);
+				rawValue = param.substr(pos+1, param.length()-pos-1);
+				value = rawValue;
+				// values are case-insensitive, except the file name
 				std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 			} else {
 				key = param;
 			}
 			if(key == "--name") {
-				filename = value;
+				filename = rawValue;
 			} else if(key == "--plane") {
 				if(value=="x") dataPlane = DataPlanes::X;
 				if(value=="y") dataPlane = DataPlanes::Y;
@@ -303,43 +306,43 @@ int main(int argc, char* argv[])
 
 	double total;
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Flae);
-	log << "Exec time FLAE:                           "<< total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FLAE:                           "<< total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeSymbolic);
-	log << "Exec time FLAE Symbolic:                  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FLAE Symbolic:                  " << total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, FlaeNewton);
-	log << "Exec time FLAE Newton:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FLAE Newton:                    " << total << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_double);
-	log << "Exec time FA3R Double:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FA3R Double:                    " << total << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, FA3R_int);
-	log << "Exec time FA3R Int:                       " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FA3R Int:                       " << total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, LARotorEstimator);
-	log << "Exec time LARotorEstimator:               " << total / double(CLOCKS_PER_SEC)  << " sec." << endl;
+	log << "Exec time LARotorEstimator:               " << total  << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Davenport);
-	log << "Exec time Davenport Q-Method:             " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time Davenport Q-Method:             " << total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Quest);
-	log << "Exec time QUEST:                          " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time QUEST:                          " << total << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, Foam);
-	log << "Exec time FOAM:                           " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time FOAM:                           " << total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, GAValkenburg);
-	log << "Exec time GA Valkenburg:                  " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time GA Valkenburg:                  " << total << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, SVDMcAdams);
-	log << "Exec time SVD McAdams:                    " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time SVD McAdams:                    " << total << " sec." << endl;
 
 	total = benchmark<Matrix3d>(pointsOriginal, pointsTransformed, weights, SVDEigen);
-	log << "Exec time SVD:                            " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time SVD:                            " << total << " sec." << endl;
 
 	total = benchmark<Quaterniond>(pointsOriginal, pointsTransformed, weights, Horn);
-	log << "Exec time Horn:                           " << total / double(CLOCKS_PER_SEC) << " sec." << endl;
+	log << "Exec time Horn:                           " << total << " sec." << endl;
 
 	log << "FINISHED..." << endl;
 	return 0;

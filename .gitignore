@@ -46,3 +46,6 @@ src/x64/*
 *.aux
 *.bbl
 *.blg
+
+# Rust build output
+rust/target/
