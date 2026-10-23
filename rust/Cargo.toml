@@ -1,0 +1,20 @@
+[package]
+name = "rotor-estimation"
+version = "0.1.0"
+edition = "2024"
+description = "Rust port of the fast rotation estimation benchmark (FLAE, FA3R, QUEST, GA rotor estimators, ...)"
+license = "MIT"
+default-run = "estimator"
+
+[[bin]]
+name = "estimator"
+path = "src/main.rs"
+
+[dependencies]
+nalgebra = "0.35.0"
+rand = "0.9"
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+lto = "fat"
