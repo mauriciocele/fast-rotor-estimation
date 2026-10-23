@@ -1,451 +1,707 @@
 % ------------------------------------------------------------------------
-% bjourdoc.tex for birkjour.cls*******************************************
+% rotorestimation.tex for birkjour.cls
 % ------------------------------------------------------------------------
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \documentclass{birkjour}
-%
-%
-% THEOREM Environments (Examples)-----------------------------------------
-%
- \newtheorem{thm}{Theorem}[section]
-% \newtheorem{cor}[thm]{Corollary}
-% \newtheorem{lem}[thm]{Lemma}
-% \newtheorem{prop}[thm]{Proposition}
-% \theoremstyle{definition}
- \newtheorem{defn}[thm]{Definition}
-% \theoremstyle{remark}
-% \newtheorem{rem}[thm]{Remark}
-% \newtheorem*{ex}{Example}
- \numberwithin{equation}{section}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{prop}[thm]{Proposition}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Remark}
+\numberwithin{equation}{section}
 
 \usepackage[noadjust]{cite}
 \usepackage{amsfonts}
-\usepackage{listings}
+\usepackage{amssymb}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepgfplotslibrary{groupplots}
+
+\newcommand{\rev}[1]{\widetilde{#1}}
+\newcommand{\grade}[2]{\langle #1 \rangle_{#2}}
+\newcommand{\scal}[1]{\langle #1 \rangle}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\Gop}{\mathcal{G}}
+\newcommand{\Ge}{\mathbb{G}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}{\operatorname{tr}}
 
 \begin{document}
-
-%-------------------------------------------------------------------------
-% editorial commands: to be inserted by the editorial office
-%
-%\firstpage{1} \volume{228} \Copyrightyear{2004} \DOI{003-0001}
-%
-%
-%\seriesextra{Just an add-on}
-%\seriesextraline{This is the Concrete Title of this Book\br H.E. R and S.T.C. W, Eds.}
-%
-% for journals:
-%
-%\firstpage{1}
-%\issuenumber{1}
-%\Volumeandyear{1 (2004)}
-%\Copyrightyear{2004}
-%\DOI{003-xxxx-y}
-%\Signet
-%\commby{inhouse}
-%\submitted{March 14, 2003}
-%\received{March 16, 2000}
-%\revised{June 1, 2000}
-%\accepted{July 22, 2000}
-%
-%
-%
-%---------------------------------------------------------------------------
-%Insert here the title, affiliations and abstract:
-%
-
 
 \title[Robust Quaternion Estimation with Geometric Algebra]
  {Robust Quaternion Estimation with \\Geometric Algebra}
 
-%----------Author 1
 \author[Mauricio Cele Lopez Belon]{Mauricio Cele Lopez Belon}
 \address{Madrid, Spain}
 \email{mclopez@outlook.com}
 
-%----------classification, keywords, date
-\subjclass{Parallel algorithms 68W10; Clifford algebras, spinors 15A66}
+\subjclass{Primary 15A66; Secondary 65F15}
 
 \keywords{Geometric Algebra, Quaternion Estimation, Wahba Problem}
 
-\date{October 21, 2019}
-%----------additions
-%\dedicatory{To my wife}
-%%% ----------------------------------------------------------------------
+\date{October 23, 2026}
 
 \begin{abstract}
-
-Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Recently, closed form solutions has been proposed in the quaternion's framework, those methods are fast but they have singularities i.e., they completely fail on certain input data. In this paper we propose a robust attitude estimator based on a formulation of the problem in Geometric Algebra. We find the optimal eigenquaternion in closed form with high accuracy and with competitive performance respect to the fastest methods reported in literature.
-
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Closed form solutions have been proposed in the quaternion framework; they are fast, but they have singularities, i.e., they completely fail on certain input data. In this paper we formulate the problem in Geometric Algebra and follow the geometry at every step. The best rotor maximizes an energy that is quadratic in the rotor, and its multivector derivative leads to an eigenrotor equation. Two energies that are sums of squares bound the eigenvalues, and the bound is a starting point from which Newton's method provably converges to the largest eigenvalue, in one step when the data are free of noise. The eigenrotor is then found as the intersection of hyperplanes, computed with outer products in the 4D Geometric Algebra. This geometric view explains the singularities of the closed form methods, and of an earlier version of this method, as a single phenomenon: they all fix in advance the scale of one hyperplane, or of one combination of them, and every such choice fails on a whole family of rotations. Choosing the hyperplanes from the data removes the singularities. The method reaches the optimum on all our test cases, with a speed comparable to the fastest methods for small numbers of vectors.
 \end{abstract}
 
-%%% ----------------------------------------------------------------------
 \maketitle
+
 %%% ----------------------------------------------------------------------
-%\tableofcontents
 \section{Introduction}
 
-\indent The estimation of rotations has been studied for over half a century \cite{Wahba1965}. The problem consist on finding the optimal rotation aligning two sets of corresponding vectors. Many effective methods have been developed \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} using $3\times3$ matrices and quaternions. Formulations based on quaternions solves a max-eigenvalue problem, while formulations based on linear algebra relies on Singular Value Decomposition (SVD). In the last decade formulations based on geometric algebra \cite{Perwass2009, Dorst2011} were introduced but they also rely on linear algebra numerical algorithms such as SVD due to the lack of native numerical algorithms. Closed form solutions for finding the optimal quaternion has been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R} based on analytic formulas for solving the roots of the quartic polynomial associated with eigenvalue problem.
+The estimation of rotations has been studied for over half a century \cite{Wahba1965}. The problem consists of finding the optimal rotation aligning two sets of corresponding vectors, and it appears in spacecraft attitude determination, point cloud registration, computer vision and shape deformation. Many effective methods have been developed \cite{Arun1987, Horn1987, Mortari1996, Shuster1981, Yang2015} using $3\times3$ matrices and quaternions. Formulations based on quaternions solve a max-eigenvalue problem, while formulations based on linear algebra rely on the Singular Value Decomposition (SVD). Formulations based on geometric algebra \cite{Perwass2009, Dorst2011} were introduced in the last decades, but they also rely on linear algebra numerical algorithms such as the SVD. Closed form solutions for finding the optimal quaternion have been proposed \cite{Yang2013, Wu2017, Wu2018FA3R, Wu2018FS3R}, based on analytic formulas for the roots of the quartic polynomial associated with the eigenvalue problem.
 
-Accuracy and speed of prominent methods have been compared in  \cite{Eggert1997, Markley1999, Wu2017} evidencing a trade-off between performance and robustness. In particular SVD based methods exhibit the best accuracy but low performance and quaternion based methods are faster but less accurate. Regarding the later methods, the closed form solutions exhibit the best performance so far but they have singularities i.e., they completely fail on certain input data.
+Accuracy and speed of prominent methods have been compared in \cite{Eggert1997, Markley1999, Wu2017}, evidencing a trade-off between performance and robustness. SVD based methods exhibit the best accuracy but low performance, and quaternion based methods are faster but less robust. The closed form solutions exhibit the best performance so far, but they have singularities, i.e., they completely fail on certain input data. QUEST \cite{Shuster1981}, for instance, fails for every rotation by $\pi$, and FLAE \cite{Wu2017} fails for every rotation whose axis is orthogonal to the $z$ axis, including the identity.
 
-In this paper we propose a robust estimator of the best quaternion aligning two sets of corresponding vectors. We maximize a convex quadratic energy functional formulated in the $\mathbb{G}_{3,0,0}$ geometric algebra which allow us to find an optimal quaternion in a robust way without resorting to linear algebra numerical algorithms. Geometric algebra rotors are isomorphic to quaternions, we find geometric algebra to be a more natural choice for studying this problem since rotations and subspaces of $\mathbb R^3$ are treated in the same manner, facilitating meaningful algebraic manipulations. We primarily work with bivectos instead of vectors for the sake of mathematical convenience. Due to mathematical (and geometric) duality of vectors and bivectors in $\mathbb{G}_3$ our formulation is also valid for vectors.
+In this paper we formulate the problem in the $\Ge_3$ geometric algebra, where rotations are rotors, and we try to understand each step geometrically, not only to compute it. Rotors are isomorphic to quaternions, but geometric algebra treats rotations and the subspaces of $\R^3$ in the same manner, and this facilitates meaningful algebraic manipulations. We work with bivectors, planes through the origin, because they belong to the same subalgebra as rotors, so that all the products we need stay in that subalgebra; by the duality of vectors and bivectors in $\Ge_3$, everything holds for vectors as well. The paper follows the path from the problem to the algorithm:
+\begin{itemize}
+\item We write an energy that is maximal when the rotated bivectors coincide with their targets, show that it is quadratic in the rotor, and derive the eigenrotor equation from its multivector derivative (Section~\ref{section:estimation}).
+\item Two energies that are sums of squares bound the eigenvalues. The bound tells us where to start Newton's method so that it converges to the largest eigenvalue, and it is exact when the data are free of noise (Sections~\ref{section:positivity} and~\ref{section:eigenvalue}).
+\item In the 4D geometric algebra, the eigenrotor is the line where four hyperplanes meet, and the meet of any three of them is computed with outer products (Section~\ref{section:intersection}). We show how large each of these meets is, which explains the singularities of the closed form methods and how to avoid them (Section~\ref{section:robustness}).
+\end{itemize}
+Section~\ref{section:algorithms} gives the algorithm and Section~\ref{section:comparisons} compares it with other methods.
 
-\section{Geometric Algebra $\mathbb{G}_3$}
+An earlier version of this paper proposed constraining all the hyperplanes at once, and claimed that this avoids all singularities. As we show in Section~\ref{section:earlier}, that choice is itself a fixed choice, and it fails, for example, for every rotation by $\pi/2$ about the $z$ axis. Its argument that a positive definite energy makes Newton's method robust was also incomplete: what makes it robust is where the iteration starts, as explained in Section~\ref{section:eigenvalue}. This version corrects both.
 
-A geometric algebra $\mathbb{G}_3$ is constructed over a real vector space $\mathbb R^3$, with basis vectors $\{e_1, e_2, e_3\}$. The associative geometric product is defined on vectors so that the square of any vector $a$ is a scalar $a a = a^2 \in \mathbb{R}$ and the geometric product of two vectors $a$ and $b$ is $a b = a \cdot b + a \wedge b$ and $b a = b \cdot a - a \wedge b$. From the vector space $\mathbb R^3$, the geometric product generates the geometric algebra $\mathbb{G}_3$ with elements $\{ X, R, A...\}$ called multivectors.
+%%% ----------------------------------------------------------------------
+\section{Geometric Algebra $\Ge_3$}
 
-For a pair of vectors $a$ and $b$, a symmetric inner product $a \cdot b = b \cdot a$ and antisymmetric outer product $a \wedge b = -b \wedge a$ can be defined implicitly by the geometric product. It is easy to prove that $a \cdot b = \frac{1}{2}(a b + b a)$ is a scalar, while the quantity $a \wedge b = \frac{1}{2}(a b - b a)$, called a bivector or $2$-vector, is a new algebraic entity that can be visualized as the two-dimensional analogue of a direction i.e., a planar direction. Similar to vectors, bivectors can be decomposed in a bivector basis $\{ e_{12}, e_{13}, e_{23} \}$ where $e_{ij} = e_i \wedge e_j$.
+A geometric algebra $\Ge_3$ is constructed over a real vector space $\R^3$, with basis vectors $\{e_1, e_2, e_3\}$. The associative geometric product is defined on vectors so that the square of any vector $a$ is a scalar, $a a = a^2 = |a|^2$, and the geometric product of two vectors $a$ and $b$ is
+\begin{equation}
+\label{eqn:gp}
+a b = a \cdot b + a \wedge b, \qquad b a = a \cdot b - a \wedge b.
+\end{equation}
+The symmetric part $a \cdot b = \frac{1}{2}(a b + b a)$ is the usual inner product, a scalar. The antisymmetric part $a \wedge b = \frac{1}{2}(a b - b a)$ is a new algebraic entity, a \emph{bivector} or $2$-vector, which can be visualized as an oriented plane element: the two-dimensional analogue of a direction. In particular, orthogonal vectors anticommute, $e_i e_j = -e_j e_i$ for $i \neq j$. Bivectors can be decomposed in the basis $\{e_{23}, e_{31}, e_{12}\}$, where $e_{ij} = e_i e_j = e_i \wedge e_j$.
 
-The outer product of three vectors $a \wedge b \wedge c$ generates a $3$-vector also known as the pseudoscalar, because the trivector basis consist of single element $e_{123} = e_1 \wedge e_2 \wedge e_3$. Similarly, the scalars are regarded as $0$-vectors whose basis is the number $1$. It follows that the outer product of $k$-vectors is the completely antisymmetric part of their geometric product: $a_1 \wedge a_2 \wedge ... \wedge a_k = \langle a_1 a_2 ... a_k \rangle_k$ where the angle bracket means $k$-vector part, and $k$ is its grade. The term grade is used to refer to the number of vectors in any exterior product. This product vanishes if and only if the vectors are linearly dependent. Consequently, the maximal grade for nonzero $k$-vectors is $3$. It follows that every multivector $X$ can be expanded into its $k$-vector parts and the entire algebra can be decomposed into $k$-vector subspaces:
-\begin{equation*}
-\mathbb G_3 = \sum_{k=0}^n{\mathbb{G}^k_3} = \{ X = \sum_{k=0}^n { \langle X \rangle_k } \}
-\end{equation*}
-This is called a \emph{grading} of the algebra. 
+The outer product of three vectors $a \wedge b \wedge c$ is a $3$-vector, also known as the pseudoscalar, because the trivector basis consists of the single element $I = e_1 e_2 e_3$. Scalars are $0$-vectors. The outer product of $k$ vectors is a $k$-vector, $k$ is its \emph{grade}, and it vanishes if and only if the vectors are linearly dependent. Every multivector $X$ is a sum of parts of different grades, and $\grade{X}{k}$ denotes the part of grade $k$; we write $\scal{X} = \grade{X}{0}$ for the scalar part. The pseudoscalar commutes with every element of $\Ge_3$ and $I^2 = -1$. Multiplying by $I$ maps every vector to the bivector of the plane orthogonal to it, and conversely: this is the \emph{duality} of vectors and bivectors. For two vectors, the bivector of their plane is dual to their cross product,
+\begin{equation}
+\label{eqn:wedge_cross}
+a \wedge b = I\, (a \times b).
+\end{equation}
 
-Reversing the order of multiplication is called reversion, as expressed by $(a_1 a_2 ... a_k)\tilde{} = a_k ... a_2 a_1$ and $(a_1 \wedge a_2 \wedge ... \wedge a_k)\tilde{} = a_k \wedge ... \wedge a_2 \wedge a_1$, and the reverse of an arbitrary multivector is defined by $\tilde{X} = \sum_{k=0}^n { \langle \tilde{X} \rangle_k }$.
+Reversing the order of multiplication is called reversion: $\rev{(a_1 a_2 \cdots a_k)} = a_k \cdots a_2 a_1$. Scalars and vectors are their own reverses, while bivectors and trivectors change sign, and $\rev{(X Y)} = \rev{Y} \rev{X}$. Two properties of the scalar part will be used constantly. The scalar part of a product does not depend on the order of the two factors, and reversion does not change it:
+\begin{equation}
+\label{eqn:cyclic}
+\scal{X Y} = \scal{Y X}, \qquad \scal{\rev{X}} = \scal{X}.
+\end{equation}
+The first property implies that the factors of a product inside $\scal{\,}$ can be permuted cyclically, as in the trace of a product of matrices.
 
 \subsection{Rotors}
 
-Rotations are even grade multivectors known as rotors. We denote the subalgebra of rotors as $\mathbb{G}^{+}_3$. A rotor $R$ can be generated as the geometric product of an even number of vectors. A reflection of any $k$-vector $X$ in a plane with normal $n$ is expressed as the sandwitch product $(-1)^k n X n$. The most basic rotor $R$ is defined as the product of two unit vectors $a$ and $b$ with angle of $\frac{\theta}{2}$. The rotation plane is the bivector $B = \frac{a \wedge b}{\| a \wedge b \|}$.
+Rotations are even grade multivectors known as rotors. We denote the subalgebra of even multivectors, those of grades $0$ and $2$, as $\Ge_3^+$; it has dimension four. A reflection of any $k$-vector $X$ in a plane with normal $n$ is expressed as the sandwich product $(-1)^k n X n$, and a rotation is the composition of two reflections. The most basic rotor $R$ is therefore the product of two unit vectors $a$ and $b$ at an angle of $\frac{\theta}{2}$: reflecting in the plane orthogonal to $b$ and then in the one orthogonal to $a$ rotates by $\theta$ in the plane of $a$ and $b$. With the unit bivector $B = \frac{a \wedge b}{|a \wedge b|}$,
 \begin{equation}
 a b = a \cdot b + a \wedge b = \cos\left( \frac{\theta}{2} \right) + B \sin\left( \frac{\theta}{2} \right).
 \end{equation}
-Rotors act on all $k$-vectors using the sandwitch product $X' = R X \tilde R$, where $\tilde R$ is the reverse of $R$ and can be obtained by reversing the order of all the products of vectors.
+Rotors act on all $k$-vectors with the sandwich product $X' = R X \rev{R}$, where $\rev{R}$ is the reverse of $R$. For a rotor, $R \rev{R} = 1$.
+
+It is useful to see rotors as vectors of a four-dimensional Euclidean space. We equip $\Ge_3^+$ with the scalar product and norm
+\begin{equation}
+\label{eqn:scalar_product}
+X * Y = \scal{X \rev{Y}}, \qquad |X|^2 = X * X.
+\end{equation}
+For $X = w + B$, with a scalar $w$ and a bivector $B = I v$, we have $\rev{X} = w - B$ and $X \rev{X} = w^2 - B^2 = w^2 + |v|^2$, because $B^2 = I^2 v^2 = -|v|^2$. So $X \rev{X} = |X|^2$ is always a scalar, and \emph{the rotors are exactly the elements of $\Ge_3^+$ of norm one}: they form the unit sphere $S^3$ of a four-dimensional Euclidean space. This simple fact will matter: whatever element of $\Ge_3^+$ we compute, dividing it by its norm makes it a rotor, and $R$ and $-R$ represent the same rotation.
 
 \subsection{Bivector products}
 
-We define the commutator product of two bivectors $p_j$ and $q_j$ as $p_j \times q_j = \frac{1}{2}(p_j q_j - q_j p _j)$. The commutator product of bivectors in $\mathbb{G}_3$  can be interpreted as a cross-product of bivectors i.e., the resulting bivector $B = p_j \times q_j$ is orthogonal to both $p_j$ and $q_j$. The commutator product allow us to define the geometric product of two bivectors as $A B = A \cdot B + A \times B$. The inner product of bivectors differs from the inner product of vectors on the sign, since the square of bivectors is negative, the inner product of bivectors is a negative scalar e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$.
+The commutator product of two bivectors $p$ and $q$ is $p \times q = \frac{1}{2}(p q - q p)$. In $\Ge_3$ it can be interpreted as a cross product of bivectors: the bivector $p \times q$ is orthogonal to both $p$ and $q$. It allows us to write the geometric product of two bivectors as $p q = p \cdot q + p \times q$, a scalar plus a bivector. The inner product of bivectors differs from the inner product of vectors in the sign: since the square of a bivector is negative, the inner product of bivectors is a negative scalar, e.g., $(a e_{12} + b e_{13} + c e_{23}) \cdot (d e_{12} + e e_{13} + f e_{23}) = -a d - b e - c f$. With the scalar product~(\ref{eqn:scalar_product}), instead, $p * q = \scal{p \rev{q}} = -p \cdot q$ is positive for a bivector and itself.
 
 \subsection{Quaternions}
 
-A quaternion $Q = w + \vec v$ consists of two parts: a scalar part $w$ and vector part $\vec v$ which denotes the axis of rotation. The vector part $\vec v$ is defined in a basis of complex vectors $\{ i, j, k \}$ that squares to $-1$ and anticommute i.e., $i^2 = j^2 = k^2 = -1$ and $i j k = -1$. In geometric algebra they corresponds to bivectors:
-\begin{eqnarray}
-i = e_{23} \ \ \ j = e_{13} \ \ \  k = e_{12} \\
-ijk = e_{23} e_{13} e_{12} = -1 \nonumber
-\end{eqnarray}
-Rotors can easily be transformed to quaternions and vice versa. A rotor $R = w + B$ corresponds with a quaternion $Q = w + \vec v$, where $B = \alpha e_{12} + \beta e_{13} + \gamma e_{23}$ and $\vec v = \gamma i + \beta j + \alpha k$.
+A quaternion $w + x \mathbf{i} + y \mathbf{j} + z \mathbf{k}$ consists of a scalar part $w$ and a vector part, in a basis of imaginary units that square to $-1$ and anticommute: $\mathbf{i}^2 = \mathbf{j}^2 = \mathbf{k}^2 = \mathbf{i} \mathbf{j} \mathbf{k} = -1$. In geometric algebra they correspond to bivectors. We choose the basis of $\Ge_3^+$
+\begin{equation}
+\label{eqn:basis}
+E_0 = 1, \qquad E_1 = e_3 e_2, \qquad E_2 = e_1 e_3, \qquad E_3 = e_2 e_1,
+\end{equation}
+that is, $E_k = -I e_k$, the planes orthogonal to the basis vectors, with the orientation that makes them multiply like Hamilton's units: $E_k^2 = -1$ and $E_1 E_2 = (-I e_1)(-I e_2) = I^2 e_1 e_2 = -e_{12} = E_3$. The basis is orthonormal for the scalar product~(\ref{eqn:scalar_product}). A rotor $R = w + x E_1 + y E_2 + z E_3$ corresponds to the quaternion $w + x \mathbf{i} + y \mathbf{j} + z \mathbf{k}$, and we call $(w, x, y, z)$ its coordinates. With this orientation, the rotor of a rotation by $\theta$ about the unit axis $n$ is \cite{Doran2003}
+\begin{equation}
+\label{eqn:rotor_axis_angle}
+R = \cos\frac{\theta}{2} - \sin\frac{\theta}{2}\, I n = \cos\frac{\theta}{2} + \sin\frac{\theta}{2}\,(n_1 E_1 + n_2 E_2 + n_3 E_3),
+\end{equation}
+so its coordinates are exactly the unit quaternion of the same rotation. Note that the scalar part of a rotor is $\cos\frac{\theta}{2}$, which vanishes for the rotations by $\pi$, and its bivector part is proportional to $\sin\frac{\theta}{2}$, which vanishes for the identity. These two facts are behind the singularities of Section~\ref{section:robustness}.
 
+%%% ----------------------------------------------------------------------
 \section{Geometric Algebra Rotor Estimation}
+\label{section:estimation}
 
-Given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, we attempt to maximize the following energy function:
-\begin{eqnarray}
-	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|p_j + \tilde R q_i R \|^2 }\\
-	s.t. \ R \tilde R = 1 \nonumber
-\end{eqnarray}
-where $\{c_{j}\}_{j=1}^n$ are scalar weights such that $\sum_j^n{c_j} = 1$. It is a quadratic maximization problem with a non-linear constraint in $R$. Notice that the term $\|p_j + \tilde R q_i R\|^2$ is dual to the traditional least squares error $\|q_j - R p_j \tilde R\|^2$. Duality is stated in the sense that the optimal $R$ is a critical point of both energies.
-Notice also that $p_j + \tilde R q_i R$ is equivalent to $R p_j + q_j R$ i.e., by multiplying by $R$ on the left and using the fact that $R \tilde R = 1$. The equivalent problem is:
-\begin{eqnarray}
-	\label{eqn:max_energy}
-	E(R) = \max_{R \in \mathbb{G}^{+}_3 } \sum_j { c_{j} \|R p_j + q_j R\|^2 }\\
-	s.t. \ R \tilde R = 1 \nonumber
-\end{eqnarray}
-which exposes the that $R$ is only quadratic in \ref{eqn:max_energy}.
+\subsection{The energy}
 
-We can take the multivector derivative of the energy $E(R)$ with respect to the rotor $R$ to find the critical multivector of it i.e., solve for $\partial E(\dot R) = 0$ using e.g., Newton's method (provided the energy is convex). The multivector derivative is an extrinsic operator which produces gradient multivectors outside the energy's tangent bundle. That implies the crtical multivector $R$ of such gradient might lie outside the rotor manifold. In general it would be needed to either work directly on the Lie algebra of SO($3$) or add a Lagrange multiplier term $L(R) = \lambda (R \tilde R - 1)$ to $E(R)$ to constrain critical multivector to SO($3$). However we can avoid that inconvinience in $\mathbb{G}_3$ since a rotor can be orthogonally projected to manifold by simply normalization. In other words, once the critical multivector is found it can be projected to the manifold by normalizing it.
+We are given two sets of $n$ corresponding bivectors $P = \{p_j\}_{j=1}^n$ and $Q = \{q_j\}_{j=1}^n$, and positive weights $c_j$. We want the rotor $R$ that rotates each $p_j$ as close as possible to $q_j$. The rotor $R$ rotates $p_j$ to $q_j$ exactly when $R p_j \rev{R} = q_j$, or equivalently, applying the inverse rotation $\rev{R}\, (\cdot)\, R$ to both sides, when $p_j = \rev{R} q_j R$. So we can either make the difference $p_j - \rev{R} q_j R$ as short as possible, or make the sum $p_j + \rev{R} q_j R$ as long as possible. The two are the same problem, because of the parallelogram law,
+\begin{equation}
+\label{eqn:parallelogram}
+|p + \rev{R} q R|^2 + |p - \rev{R} q R|^2 = 2\, |p|^2 + 2\, |q|^2,
+\end{equation}
+which does not depend on $R$ (a rotation does not change lengths). The sum is longest exactly when the difference is shortest. We choose the sum and maximize the energy
+\begin{equation}
+\label{eqn:energy}
+E(R) = \sum_j c_j\, |p_j + \rev{R} q_j R|^2, \qquad R \rev{R} = 1.
+\end{equation}
+The weights need not sum to one. By~(\ref{eqn:parallelogram}), maximizing $E$ is the same as minimizing the classical least squares error $\sum_j c_j |R p_j \rev{R} - q_j|^2$ of Wahba's problem \cite{Wahba1965}.
 
-Note that since $p_j$ and $q_j$ are bivectors then $R p_j$ and $q_j R$ are also bivectors. Since the square of a bivector $X$ is a scalar i.e., $\|X\|^2 = X \tilde X$, we have:
-\begin{eqnarray}
-	\|R p_j + q_j R\|^2 = (R p_j + q_j R)(\tilde p_j \tilde R + \tilde R \tilde q_j) \nonumber\\
-	= (R p_j + q_j R)(- p_j \tilde R - \tilde R q_j) \nonumber\\
-	= -\langle R p_j p_j \tilde R\rangle - \langle R p_j \tilde R q_j\rangle - \langle q_j R p_j \tilde R\rangle - \langle q_j R \tilde R q_j\rangle \nonumber
-\end{eqnarray}
+\subsection{From quartic to quadratic}
 
-Where we recognize that everything inside $\langle \rangle$ is a scalar. So the multivector derivative of a scalar-valued function gives a gradient function (equivalent to a Jacobian matrix in vector calculus). Also note that $\langle \rangle$ acts in a similar way to the trace operator in matrix algebra. So it can be shown that any cyclic permutation of the bivector products inside the $\langle \rangle$ produces the same scalar. That's a useful fact to take into account when taking the multivector derivative. For example:
+As written, the energy is hard to work with: $\rev{R} q_j R$ contains the rotor twice, so the squared norm contains it four times. The way out is to multiply by $R$ on the left. For a rotor, $R \rev{R} = 1$, so
+\begin{equation}
+R\, (p_j + \rev{R} q_j R) = R p_j + q_j R,
+\end{equation}
+and multiplying by a rotor does not change the norm of an even multivector, $|R X| = |X|$, because $|R X|^2 = \scal{R X \rev{X} \rev{R}} = |X|^2 \scal{R \rev{R}}$. Hence
+\begin{equation}
+\label{eqn:max_energy}
+E(R) = \sum_j c_j\, |R p_j + q_j R|^2.
+\end{equation}
+Now each term $R p_j + q_j R$ is \emph{linear} in $R$, so the energy is \emph{quadratic} in $R$. This is what will turn the search for the best rotor into an eigenvalue problem. Note that the new form~(\ref{eqn:max_energy}) makes sense for any element $R$ of $\Ge_3^+$, not only for rotors, and that is how we will treat it from now on: as a quadratic function on the four-dimensional space $\Ge_3^+$, to be maximized on its unit sphere.
 
-\begin{eqnarray}
-	-\partial \langle R p_j p_j \tilde R\rangle = -\partial \langle \dot R * p_j p_j \tilde R\rangle - \partial \langle \dot{\tilde R} * R p_j p_j\rangle \nonumber\\
-	= -\langle \partial R * p_j p_j \tilde R\rangle - \langle \partial{\tilde R}  * R p_j p_j\rangle \nonumber\\
-	= \mathcal P \left[ - p_j p_j \tilde R - \widetilde{R p_j p_j} \right] \nonumber\\
-	= - p_j p_j \tilde R - p_j p_j \tilde R \nonumber\\
-	= -2 p_j p_j \tilde R \nonumber\\
-\end{eqnarray}
-where $\mathcal{P} \left[ \right]$ is a grade projection to even grades (i.e., grades $0$ and $2$) of the resulting multivector which, in this case, is simply the identity function. 
+\subsection{The multivector derivative}
 
-Doing something similar to all other terms we get:
-\begin{eqnarray}
-	\label{eqn:multivector_derivative}
-	\partial E_j(\dot R) = -2 p_j p_j \tilde R - 4 p_j \tilde R q_j - 2 \tilde R q_j q_j \nonumber\\
-\end{eqnarray}
-taking the reverse to express it in terms of $R$ (recall that $\tilde X = -X$ , $\widetilde{X Y} = \tilde Y \tilde X$ and $\tilde{\tilde X} = X$) we get $\partial E_j(\dot R) = - R p p - 2 q R p - q q R$ from which follows the eigenrotor equation for $\partial E(\dot R) = 0$:
+To find the maximum we take the multivector derivative of $E$ with respect to $R$ \cite{HestenesSobczyk1984}. Restricted to $\Ge_3^+$, the derivative $\partial E(R)$ is the element of $\Ge_3^+$ such that, for every direction $X$,
+\begin{equation}
+\label{eqn:derivative}
+\frac{d}{dt} E(R + t X) \Big|_{t=0} = X * \partial E(R).
+\end{equation}
+It is the gradient of $E$ for the scalar product~(\ref{eqn:scalar_product}). At a maximum of $E$ on the unit sphere, the gradient must be orthogonal to the sphere, that is, parallel to $R$; this is the method of Lagrange multipliers, $\partial E(R) = \lambda\, \partial |R|^2 = 2 \lambda R$.
 
-\begin{eqnarray}
-	\lambda R = 2 \sum_j { c_{j} q_j R p_j } \nonumber\\
-\end{eqnarray}
-where $\lambda = -\sum_j { c_{j} (p_j^2 + q_j^2) }$ which shows that the eigenrotor $R$ associated with the eigenvalue $\lambda$ is the optimal one. However this equation only holds for exact matches, i.e., when the input bivectors can be aligned by a rotor. In general that is not the case since some arbitrary noise is expected on input bivectors therefore we are looking for the best alignment in the least squares sense. The eigenrotor equation can be stated in matrix algebra as:
+First we expand the energy. Since $p_j$ and $q_j$ are bivectors, $R p_j$ and $q_j R$ are even, and $\rev{p_j} = -p_j$, $\rev{q_j} = -q_j$:
+\begin{align}
+|R p_j + q_j R|^2 &= \scal{(R p_j + q_j R)(\rev{p_j} \rev{R} + \rev{R} \rev{q_j})} \nonumber\\
+&= -\scal{R p_j p_j \rev{R}} - \scal{R p_j \rev{R} q_j} - \scal{q_j R p_j \rev{R}} - \scal{q_j R \rev{R} q_j}. \label{eqn:expansion}
+\end{align}
+The first and last terms are the squared lengths of the bivectors times $|R|^2$: $p_j p_j = -|p_j|^2$, so $-\scal{R p_j p_j \rev{R}} = |p_j|^2 |R|^2$, and similarly for $q_j$. The two middle terms are equal, by a cyclic permutation~(\ref{eqn:cyclic}). Therefore
+\begin{equation}
+\label{eqn:energy_expanded}
+E(R) = S\, |R|^2 - 2 \sum_j c_j \scal{R p_j \rev{R} q_j}, \qquad S = \sum_j c_j \left(|p_j|^2 + |q_j|^2\right).
+\end{equation}
+$S$ is the total weighted energy of the data, and it does not depend on $R$. Everything that depends on the rotation is in the sum, so let us look at it more closely. Bringing $R$ to the front with a cyclic permutation, $\scal{R p_j \rev{R} q_j} = \scal{R\, (p_j \rev{R} q_j)}$, and the factor in parentheses is the reverse of $q_j R p_j$: $\rev{(q_j R p_j)} = \rev{p_j} \rev{R} \rev{q_j} = p_j \rev{R} q_j$. This suggests collecting the data into one linear function.
 
-\begin{eqnarray}
-	(A  + \lambda I) R = 0 \nonumber\\
-\end{eqnarray}
-where $A$ is a matrix derived from $-2 \sum_j { c_{j} q_j R p_j }$ and $\lambda = -\sum_j { c_{j} (p_j^2 + q_j^2) }$. Note that $\lambda$ is a positive number since the square of a bivector is a negative number and $c_j \geq 0$. Let's define the $4 \times 4$ symmetric matrix $M = A  + \lambda I$ where $M$ is singular when the input bivectors can be aligned by a rotor and otherwise is positive definite i.e., $M$ is a positive semi-definite matrix.
+\begin{defn}
+The \emph{rotor operator} of the data is the linear function on $\Ge_3^+$
+\begin{equation}
+\label{eqn:operator}
+\K(R) = -\sum_j c_j\, q_j\, R\, p_j.
+\end{equation}
+\end{defn}
+The product of a bivector, an even element and a bivector is even, so $\K$ maps $\Ge_3^+$ to itself. By the definition of the scalar product, $R * \K(R) = -\sum_j c_j \scal{R\, \rev{(q_j R p_j)}} = -\sum_j c_j \scal{R p_j \rev{R} q_j}$, and the energy becomes
+\begin{equation}
+\label{eqn:energy_K}
+E(R) = S\, |R|^2 + 2\, R * \K(R).
+\end{equation}
+The function $G(R) = R * \K(R)$ has a direct meaning. Since $\rev{q_j} = -q_j$, it can be written $G(R) = \sum_j c_j\, (R p_j \rev{R}) * q_j$: it adds up, with the weights, how well each rotated bivector $R p_j \rev{R}$ agrees with its target $q_j$. We call it the \emph{gain}. The energy is the constant $S$ plus twice the gain, so maximizing one maximizes the other.
 
-The matrix $A = \sum_j A_j$ can be derived from $-2 c_j q_j R p_j$ as follows. First split $R$ as $w + B$ where $w$ is a scalar and $B$ is a bivector, second split geometric product of bivectors on inner and commutator products
-\begin{eqnarray}
-	-2 c_j q_j (w + B) p_j = -2 c_j (w q_j p_j + q_j B p_j) \nonumber\\
-	= -2 c_j (
-		w (q_j \cdot p_j) + w (q_j \times p_j) + \nonumber\\
-	   (q_j \cdot B) p_j + B \cdot (p_j \times q_j) - B (p_j \cdot q_j) + q_j (B \cdot p_j)
-	) \nonumber\\
-\end{eqnarray}
-the last rearrange uses the identity $q B p = (q \cdot B) p + B \cdot (p \times q) - B (p \cdot q) + q (B \cdot p)$. Now that everything is in terms of inner products and commutators we can re-write that equation in matrix form using the correspondence $X \cdot Y = - \vec X^T \vec Y$ for bivectors $X$, $Y$ and $3 \times 1$ column vectors $\vec X$ and $\vec Y$. We also use the fact that bivector's commutator corresponds to vector's cross-product $X \times Y = \vec X \times \vec Y$:
-\begin{eqnarray}
-	A_j = 2 c_j 
-	\left[\begin{array}{cc} 
-		q_j^T p_j  & (p_j \times q_j)^T  \\
-		p_j \times q_j & q_j p_j^T + p_j q_j^T - (p_j^T q_j) I
-	\end{array}\right] \\
-\end{eqnarray}
+$\K$ is symmetric, $X * \K(Y) = Y * \K(X)$. Indeed
+\begin{equation*}
+X * \K(Y) = -\sum_j c_j \scal{X\, \rev{(q_j Y p_j)}} = -\sum_j c_j \scal{X p_j \rev{Y} q_j};
+\end{equation*}
+reversing inside the scalar part gives $\scal{q_j Y p_j \rev{X}}$, and a cyclic permutation gives $\scal{Y p_j \rev{X} q_j}$, which is the same expression with $X$ and $Y$ exchanged. Because of the symmetry, the derivative of the quadratic function $R * \K(R)$ is $2 \K(R)$: in $(R + tX) * \K(R + tX)$, the two terms linear in $t$ are $X * \K(R)$ and $R * \K(X)$, which are equal. With $\partial |R|^2 = 2R$,
+\begin{equation}
+\label{eqn:derivative_energy}
+\partial E(R) = 2 S R + 4\, \K(R) = 2 \sum_j c_j \left( (|p_j|^2 + |q_j|^2)\, R - 2\, q_j R p_j \right),
+\end{equation}
+the same expression as the one obtained by taking the multivector derivative of each term of~(\ref{eqn:expansion}) directly. Setting it equal to $2 \lambda R$ gives the \emph{eigenrotor equation}
+\begin{equation}
+\label{eqn:eigenrotor}
+\K(R) = \mu\, R, \qquad \mu = \frac{\lambda - S}{2}.
+\end{equation}
+The best rotor is an eigenvector of $\K$. Which one? At a unit eigenrotor, the gain is $G(R) = R * \mu R = \mu$, so the best rotor is the eigenrotor of the \emph{largest} eigenvalue $\mu_0$, and the maximum energy is $S + 2 \mu_0$. Because $\K$ is symmetric on a four-dimensional Euclidean space, it has four real eigenvalues with orthogonal eigenrotors (the spectral theorem), so this maximum exists and, as long as $\mu_0$ is a simple eigenvalue, it is attained by a single rotation.
 
-To proof the positive semi-definiteness of $M = \sum_j A_j + \lambda I$ we proceed to express $E(R)$ in matrix algebra as the quadratic form $E(R) = R^T M R$ as follows: the constraint $R p_j + q_j R$ can be rewriten as $(w + B) p_j  + q_j (w + B)$. Expanding the geometric product of bivectors in terms of the inner product and the communtator product we get:
-\begin{eqnarray}
-	w  (p_j + q_j) + B \cdot (p_j + q_j)  + (q_j - p_j) \times B
-\end{eqnarray}
+What is $\mu_0$ when the data are free of noise? Then $q_j = R p_j \rev{R}$, that is, $q_j R = R p_j$ for the true rotor, and $\K(R) = -\sum_j c_j\, R\, p_j p_j = \sum_j c_j |p_j|^2 R$. Since rotations preserve lengths, $|p_j| = |q_j|$, and this is $\frac{S}{2} R$:
+\begin{equation}
+\label{eqn:exact_eigenvalue}
+\mu_0 = \frac{S}{2} \qquad \text{for data free of noise.}
+\end{equation}
+We will see in Section~\ref{section:positivity} that $S/2$ is in fact an upper bound for all the eigenvalues, attained exactly when there is no noise, and in Section~\ref{section:eigenvalue} that this is precisely what makes it the right place to start the search for $\mu_0$.
 
-In matrix language we can define the following matrix system $M_j R = 0$:
-\begin{eqnarray}
-	M_j R =
-	\left[\begin{array}{cc}
-		0      &       -s_j^T \\
-		s_j    &   \left[ d_j \right]_\times \\
-	\end{array}\right]
-	\left[\begin{array}{c} 
-		w \\
-		B
-	\end{array}\right] = 
-	\left[\begin{array}{c}
-		-s_j^T B \\
-		w s_j + d_j \times B 
-	\end{array}\right]\\
-	d_j = q_j - p_j \ \ s_j = p_j + q_j  \nonumber
-\end{eqnarray}
-where $d_j$ and $s_j$ are $3 \times 1$ column vectors holding bivector's coefficients, $M_j$ is a skew-symmetric $4\times 4$ real matrix, so that $M_j^T = -M_j$. The rotor $R$ is represented as $4 \times 1$ column vector made of the scalar $w$ and the $3 \times 1$ column vector $B$ holding the bivector's components. The $3\times 3$ matrix $\left[ d_j \right]_\times$ is representing the skew-symmetric cross-product matrix as usually defined for vectors in $\mathbb R^3$.
+\subsection{The eigenproblem in coordinates}
 
-Therefore we can express $E(R)$ as the quadratic form:
-\begin{eqnarray}
-E(R) = R^T M R \nonumber
-\end{eqnarray}
-where $M = \sum_j^n { c_j M_j^T M_j}$. Note that since $M_j$ is skew-symmetric, the product $M_j^T M_j$ is symmetric and positive semi-definite.
-Consequently the matrix $M$ is also symmetric positive semi-definite. It follows that all eigenvalues of $M$ are real and $\lambda_i \geq 0$.
-\begin{eqnarray}
-	M_j^T M_j = 
-	\left[\begin{array}{cc}
-		\| s_j \|^2       &         (s_j \times d_j)^T \\
-		s_j \times d_j  &    s_j s_j^T - \left[ d_j \right]^2_\times \\
-	\end{array}\right]\\
-	d_j = q_j - p_j \ \ s_j = p_j + q_j  \nonumber
-\end{eqnarray}
+To compute, we need the matrix of $\K$ in the basis~(\ref{eqn:basis}). It is easier to do the computation with vectors than with bivectors, since the product rules of vectors are simpler. Every bivector is the dual of a vector, $p_j = I \hat p_j$ and $q_j = I \hat q_j$, and since $I$ commutes with everything and $I^2 = -1$,
+\begin{equation}
+\label{eqn:operator_vectors}
+\K(R) = -\sum_j c_j\, I \hat q_j\, R\, I \hat p_j = \sum_j c_j\, \hat q_j\, R\, \hat p_j.
+\end{equation}
+The data enter through two quantities: the correlation matrix and the vector of cross products,
+\begin{equation}
+\label{eqn:correlation}
+D = \sum_j c_j\, \hat q_j \hat p_j^T, \qquad z = \sum_j c_j\, \hat p_j \times \hat q_j.
+\end{equation}
+Let us apply $\K$ to the basis. For $R = 1$, by~(\ref{eqn:gp}) and~(\ref{eqn:wedge_cross}),
+\begin{equation*}
+\K(1) = \sum_j c_j\, \hat q_j \hat p_j = \sum_j c_j\, (\hat q_j \cdot \hat p_j + \hat q_j \wedge \hat p_j) = \tr D - I z,
+\end{equation*}
+whose coordinates are $(\tr D, z)$, since $-I z = z_1 E_1 + z_2 E_2 + z_3 E_3$. For $R = -I n$, a bivector with coordinates $n$, we need the product of three vectors. Splitting $\hat q n = \hat q \cdot n + \hat q \wedge n$ and multiplying by $\hat p$, the vector part of $\hat q n \hat p$ is $(\hat q \cdot n)\, \hat p + (n \cdot \hat p)\, \hat q - (\hat q \cdot \hat p)\, n$, and its trivector part is the volume $\big(\hat q \cdot (n \times \hat p)\big) I$. Multiplying by $-I$ turns the vector part $v$ into the bivector $-I v$, whose coordinates are $v$, and turns the trivector part into the scalar $\hat q \cdot (n \times \hat p) = n \cdot (\hat p \times \hat q)$. Summing with the weights:
+\begin{equation*}
+\K(-I n) = z \cdot n - I \left( D n + D^T n - (\tr D)\, n \right).
+\end{equation*}
+So the matrix of $\K$ in the basis $E_0, \ldots, E_3$ is
+\begin{equation}
+\label{eqn:matrix}
+K = \begin{pmatrix} \tr D & z^T \\ z & D + D^T - (\tr D)\, I_{3\times3} \end{pmatrix}.
+\end{equation}
+This is Davenport's matrix of the q-method \cite{Davenport1968, Shuster1981}. Geometric algebra shows where it comes from: it is the matrix of the operator $R \mapsto \sum_j c_j \hat q_j R \hat p_j$, which measures the gain. Its trace is $\tr D + 2 \tr D - 3 \tr D = 0$, so its four eigenvalues add up to zero, and some of them are negative.
 
-By the spectral theorem the maximizer of $E(R)$ is the eigenvector of $M$ associated with the largest eigenvalue which is non-negative number.
+\subsection{The energy as a sum of squares}
 
-\section{Convexity}
+The energy has another useful form. For each pair, the map $R \mapsto R p_j + q_j R$ is linear, and its matrix $M_j$ in the basis~(\ref{eqn:basis}) is a $4 \times 4$ real matrix. Expanding the geometric products of bivectors with the inner and commutator products, for $R = w + B$,
+\begin{equation*}
+R p_j + q_j R = w\, (p_j + q_j) + B \cdot (p_j + q_j) + (q_j - p_j) \times B,
+\end{equation*}
+and with $s_j = p_j + q_j$ and $d_j = q_j - p_j$ (as $3 \times 1$ coefficient vectors),
+\begin{equation}
+\label{eqn:Mj}
+M_j = \begin{pmatrix} 0 & -s_j^T \\ s_j & [d_j]_\times \end{pmatrix},
+\end{equation}
+a skew-symmetric matrix, where $[d]_\times$ is the cross-product matrix. Then the energy is $E(R) = \sum_j c_j\, |M_j R|^2 = R^T M R$, with
+\begin{equation}
+\label{eqn:M}
+M = \sum_j c_j\, M_j^T M_j = S\, I_{4\times4} + 2 K,
+\end{equation}
+which agrees with~(\ref{eqn:energy_K}). Being a sum of matrices of the form $M_j^T M_j$, $M$ is symmetric and positive semi-definite. The next section explains what this positivity really gives us.
 
-The multivector derivative gives the gradient of the energy $\partial E(\dot R)$, which is equal to zero at critical points and gives the eigenrotor equation $\lambda R = 2 \sum_j { c_{j} q_j R p_j }$ which implies the matrix equation $(A  + \lambda I) R = 0$. From the eigenrotor equation follows that $M = A  + \lambda I$ is singular when input bivectors can be aligned by a rotor $R$ associated with eigenvalue $\lambda$. Otherwise, e.g., in presence of noisy input bivectors, the matrix $M$ is positive definite. That means the enery $E(R)$ is convex.
+%%% ----------------------------------------------------------------------
+\section{What Positivity Tells Us}
+\label{section:positivity}
 
-The convexity of the energy $E(R)$ can be proved by showing that its Hessian matrix of second partial derivatives is positive semi-definite. The Hessian matrix of $E(R)$ is $\frac{\partial^2 E(R)}{\partial R} = \sum_j^n { c_j M_j^T M_j}$ which is symmetric, moreover since $M_j$ is skew-symmetric matrix, the product $M_j^T M_j$ is symmetric positive semi-definite. Then follows that $\sum_j^n { c_j M_j^T M_j}$ is positive semi-definite and therefore convex, provided that the sum of weights is convex i.e., $\sum_j^n { c_j } = 1$.
+\subsection{Bounds on the eigenvalues}
 
+The earlier version of this paper argued that, since the energy is a positive semi-definite quadratic form, Newton's method for its largest eigenvalue is robust. Positivity is useful, but for a different reason. $M$ and $K$ have the same eigenvectors, and their eigenvalues differ by the shift $\lambda = S + 2\mu$; shifting the eigenvalues changes nothing in the eigenvector problem, nor in Newton's method, whose iterates are simply shifted too. What positivity does provide is a \emph{bound}.
+
+There are two sums of squares, one for the sum and one for the difference. Repeating the expansion~(\ref{eqn:expansion}) with a minus sign,
+\begin{equation}
+\label{eqn:two_energies}
+E_\pm(R) = \sum_j c_j\, |R p_j \pm q_j R|^2 = S\, |R|^2 \pm 2\, G(R) \;\geq\; 0.
+\end{equation}
+For a unit eigenrotor $R_k$ with eigenvalue $\mu_k$, the gain is $G(R_k) = \mu_k$, and both inequalities give $S \pm 2 \mu_k \geq 0$:
+\begin{equation}
+\label{eqn:bounds}
+-\frac{S}{2} \;\leq\; \mu_k \;\leq\; \frac{S}{2} \qquad \text{for every eigenvalue } \mu_k.
+\end{equation}
+The upper bound is attained exactly when the data are free of noise, since then the difference energy $E_-$ vanishes at the true rotor, which is~(\ref{eqn:exact_eigenvalue}). In general, the difference energy at the best rotor is the least squares error $L^*$ of the best rotation, and $E_-(R_0) = S - 2 \mu_0$ gives
+\begin{equation}
+\label{eqn:overshoot}
+\frac{S}{2} - \mu_0 = \frac{L^*}{2}.
+\end{equation}
+The bound overestimates the largest eigenvalue by half of the least squares error: it is close to $\mu_0$ exactly when the data can be aligned well. We will use this in Section~\ref{section:eigenvalue}.
+
+\subsection{How the eigenvalues depend on the data}
+
+To understand the eigenvalues, it helps to look at the data in the coordinate frames where they are simplest. The correlation matrix has a signed singular value decomposition $D = \mathcal V\, \mathrm{diag}(s_1, s_2, s_3)\, \mathcal U^T$, where $\mathcal U$ and $\mathcal V$ are rotations, $s_1 \geq s_2 \geq |s_3|$, and $s_3$ has the sign of $\det D$. In the frame of $\mathcal U$ for the $\hat p_j$ and the frame of $\mathcal V$ for the $\hat q_j$, the correlation becomes diagonal. Since, by~(\ref{eqn:matrix}), $\K$ depends on the data only through $D$, we may as well replace the data by three pairs that have the same correlation: the unit vectors $e_k$ of the first frame, paired with $s_k e_k$ in the second frame. In those frames,
+\begin{equation*}
+\K(R) = \sum_{k=1}^3 s_k\, e_k R\, e_k.
+\end{equation*}
+Now the eigenrotors can be read off. The identity, $R = 1$, aligns every $e_k$ with itself, and its gain is $s_1 + s_2 + s_3$. The rotation by $\pi$ about $e_1$, $R = E_1$, keeps $e_1$ and reverses $e_2$ and $e_3$, so its gain is $s_1 - s_2 - s_3$. Algebraically, $e_1 E_1 e_1 = E_1$ because $E_1 = -I e_1$ commutes with $e_1$, while $e_2 E_1 e_2 = -E_1$ because $E_1$ anticommutes with $e_2$. The same holds for the other two half-turns. The four eigenvalues are therefore
+\begin{equation}
+\label{eqn:spectrum}
+\mu_0 = s_1 + s_2 + s_3, \quad \mu_1 = s_1 - s_2 - s_3, \quad \mu_2 = -s_1 + s_2 - s_3, \quad \mu_3 = -s_1 - s_2 + s_3,
+\end{equation}
+and the eigenrotors are the identity and the three half-turns about the principal axes. In the original frames they are $V E_k \rev{U}$, where $U$ and $V$ are the rotors of $\mathcal U$ and $\mathcal V$, and the best rotor is $V \rev{U}$: rotate the principal frame of the $\hat p_j$ onto that of the $\hat q_j$. This is the SVD solution \cite{Arun1987}, and the signed decomposition automatically avoids reflections.
+
+This picture answers three questions that will come up later.
+\begin{itemize}
+\item \emph{When is the best rotation unique?} When $\mu_0$ is a simple eigenvalue. The smallest gap is $\mu_0 - \mu_1 = 2 (s_2 + s_3)$, so the rotation is unique exactly when $s_2 + s_3 > 0$. If, for instance, all the $\hat p_j$ are parallel, then $s_2 = s_3 = 0$, and every rotation about that direction aligns the data equally well; no method can return a unique answer.
+\item \emph{What is the characteristic polynomial?} $P(\mu) = \det(\mu - \K) = \prod_k (\mu - \mu_k)$. Expanding with the eigenvalues~(\ref{eqn:spectrum}): the cubic term vanishes, since the eigenvalues add up to zero; the quadratic coefficient is $-2 (s_1^2 + s_2^2 + s_3^2)$; the linear coefficient is $-8 s_1 s_2 s_3$; and the constant term is the product of the eigenvalues, $\det K$. Since $s_1^2 + s_2^2 + s_3^2 = |D|^2$ (the sum of the squares of the entries) and $s_1 s_2 s_3 = \det D$,
+\begin{equation}
+\label{eqn:charpoly}
+P(\mu) = \mu^4 + a\, \mu^2 + b\, \mu + c, \qquad a = -2\, |D|^2, \quad b = -8 \det D, \quad c = \det K.
+\end{equation}
+\item \emph{How fast does $P$ grow at $\mu_0$?} $P'(\mu_0) = \prod_{k \geq 1} (\mu_0 - \mu_k) = 8\, (s_1 + s_2)(s_1 + s_3)(s_2 + s_3)$, the product of the three gaps.
+\end{itemize}
+
+%%% ----------------------------------------------------------------------
 \section{Optimal Quaternion using 4D Geometric Algebra}
+\label{section:eigenvalue}
 
-The most time consuming task of the estimation is to compute the eigenrotor of $M$ associated with the greatest eigenvalue. In this section we show how to find the largest eigenvalue and its corresponding eigenrotor i.e., the required quaternion, using the 4D Geometric Algebra $ \mathbb{G}_4$ which is robust, efficient and accurate.
+The most time consuming task of the estimation is to compute the eigenrotor of $\K$ associated with the largest eigenvalue. In this section and the next we show how to find the largest eigenvalue and its eigenrotor, i.e., the required quaternion, using the 4D geometric algebra $\Ge_4$.
 
-Let us define four vectors $\textbf m_1$, $\textbf m_2$, $\textbf m_3$, $\textbf m_4$ corresponding to the columns of matrix $M$:
-\begin{eqnarray}
-	M = \sum_j^n { c_j M_j^T M_j} =
-	\left[\begin{array}{cccc}
-		\\
-		\textbf m_1 & \textbf m_2 & \textbf m_3 & \textbf m_4 \\
-		\\
-	\end{array}\right]
-\end{eqnarray}
+\subsection{The columns as vectors}
 
-The matrix system that we want to solve is $M R = \lambda R$ for some $\lambda$ corresponding to the largest eigenvalue of $M$. We can write the system in its homogeneous form:
-\begin{eqnarray}
-	\label{eqn:eigensystem}
-	\left[\begin{array}{cccc}
-		\\
-		\textbf m_1 - \lambda e_1 & \textbf m_2 - \lambda e_2 & \textbf m_3 - \lambda e_3 & \textbf m_4- \lambda e_4 \\
-		\\
-		\\
-	\end{array}\right]
-	\left[\begin{array}{c} 
-		w \\
-		B_1\\
-		B_2\\
-		B_3
-	\end{array}\right] = 	
-	\left[\begin{array}{c} 
-		0 \\
-		0 \\
-		0 \\
-		0
-	\end{array}\right]
-\end{eqnarray}
+$\K$ is a linear function on the four-dimensional space $\Ge_3^+$. We model that space by $\R^4$ with an orthonormal basis $\varepsilon_0, \varepsilon_1, \varepsilon_2, \varepsilon_3$ corresponding to $E_0, \ldots, E_3$, and work in its geometric algebra $\Ge_4$, with pseudoscalar $J = \varepsilon_0 \varepsilon_1 \varepsilon_2 \varepsilon_3$. In four Euclidean dimensions $J^2 = 1$, so $J^{-1} = J$. Let us define four vectors $\mathbf m_0, \ldots, \mathbf m_3$, corresponding to the columns of the matrix $K$:
+\begin{equation}
+K = \begin{pmatrix} \mathbf m_0 & \mathbf m_1 & \mathbf m_2 & \mathbf m_3 \end{pmatrix}, \qquad \mathbf m_i = \K(\varepsilon_i).
+\end{equation}
+The system that we want to solve, $\K(R) = \mu R$, written in its homogeneous form, is
+\begin{equation}
+\label{eqn:eigensystem}
+\begin{pmatrix} \mathbf m_0 - \mu\, \varepsilon_0 & \mathbf m_1 - \mu\, \varepsilon_1 & \mathbf m_2 - \mu\, \varepsilon_2 & \mathbf m_3 - \mu\, \varepsilon_3 \end{pmatrix}
+\begin{pmatrix} w \\ x \\ y \\ z \end{pmatrix} = 0.
+\end{equation}
 
-The matrix in equation~\ref{eqn:eigensystem}, called \emph{characteristic matrix}, is of rank $3$ and thus singular i.e., the vectors $(\textbf m_1 - \lambda e_1)$, $(\textbf m_2 - \lambda e_2)$, $(\textbf m_3 - \lambda e_3)$ and $()\textbf m_4- \lambda e_4)$ are linearly dependent. It follows that its outer product must be zero:
-\begin{eqnarray}
+\subsection{The characteristic outer product}
+
+The system has a nonzero solution exactly when the matrix in~(\ref{eqn:eigensystem}), the \emph{characteristic matrix}, is singular, that is, when its four columns $\mathbf m_i - \mu\, \varepsilon_i$ are linearly dependent. In geometric algebra, linear dependence is expressed by the vanishing of an outer product: four vectors of $\R^4$ are dependent exactly when the oriented volume of the parallelotope they span is zero. So $\mu$ is an eigenvalue exactly when the \emph{characteristic outer product} vanishes,
+\begin{equation}
 \label{eqn:characteristic_outer_product}
-(\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4) = 0
-\end{eqnarray}
+(\mathbf m_0 - \mu\, \varepsilon_0) \wedge (\mathbf m_1 - \mu\, \varepsilon_1) \wedge (\mathbf m_2 - \mu\, \varepsilon_2) \wedge (\mathbf m_3 - \mu\, \varepsilon_3) = P(\mu)\, J.
+\end{equation}
+The coefficient of $J$ is the volume, which is the determinant of the characteristic matrix, so it is the characteristic polynomial $P(\mu)$ \cite{HestenesSobczyk1984}.
 
-Which is called the \emph{charactetistic outer porduct} and is equivalent to the characteristic polynomial $P(\lambda) = det(M - \lambda I)$. A simple way to find the largest eigenvalue is using Newton-Raphson method $\lambda_{i+1} = \lambda_i - P(\lambda) / P'(\lambda)$. This method is indeed robust given that all eigenvalues are non-negative real numbers, it wasn't however for methods based on Davenport's matrix \cite{Davenport1968} which eigenvalues can be negative. We found that $\sum_j { c_{j} (\|p_j\|^2 + \|q_j\|^2) }$ is a robust guess for Newton-Raphson iteration because it is close to largest eigenvalue (under certain input it is the actual largest eigenvalue, as discussed earlier) and thus converges to it in few iterations. For the sake of completeness we show the first derivative of \ref{eqn:characteristic_outer_product}:
-\begin{eqnarray*}
-P'(\lambda) = 
-- e_1\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
-- (\textbf m_1 - \lambda e_1)\wedge e_2\wedge(\textbf m_3 - \lambda e_3)\wedge(\textbf m_4- \lambda e_4)\\
-- (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge e_3\wedge(\textbf m_4- \lambda e_4)\\
-- (\textbf m_1 - \lambda e_1)\wedge(\textbf m_2 - \lambda e_2)\wedge(\textbf m_3 - \lambda e_3)\wedge e_4
-\end{eqnarray*}
+We will evaluate $P$ several times, so it pays to compute its coefficients once. The earlier version expanded the outer product~(\ref{eqn:characteristic_outer_product}) symbolically and evaluated the long expression at every iteration. Section~\ref{section:positivity} gives a shortcut: by~(\ref{eqn:charpoly}), two of the coefficients come directly from the correlation matrix, and only $c = \det K = P(0)$ needs the four columns. At $\mu = 0$, the outer product~(\ref{eqn:characteristic_outer_product}) is the volume of the columns themselves, and it can be computed as the outer product of two bivectors,
+\begin{equation}
+\label{eqn:c}
+c\, J = (\mathbf m_0 \wedge \mathbf m_1) \wedge (\mathbf m_2 \wedge \mathbf m_3).
+\end{equation}
+Each of the two bivectors has six coefficients, the $2 \times 2$ minors of a pair of columns, and the outer product combines them into a single number (equation~(\ref{eqn:coef_wedge4}) below). After that, evaluating $P(\mu)$ and $P'(\mu)$ costs a few multiplications.
 
-Following \cite{DeKeninck2019} we solve the system~\ref{eqn:eigensystem} using outer products. For a linear system $A \textbf x = b$ the authors in \cite{DeKeninck2019} defines $N$ linear equations of the form $A^T_j \textbf x = b_j$ each of which corresponds to a dual hyper-plane of the form $\textbf a_j \equiv A_j - b_j e_0$ where the solution $\textbf x$ must lie on. The $e_0$ is an \emph{homogeneous} basis vector needed for enabling projective geometry, enlarging the base space to $N+1$, which interpretation is to be the offset of the hyper-plane. So solution of the linear system is the intersection of $N$ dual hyper-planes, which is given by its outer product.
-\begin{eqnarray}
-\alpha (\textbf x + e_0)^* = \textbf a_1 \wedge \textbf a_2 \wedge ... \wedge \textbf a_N
-\end{eqnarray}
+\subsection{Finding the largest eigenvalue}
 
-Where the symbol $^*$ is the dual operator of the $N+1$ space and $\alpha$ is a weight factor. After taking the dual of $\alpha (\textbf x + e_0)^*$ and divide by the coefficient of $e_0$ (which is $\alpha$), the solution $\textbf x$ can be read off the coefficients of the $1$-vector.
+A simple way to find the largest root of $P$ is Newton's method, $\mu^{(t+1)} = \mu^{(t)} - P(\mu^{(t)}) / P'(\mu^{(t)})$, which follows the tangent of the graph of $P$ down to the axis. But $P$ has four real roots, and Newton's method converges to one of them that depends on where it starts. Figure~\ref{fig:newton} shows the danger. If we start between two roots, for instance at $\mu = 1$, as the implementations of QUEST and FOAM in the earlier version of this paper did, the iteration can converge to a smaller root and return a wrong rotation. In our tests this happened in about $30\%$ of noisy problems with vectors of random lengths.
 
-We know that the null space of $(M - \lambda I)$ is of rank one. Algebraically this means that one of its column vectors is redundant i.e., it can be written in term of the others. In linear algebra this means that the system has infinitely many solutions. The geometric interpretation is that all hyper-planes intersect in a line passing through the origin. Since all solutions lie on the same line they only differ by a scalar term, therefore a particular solution can be found by fixing a scalar. The homogeneous component $e_0$ of the hyperplane is such scalar (analog to the hyper-plane's offset as in \cite{DeKeninck2019}) since it affects only the scale of the solution not its attitude. In linear algebra language it is equivalent to set one offset value at the right hand side of \ref{eqn:eigensystem}, however that system can't be solved in linear algebra because it requires to invert a singular matrix.
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	width=0.9\textwidth, height=0.5\textwidth,
+	xmin=-1.6, xmax=2.5, ymin=-4.5, ymax=9,
+	axis lines=middle, xlabel={$\mu$}, ylabel={$P(\mu)$},
+	tick label style={font=\scriptsize}, label style={font=\small},
+	samples=200, restrict y to domain=-10:40]
+	\addplot[blue, thick, domain=-1.55:2.32] {(x-1.9)*(x-0.1)*(x+0.7)*(x+1.3)};
+	\addplot[red, thick, mark=*, mark size=1.3pt] coordinates {(2.25, 7.88) (1.9964, 0) (1.9964, 1.62) (1.91, 0) (1.91, 0.15) (1.9, 0)};
+	\addplot[orange!90!black, thick, dashed, mark=square*, mark size=1.3pt] coordinates {(1.0, -3.17) (0.0225, 0) (0.0225, 0.139) (0.111, 0) (0.1, 0)};
+	\node[font=\scriptsize, red, anchor=east] at (axis cs:2.2,7.9) {start above $\mu_0$};
+	\node[font=\scriptsize, orange!80!black, anchor=west] at (axis cs:1.05,-3.3) {start at $1$};
+	\node[font=\scriptsize, anchor=south] at (axis cs:1.9,0.5) {$\mu_0$};
+	\node[font=\scriptsize, anchor=south] at (axis cs:0.1,0.5) {$\mu_1$};
+\end{axis}
+\end{tikzpicture}
+\caption{Newton's method on a characteristic polynomial with roots $\mu_0 = 1.9$, $\mu_1 = 0.1$, $-0.7$, $-1.3$ (singular values $1, 0.6, 0.3$). Started above the largest root (red), every step stays above it and moves toward it. Started at $\mu = 1$ (dashed), between two roots, it converges to $\mu_1$, a wrong eigenvalue.}
+\label{fig:newton}
+\end{figure}
 
-We define the dual hyper-planes passing through the origin as:
-\begin{eqnarray}
-   \textbf a_i \equiv \textbf m_i - \lambda e_i
-\end{eqnarray}
+The figure also suggests the cure: to the right of the largest root, the graph of $P$ is increasing and convex, so each tangent meets the axis between the current point and the root. Starting there, the iteration slides down monotonically to the right root. All we need is a starting point that is guaranteed to be above the largest root, and the bound~(\ref{eqn:bounds}) provides it.
 
-Although it is enough to fix the scale of a single hyper-plane to get a solution it is inconvenient to do so, as will be explained in Section~\ref{section:robustness}. It is more robust to fix the scale of all hyper-planes to some $\gamma \neq 0$ which is a scalar value. Intersection can then be found by taking the outer product as:
-\begin{eqnarray}
-\label{eqn:hyperplanes_intersection}
-\alpha (\textbf x + 1)^* = (\textbf a_1 + \gamma) \wedge  (\textbf a_2 + \gamma) \wedge  (\textbf a_3  + \gamma) \wedge (\textbf a_4 + \gamma)
-\end{eqnarray}
+\begin{thm}
+\label{thm:newton}
+Starting from $\mu^{(0)} = S/2$, Newton's method on $P$ produces a decreasing sequence $\mu^{(0)} \geq \mu^{(1)} \geq \cdots \geq \mu_0$ that converges to the largest eigenvalue $\mu_0$. For data free of noise it starts at $\mu_0$.
+\end{thm}
+\begin{proof}
+$P(\mu) = \prod_k (\mu - \mu_k)$, and for $\mu > \mu_0$ every factor is positive. So are $P'(\mu)$ and $P''(\mu)$, which are sums of products of these factors: $P$ is increasing and convex on $[\mu_0, \infty)$. Suppose $\mu^{(t)} > \mu_0$. Then $P(\mu^{(t)})$ and $P'(\mu^{(t)})$ are positive, so the step is negative and $\mu^{(t+1)} < \mu^{(t)}$. Because $P$ is convex there, its graph lies above the tangent at $\mu^{(t)}$; at $\mu_0$ this says $0 = P(\mu_0) \geq P(\mu^{(t)}) + P'(\mu^{(t)})\, (\mu_0 - \mu^{(t)})$, and dividing by $P'(\mu^{(t)}) > 0$ gives $\mu^{(t+1)} \geq \mu_0$. A decreasing sequence bounded below converges, and its limit is a root of $P$ not smaller than $\mu_0$, hence $\mu_0$ itself. The start $S/2$ is above $\mu_0$ by~(\ref{eqn:bounds}), and equal to it without noise by~(\ref{eqn:exact_eigenvalue}).
+\end{proof}
 
-Distributing the outer product and keeping the terms of grade-$3$ we get:
-\begin{eqnarray}
-\alpha (\textbf x + 1)^* =  \gamma (\textbf a_1 \wedge \textbf a_3 \wedge \textbf a_4
-+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_4
-+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_3
-+ \textbf a_2 \wedge \textbf a_3 \wedge \textbf a_4)
-\end{eqnarray}
+How many steps are needed? By~(\ref{eqn:overshoot}), the start overestimates $\mu_0$ by half the least squares error. When the data can be aligned well, the start is very close to the root, and the quadratic convergence of Newton's method near a simple root takes over immediately: one step without noise, two or three with moderate noise. Only for very noisy data, where the least squares error is comparable to $S$, does the iteration start far from the root, where $P$ behaves like $\mu^4$ and each step shrinks $\mu$ by about one quarter. We stop when a step is smaller than a tolerance $\epsilon$ ($10^{-5}$ in our implementation). By then the error is of order $\epsilon^2$, relative to the scale of the eigenvalues.
 
-Here the symbol $^*$ is the dual operator of the $4$D space (not $5$D as in \cite{DeKeninck2019} which allow us to be more efficient) and $\alpha$ is a weight factor. After taking the dual of $\alpha (\textbf x + 1)^*$ the eigenvector $\textbf x$ can be read off the coefficients of the $1$-vector. Notice that solution needs to be normalized.
+The earlier version started Newton's method from $S$. In the scaling of that version the eigenvalue of its matrix was $\mu + S/2$, so that starting point is exactly our $S/2$, and the analysis above explains why it worked: it is an upper bound, exact without noise. The same start works for every method that solves the same quartic, including QUEST, FOAM and FLAE with Newton's method.
 
-\section{Optimal Computation of M}
+%%% ----------------------------------------------------------------------
+\section{The Eigenrotor as an Intersection of Hyperplanes}
+\label{section:intersection}
 
-The symmetric matrix $M_j^T M_j$ has a simple form in terms of $p_j$ and $q_j$:
-\begin{eqnarray}
-   \label{eqn:matrix_fast}
-   	M_j^T M_j = 2
-	\left[\begin{array}{cc}
-		p_j^T q_j       &  (p_j \times q_j)^T \\
-		p_j \times q_j  &  p_j q_j^T + q_j p_j^T - p_j^Tq_j I_{3\times3} \\
-	\end{array}\right]
-    + (\| p_j \|^2 + \| q_j \|^2) I_{4\times4}
-\end{eqnarray}
-All terms of \ref{eqn:matrix_fast} can be derived from the covariance matrix $D = p_j q_j^T$ plus the quantity $\| p_j \|^2 + \| q_j \|^2$. Since matrix $D$ is of $3\times3$ its computation is more efficient than the whole \ref{eqn:matrix_fast}. Details can be found in Section~\ref{section:algoritms}.
+\subsection{Why intersect hyperplanes}
 
+Once $\mu_0$ is known, we need a nonzero solution of the homogeneous system~(\ref{eqn:eigensystem}). Since the characteristic matrix is singular, the system cannot be solved by inverting it, and since every multiple of a solution is also a solution, we have to decide which multiple we want. Following \cite{DeKeninck2019}, we look at the system geometrically.
+
+Let $\mathbf x_i = \mathbf m_i - \mu_0\, \varepsilon_i$ be the columns of the characteristic matrix, and $r = (w, x, y, z)$ the unit eigenrotor. Because $K$ is symmetric, the columns are also its rows, so each equation of the system says $\mathbf x_i \cdot r = 0$: the solution lies on the hyperplane $H_i$ through the origin with normal $\mathbf x_i$. The characteristic matrix has rank three, so the four hyperplanes intersect in a line, the line spanned by $r$. The normals $\mathbf x_i$ all lie in the three-dimensional space orthogonal to that line. Finding the eigenrotor means finding the line where the four hyperplanes meet.
+
+\subsection{The meet of three hyperplanes}
+
+Three hyperplanes in general position already meet in a line, and geometric algebra gives that line directly. For three vectors $\mathbf a, \mathbf b, \mathbf c$ of $\R^4$, the trivector $\mathbf a \wedge \mathbf b \wedge \mathbf c$ represents the three-dimensional space they span, and its dual is the direction orthogonal to it:
+\begin{equation}
+\label{eqn:meet}
+\mathbf a \cdot \big( (\mathbf a \wedge \mathbf b \wedge \mathbf c)\, J^{-1} \big) = (\mathbf a \wedge \mathbf a \wedge \mathbf b \wedge \mathbf c)\, J^{-1} = 0,
+\end{equation}
+and likewise for $\mathbf b$ and $\mathbf c$. So $(\mathbf a \wedge \mathbf b \wedge \mathbf c) J^{-1}$ lies on the three hyperplanes with normals $\mathbf a, \mathbf b, \mathbf c$: it is their \emph{meet}. Its length is the three-dimensional volume of the parallelotope spanned by $\mathbf a, \mathbf b, \mathbf c$, because multiplying by $J^{-1}$ preserves norms. The meet is long when the three normals are well spread out, and it shrinks to zero when they become coplanar, which is exactly when the three hyperplanes stop meeting in a single line.
+
+With four normals there are four ways of choosing three. Leaving out one column at a time, define the four trivectors
+\begin{equation}
+\label{eqn:trivectors}
+T_0 = \mathbf x_1 \wedge \mathbf x_2 \wedge \mathbf x_3, \quad T_1 = \mathbf x_0 \wedge \mathbf x_2 \wedge \mathbf x_3, \quad T_2 = \mathbf x_0 \wedge \mathbf x_1 \wedge \mathbf x_3, \quad T_3 = \mathbf x_0 \wedge \mathbf x_1 \wedge \mathbf x_2.
+\end{equation}
+Each meet $T_k J^{-1}$ lies on the line of $r$, so it is a multiple of $r$. Which multiple? The answer is the key to everything that follows.
+
+\subsection{How long is each meet}
+
+Think of the characteristic matrix as a linear function $\Gop = \K - \mu_0$ on $\R^4$. It maps each basis vector $\varepsilon_i$ to the column $\mathbf x_i$, and it maps the eigenrotor $r$ to zero: it flattens the direction $r$ and keeps the three directions orthogonal to it. Now, the three columns in $T_k$ are the images of the three basis vectors other than $\varepsilon_k$, which together span the coordinate hyperplane $\varepsilon_k^\perp$ (the elements whose $k$-th coordinate is zero). So $T_k$ is the image under $\Gop$ of the unit volume of $\varepsilon_k^\perp$, and its size tells us how much $\Gop$ shrinks volumes in that hyperplane. If $\varepsilon_k^\perp$ contains the flattened direction $r$, that is, if $r_k = 0$, its image is squashed onto a plane and the volume is zero. If $\varepsilon_k^\perp$ is orthogonal to $r$, which happens when $r = \pm \varepsilon_k$, nothing in it is flattened. In between, the volume is proportional to how far $\varepsilon_k^\perp$ is from containing $r$, which is $|\cos \angle(r, \varepsilon_k)| = |r_k|$. The precise statement is:
+
+\begin{prop}
+\label{prop:meets}
+Let $\kappa = -P'(\mu_0) = -8\, (s_1 + s_2)(s_1 + s_3)(s_2 + s_3)$. Then
+\begin{equation}
+\label{eqn:meets}
+T_k\, J^{-1} = (-1)^k\, \kappa\, r_k\, r, \qquad k = 0, 1, 2, 3.
+\end{equation}
+\end{prop}
+\begin{proof}
+A linear function extends to multivectors as an outermorphism, $\Gop(\mathbf a \wedge \mathbf b \wedge \mathbf c) = \Gop(\mathbf a) \wedge \Gop(\mathbf b) \wedge \Gop(\mathbf c)$ \cite{HestenesSobczyk1984}, so $T_k = \Gop(\hat \varepsilon_k)$, where $\hat \varepsilon_k$ is the outer product of the basis vectors other than $\varepsilon_k$, in increasing order. Moving $\varepsilon_k$ through the others shows $\hat \varepsilon_k = (-1)^k\, \varepsilon_k J$; for example $\varepsilon_1 J = \varepsilon_1 \varepsilon_0 \varepsilon_1 \varepsilon_2 \varepsilon_3 = -\varepsilon_0 \varepsilon_2 \varepsilon_3$. Hence $T_k J^{-1} = (-1)^k\, \Gop(\varepsilon_k J) J^{-1}$. For a symmetric $\Gop$, the map $\mathbf a \mapsto \Gop(\mathbf a J) J^{-1}$ is its adjugate, which satisfies $\Gop\big(\Gop(\mathbf a J) J^{-1}\big) = \det(\Gop)\, \mathbf a$ \cite{HestenesSobczyk1984, Doran2003}. Here $\det \Gop = 0$, so the adjugate maps every vector into the kernel of $\Gop$, the line of $r$; being symmetric, it is $\mathbf a \mapsto \kappa\, (r \cdot \mathbf a)\, r$ for some number $\kappa$, which is its trace: the sum of the principal $3 \times 3$ minors of $\Gop$, or equivalently the product of its three nonzero eigenvalues $\mu_k - \mu_0$, $k = 1, 2, 3$. By Section~\ref{section:positivity}, this is $-P'(\mu_0)$, the product of the three gaps with a minus sign.
+\end{proof}
+
+So every meet points along the eigenrotor, and its length $|\kappa|\, |r_k|$ has two factors. The first one, $|\kappa|$, is the product of the three gaps between $\mu_0$ and the other eigenvalues; it depends only on the data, and it vanishes only when the best rotation is not unique. The second one, $|r_k|$, is the size of the $k$-th coordinate of the eigenrotor, and it depends on the rotation. A meet is a reliable way of computing the eigenrotor when $r_k$ is large, and a useless one when $r_k$ is close to zero: then it is a tiny vector made mostly of rounding errors.
+
+\subsection{The earlier choice: constraining all the hyperplanes}
+\label{section:earlier}
+
+The earlier version of this paper fixed the scale of the solution by adding the same offset $\gamma$ to all four hyperplanes and intersecting them, $(\mathbf x_0 + \gamma) \wedge (\mathbf x_1 + \gamma) \wedge (\mathbf x_2 + \gamma) \wedge (\mathbf x_3 + \gamma)$. Distributing the outer product, the terms of grade three are $\gamma$ times the sum of the four trivectors~(\ref{eqn:trivectors}), so the solution was $\sum_k T_k J^{-1}$. The motivation was sound: fixing the scale of a single hyperplane fails for some rotations, and constraining all of them was meant to avoid every such failure. Proposition~\ref{prop:meets} shows what the sum computes:
+\begin{equation}
+\label{eqn:sum_of_meets}
+\sum_{k=0}^3 T_k\, J^{-1} = \kappa\, (r_0 - r_1 + r_2 - r_3)\, r.
+\end{equation}
+The four meets point along the same line, but with signed lengths $\kappa r_0$, $-\kappa r_1$, $\kappa r_2$, $-\kappa r_3$, and they cancel when $r_0 - r_1 + r_2 - r_3 = 0$. This happens for many common rotations: for example the rotation by $\pi/2$ about the $z$ axis, whose coordinates are $(\frac{1}{\sqrt2}, 0, 0, \frac{1}{\sqrt2})$, or the rotation by $2\pi/3$ about the axis $(1, 1, 1)/\sqrt3$, whose coordinates are $(\frac12, \frac12, \frac12, \frac12)$. Constraining all the hyperplanes does not remove the singularities; it moves them to a different family of rotations.
+
+%%% ----------------------------------------------------------------------
+\section{Optimal Computation}
+\label{section:computation}
+
+\subsection{The matrix}
+
+The matrix $K$ of~(\ref{eqn:matrix}) and the coefficients of $P$ depend on the data only through the correlation matrix $D$, a $3 \times 3$ matrix, and the scalar $S$. Both are accumulated in a single pass over the data, $D = \sum_j c_j\, \hat q_j \hat p_j^T$ and $S = \sum_j c_j\, (|\hat p_j|^2 + |\hat q_j|^2)$, which is the only part of the computation whose cost grows with the number of vectors. Every other step has a fixed cost. The vector $z$ of~(\ref{eqn:correlation}) is the antisymmetric part of $D$: $z = (D_{32} - D_{23},\, D_{13} - D_{31},\, D_{21} - D_{12})$.
+
+\subsection{The meets}
+
+All four meets can be formed from two bivectors,
+\begin{equation}
+\label{eqn:bivectors}
+A = \mathbf x_0 \wedge \mathbf x_1, \qquad C = \mathbf x_2 \wedge \mathbf x_3,
+\end{equation}
+since a bivector and a vector commute under the outer product:
+\begin{equation}
+\label{eqn:trivectors_AC}
+T_0 = \mathbf x_1 \wedge C, \qquad T_1 = \mathbf x_0 \wedge C, \qquad T_2 = A \wedge \mathbf x_3, \qquad T_3 = A \wedge \mathbf x_2.
+\end{equation}
+In coordinates, a bivector has the six coefficients $A_{ij}$, $i < j$, on $\varepsilon_i \wedge \varepsilon_j$, and a trivector the four coefficients $T_{012}, T_{013}, T_{023}, T_{123}$. The products we need are
+\begin{align}
+(\mathbf a \wedge \mathbf b)_{ij} &= a_i b_j - a_j b_i, \label{eqn:coef_wedge2} \\
+(A \wedge \mathbf x)_{ijk} &= A_{ij}\, x_k - A_{ik}\, x_j + A_{jk}\, x_i, \qquad i < j < k, \label{eqn:coef_wedge3} \\
+(A \wedge C)\, J^{-1} &= A_{01} C_{23} - A_{02} C_{13} + A_{03} C_{12} + A_{12} C_{03} - A_{13} C_{02} + A_{23} C_{01}, \label{eqn:coef_wedge4} \\
+T J^{-1} &= T_{123}\, \varepsilon_0 - T_{023}\, \varepsilon_1 + T_{013}\, \varepsilon_2 - T_{012}\, \varepsilon_3. \label{eqn:coef_dual}
+\end{align}
+Equation~(\ref{eqn:coef_wedge4}) is also how the coefficient $c$ of~(\ref{eqn:c}) is computed, from the bivectors of the columns $\mathbf m_i$.
+
+%%% ----------------------------------------------------------------------
 \section{Robustness and Singularities}
 \label{section:robustness}
 
-As stated before, setting the scale of a single hyperplane is enough to get a valid eigenrotor. However, the choice of which hyperplane to constraint is problematic. For instance,  assuming input vectors without noise, constraining the hyperplane corresponding to the $w$ component of the rotor won't work because when the angle of rotation is $\pi$ the $w = \cos(\pi/2) = 0$ and so its scale cannot be constrained. Similarly, constraining one of the hyper-planes corresponding to $B_1$, $B_2$ or $B_3$ won't work because when the angle of rotation is $0$ or $4 \pi$ the $\sin(2 \pi) = 0$ and so on. Then, it is complex task to avoid all problematic situations. By constraining all hyper-planes as in \ref{eqn:hyperplanes_intersection} our geometric algebra method does not suffer from any of those singularities.
+\subsection{Every fixed choice fails somewhere}
 
-Some of the above mentioned singularities are present in classic methods such as QUEST \cite{Shuster1981} and FOMA \cite{Markley1993} but also on methods derived from those, including recent descendants based on analytic formulas \cite{Yang2013, Wu2016, Wu2017, Wu2018FA3R, Wu2018FS3R}. All those methods are based on finding the eigenvector corresponding to largest eigenvalue of Davenport's matrix \cite{Davenport1968}. Since that is an indefinite matrix, some eigenvalues are positive and some negative, the Newton-Raphson can fail to find the max eigenvalue (which can be negative). So significant effort has been put on finding fast and robust analytic solutions to the quartic polynomial but no advances has been made on improving robustness on finding the associated eigenvector besides doing \emph{sequential rotations} i.e., a $\pi$ angle rotation of input data accomplished by changing the signs of two columns of the covariance matrix of \cite{Shuster1981}. The QUEST method performs sequential rotations one axis at a time, until an acceptable reference coordinate system is found.
+The eigenrotor is a line; to compute it, every method has to fix its scale somehow. Choosing the meet $T_k J^{-1}$ fixes it in proportion to $r_k$; choosing the sum~(\ref{eqn:sum_of_meets}) fixes it in proportion to $r_0 - r_1 + r_2 - r_3$. In general, a method that fixes a linear combination $\sigma \cdot r$ of the coordinates in advance computes the point where the line meets the hyperplane $\sigma \cdot \mathbf x = 1$, the point $r / (\sigma \cdot r)$. Figure~\ref{fig:charts} shows the situation in two dimensions: when the line becomes parallel to the chosen hyperplane, the intersection point moves to infinity and the computation breaks down.
 
-\section{Algorithms}
-\label{section:algoritms}
-
-The pseudo-code of proposed method is shown in Algorithm~\ref{alg:FastRotorEstimation}. 
-
-\begin{algorithm}
-\begin{algorithmic}[1]
-\REQUIRE {$P = \{p_{j}\}_{j=1}^n, Q = \{q_{j}\}_{j=1}^n, C = \{c_{j}\}_{j=1}^n$}
-\STATE{$S = D = 0, \gamma = 1$}
-\FOR{$j = 1$ \TO $n$}
-\STATE{$S = S + c_j (p_j \cdot p_j + q_j \cdot q_j)$}
-\STATE{$D = D + c_j p_j q_j^T$}
-\ENDFOR
-\STATE{$\textbf m_1 = (\frac{1}{2}S + Tr(D))e_1 + (D_{12} - D_{21}) e_2 + (D_{20} - D_{02}) e_3 + (D_{01} - D_{10}) e_4$}
-\STATE{$\textbf m_2 = (D_{12} - D_{21})e_1 + (2 D_{00} + \frac{1}{2}S - Tr(D))e_2 + (D_{01} + D_{10}) e_3 + (D_{20} + D_{02}) e_4$}
-\STATE{$\textbf m_3 = (D_{20} - D_{02})e_1 + (D_{01} + D_{10}) e_2 + (2 D_{11} + \frac{1}{2}S - Tr(D))e_3 + (D_{12} + D_{21}) e_4$}
-\STATE{$\textbf m_3 = (D_{01} - D_{10})e_1 + (D_{20} + D_{02}) e_2 + (D_{12} + D_{21}) e_3 + (2 D_{22} + \frac{1}{2}S - Tr(D))e_4$}
-
-\COMMENT{Newton-Raphson}
-\STATE{$\lambda_0 = S$}
-\REPEAT
-\STATE{$\lambda_{i+1} = \lambda_i - P(\lambda_i) / P'(\lambda_i)$}
-\UNTIL{$\|\lambda_{i+1} - \lambda_i\| < \epsilon$}
-\STATE{$\textbf a_1 = \textbf m_1 - \lambda e_1$
-}
-\STATE{$\textbf a_2 = \textbf m_2 - \lambda e_2$
-}
-\STATE{$\textbf a_3 = \textbf m_3 - \lambda e_3$
-}
-\STATE{$\textbf a_4 = \textbf m_4 - \lambda e_4$
-}
-\STATE{$\textbf X = \gamma (\textbf a_1 \wedge \textbf a_3 \wedge \textbf a_4
-	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_4
-	+ \textbf a_1 \wedge \textbf a_2 \wedge \textbf a_3
-	+ \textbf a_2 \wedge \textbf a_3 \wedge \textbf a_4)$}
-\STATE{$R = normalize( \langle \textbf X^* \rangle_1 )$}
-\RETURN { $R(0) + R(1) e_{12} + R(2) e_{13} + R(3) e_{23}$ }
-\end{algorithmic}
-\caption{Fast Rotor Estimation}\label{alg:FastRotorEstimation}
-\end{algorithm}
-An optimized C++ code using the Eigen library \cite{Eigen} and GAALOP  \cite{Gaalop} is publicly available on GitHub \cite{GARotorEstimator}
-
-\section{Comparisons}
-
-We selected several representative methods e.g. FLAE \cite{Wu2017}, SVD \cite{Arun1987}, QUEST \cite{Shuster1981}, FA3R \cite{Wu2018FA3R}, Symbolic \cite{Wu2018FS3R}, Q-Method \cite{Shuster1981} and FOMA \cite{Markley1993} for comparison. The Eigen library \cite{Eigen} was employed to implement all of them. The tests were ran on a MacBook Pro laptop with Intel Core i7 CPU running at 2,5 GHz. The Clang C++ compiler was used with -Ofast option enabled.
-
-We first show that some methods fails on producing meaningful rotations when certain input data is provided. Table~\ref{tab:failure_cases} shows four cases which causes error. First two cases consist of having input vectors rotated $\pi/2$ and $\pi$ radians without noise. Other case is when the 3D vectors are projected to the $YZ$-plane and rotated  around the $X$-axis without noise. The last case is similar but projected to the $XZ$-plane. The root mean-squared error (RMSE) is used to describe the difference of accuracy.
-
- \begin{table} [H]
- \centering
- \resizebox{1.0\textwidth}{!}{ 
- \begin{tabular}{cccccc}
- \toprule
- {Algo}&{$\pi/2$}&{$\pi$}&{$YZ$Plane}&{$XZ$Plane}&{$XY$Plane}\\
- \midrule
- {FLAE}&{$4.41 \times 10^{-28}$}&{$696$}&{$392$}&{$1328$}&{$3.25 \times 10^{-28}$}\\
- {Symbolic}&{$1.78 \times 10^{-26}$}&{$1053$}&{$392$}&{$1321$}&{$4.70 \times 10^{-27}$}\\
- {FA3R}&{$4.00 \times 10^{-28}$}&{$5.41 \times 10^{-29}$}&{$2.25 \times 10^{-09}$}&{$2.76 \times 10^{-08}$}&{$4.98 \times 10^{-08}$}\\
- {Proposed}&{$7.32 \times 10^{-18}$}&{$1.79 \times 10^{-18}$}&{$4.05 \times 10^{-28}$}&{$3.43 \times 10^{-28}$}&{$2.22 \times 10^{-24}$}\\
- {Q-Method}&{$3.78 \times 10^{-28}$}&{$2.89 \times 10^{-29}$}&{$7.10 \times 10^{-28}$}&{$1.45 \times 10^{-28}$}&{$9.57 \times 10^{-29}$}\\
- {QUEST}&{$82.6$}&{$2.18 \times 10^{-29}$}&{$6.09 \times 10^{-26}$}&{$9.93 \times 10^{-28}$}&{$8.36 \times 10^{-29}$}\\
- {FOMA}&{$6.08 \times 10^{-28}$}&{$2.95 \times 10^{-28}$}&{$3.93 \times 10^{-26}$}&{$2.13 \times 10^{-27}$}&{$1.19 \times 10^{-28}$}\\
- {SVD}&{$4.41 \times 10^{-28}$}&{$7.51 \times 10^{-29}$}&{$3.35 \times 10^{-28}$}&{$9.83 \times 10^{-29}$}&{$1.09 \times 10^{-28}$}\\
-\bottomrule
- \end{tabular}}
- \caption{RMSE of one million vector alignments of a thousand input vectors without noise. Some methods failed when 3D vectors were rotated $\pi/2$ and $\pi$  and when vectors are projected to the coordinate planes}  
- \label{tab:failure_cases}
- \end{table}
-
-We also compared the robustness of the methods when input data has extreme noise applied to the length of input vectors. Figure~\ref{fig:robustness} shows that some methods often fails to find meaningful rotations. We took SVD as reference. Notice that the amount of RMSE is almost the same on successes and on failures, evidencing that almost all methods builds, in essence, the Q-Method's matrix.
- 
-\begin{figure}[H]
+\begin{figure}[t]
 \centering
-\includegraphics[width=1.0\textwidth]{robustness.png}
-\caption{Sum of RMSE of one million vector alignments of a thousand input vectors. We applied Gaussian random noise to angles and random noise to lengths}
-\label{fig:robustness}
+\begin{tikzpicture}[scale=1.6]
+	\draw[->] (-0.3, 0) -- (2.6, 0) node[right] {$x_1$};
+	\draw[->] (0, -0.3) -- (0, 2.2) node[above] {$x_2$};
+	\draw[thick, blue] (-0.15, -0.0618) -- (2.5, 1.03) node[right] {line of $r$};
+	\draw[dashed] (1, -0.2) -- (1, 2.1) node[above] {$x_1 = 1$};
+	\draw[dashed] (-0.3, 1) -- (2.55, 1);
+	\node[left] at (-0.3, 1) {$x_2 = 1$};
+	\fill[red] (1, 0.412) circle (0.035);
+	\node[right] at (1.02, 0.30) {$r / r_1$};
+	\fill[red!50] (2.427, 1) circle (0.035);
+	\node[above left] at (2.43, 1.0) {$r / r_2$};
+	\draw[->, thick] (0, 0) -- (0.924, 0.381) node[midway, above left] {$r$};
+\end{tikzpicture}
+\caption{Fixing the scale of a line, in two dimensions. Fixing $x_1 = 1$ selects the point $r / r_1$, close to the origin here. Fixing $x_2 = 1$ selects $r / r_2$, which moves to infinity as the line becomes parallel to $x_2 = 1$ ($r_2 \to 0$). The coordinate with the largest $|r_k|$ always gives a nearby point.}
+\label{fig:charts}
 \end{figure}
 
-Among the compared methods SVD, Q-Method and the ours are the most robust. Performance is shown in Figure~\ref{fig:time} compared to the other methods. Our experiments shows that when the number of input vectors is up to 1000 our method is faster than Q-Method. Beyond that point the trend shows that Q-Method is faster.
+No fixed choice of $\sigma$ can avoid this. The eigenrotors with $\sigma \cdot r = 0$ are the intersection of the unit sphere of rotors with a hyperplane through its center, a great two-sphere, which is never empty: every fixed choice fails on a two-parameter family of rotations. Near that family it loses accuracy gradually, since the computed meet is proportional to $\sigma \cdot r$ while its rounding errors are not; the relative error grows like $u / |\sigma \cdot r|$, where $u$ is the unit roundoff. The closed form methods fall in this category:
+\begin{itemize}
+\item QUEST \cite{Shuster1981} computes the eigenrotor from a closed formula whose scalar part $\gamma$ is the scale, the choice $r_0$. It fails when the scalar part of the rotor vanishes, that is, for every rotation by $\pi$, since the scalar part of a rotor is $\cos\frac{\theta}{2}$.
+\item FLAE \cite{Wu2017} and the Symbolic method \cite{Wu2018FS3R} fix the last coordinate of the quaternion, the choice $r_3$. They fail when $r_3 = \sin\frac{\theta}{2}\, n_3 = 0$: for every rotation about an axis orthogonal to the $z$ axis, and for the identity.
+\item The sum of the earlier version is the choice $\sigma = (1, -1, 1, -1)$ and fails on the family described in Section~\ref{section:earlier}.
+\end{itemize}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1.0\textwidth]{time.png}
-	\caption{Performance comparison: number of vectors v.s. execution time ($\mu$s)}
-	\label{fig:time}
+Figure~\ref{fig:meet_sizes} follows the size of each candidate as a rotation turns from $0$ to $2\pi$ about a fixed axis. Every single meet, and the sum, reaches zero somewhere. But the four coordinates of a unit eigenrotor cannot all be small at once: their squares add up to one, so the largest one always satisfies $|r_k| \geq \frac12$.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	width=0.9\textwidth, height=0.45\textwidth,
+	xmin=0, xmax=360, ymin=0, ymax=1.02, xtick={0,90,180,270,360},
+	xlabel={rotation angle $\theta$ (degrees) about $(1,2,3)/\sqrt{14}$}, ylabel={size of the meet / $|\kappa|$},
+	legend style={font=\scriptsize, at={(0.5,1.03)}, anchor=south}, legend columns=3,
+	tick label style={font=\scriptsize}, label style={font=\small}, samples=181, domain=0:360]
+	\addplot[red, thick] {abs(cos(x/2))};
+	\addplot[teal, thick] {abs(sin(x/2))*1/sqrt(14)};
+	\addplot[violet, thick] {abs(sin(x/2))*2/sqrt(14)};
+	\addplot[orange, thick] {abs(sin(x/2))*3/sqrt(14)};
+	\addplot[gray, thick, dashed] {abs(cos(x/2) - sin(x/2)*(1 - 2 + 3)/sqrt(14))};
+	\addplot[blue, ultra thick] {max(abs(cos(x/2)), abs(sin(x/2))*3/sqrt(14))};
+	\addplot[black, densely dotted, domain=0:360] {0.5};
+	\legend{$|r_0|$ (QUEST), $|r_1|$, $|r_2|$, $|r_3|$ (FLAE), sum (earlier), largest}
+\end{axis}
+\end{tikzpicture}
+\caption{Size of each meet, divided by $|\kappa|$, for the rotations by $\theta$ about a fixed axis. The meet $T_0 J^{-1}$ (as in QUEST) vanishes at $\theta = \pi$; the meets $T_1, T_2, T_3$ (the last one as in FLAE) vanish at the identity; the sum of the earlier version vanishes near $\theta = 0.7\pi$. The largest meet never goes below $\frac12$ (dotted line).}
+\label{fig:meet_sizes}
 \end{figure}
 
+\subsection{Choosing the hyperplanes from the data}
+
+The cure is to let the data choose: use the meet with the largest $|r_k|$. We do not know $r$ before computing it, but Proposition~\ref{prop:meets} tells us how to find the best meet anyway. The component of the meet $T_k J^{-1}$ along its own missing direction $\varepsilon_k$ is
+\begin{equation}
+\label{eqn:own}
+\varepsilon_k \cdot (T_k J^{-1}) = (-1)^k\, \kappa\, r_k^2,
+\end{equation}
+which is largest, in absolute value, for the largest $|r_k|$. This component is a single coefficient of $T_k$: by~(\ref{eqn:coef_dual}), it is $T_{0,123}$, $-T_{1,023}$, $T_{2,013}$ or $-T_{3,012}$ for $k = 0, 1, 2, 3$, each a sum of three products by~(\ref{eqn:coef_wedge3}). So we compute the four coefficients from the bivectors $A$ and $C$, pick the largest, and complete and dualize only that trivector. Since the largest $|r_k|$ is at least $\frac12$, the selected meet satisfies
+\begin{equation}
+\label{eqn:lower_bound}
+|T_{k^*} J^{-1}| = |\kappa|\, |r_{k^*}| \;\geq\; \frac{|\kappa|}{2} = 4\, (s_1 + s_2)(s_1 + s_3)(s_2 + s_3).
+\end{equation}
+The right-hand side depends only on the singular values of the data, not on the rotation, and it vanishes only when the best rotation is not unique. Whatever the rotation, the selected meet is computed with a relative error of the order of the unit roundoff. The remaining degeneracy belongs to the problem, not to the method.
+
+The same idea appears elsewhere. Shepperd's method \cite{Shepperd1978} converts a rotation matrix into a quaternion by first finding the largest of the four components, from the diagonal of the matrix, and solving for the others relative to it. QUEST can be made robust with the method of sequential rotations \cite{Shuster1981}: when $\gamma$ is too small, the problem is solved again in a reference frame rotated by $\pi$ about a coordinate axis, which exchanges the roles of the four coordinates. In the language of this section, both select a better hyperplane. Here the selection costs almost nothing, because the four candidates come from the same two bivectors.
+
+%%% ----------------------------------------------------------------------
+\section{Algorithms}
+\label{section:algorithms}
+
+The pseudo-code of the proposed method is shown in Algorithm~\ref{alg:rotor}. After the loop over the data, it needs about $40$ multiplications to form $K$ and the coefficients of $P$, about $10$ per Newton step, and about $40$ to form the two bivectors, the four selection coefficients and the selected trivector. An optimized C++ implementation using the Eigen library \cite{Eigen}, a port to Rust, and the experiments of the next section are publicly available on GitHub \cite{GARotorEstimator}.
+
+\begin{algorithm}[t]
+\begin{algorithmic}[1]
+\REQUIRE {$P = \{p_j\}_{j=1}^n$, $Q = \{q_j\}_{j=1}^n$, $C = \{c_j\}_{j=1}^n$, as vectors (the duals of the bivectors)}
+\STATE $S \leftarrow \sum_j c_j \left(|p_j|^2 + |q_j|^2\right)$, \quad $D \leftarrow \sum_j c_j\, q_j p_j^T$
+\STATE $t \leftarrow \tr D$, \quad $z \leftarrow (D_{32} - D_{23},\, D_{13} - D_{31},\, D_{21} - D_{12})$
+\STATE $N \leftarrow D + D^T - t\, I$
+\STATE $\mathbf m_0 \leftarrow (t, z)$, \quad $\mathbf m_i \leftarrow (z_i, N_{1i}, N_{2i}, N_{3i})$, $i = 1, 2, 3$ \hfill (\ref{eqn:matrix})
+\STATE $a \leftarrow -2 |D|^2$, \quad $b \leftarrow -8 \det D$ \hfill (\ref{eqn:charpoly})
+\STATE $c \leftarrow (\mathbf m_0 \wedge \mathbf m_1) \wedge (\mathbf m_2 \wedge \mathbf m_3)\, J^{-1}$ \hfill (\ref{eqn:c})
+\COMMENT{Newton-Raphson from the upper bound}
+\STATE $\mu \leftarrow S / 2$
+\REPEAT
+\STATE $\mu \leftarrow \mu - \dfrac{\mu^4 + a \mu^2 + b \mu + c}{4 \mu^3 + 2 a \mu + b}$
+\UNTIL{the step is smaller than $\epsilon$}
+\COMMENT{the meets}
+\STATE $\mathbf x_i \leftarrow \mathbf m_i - \mu\, \varepsilon_i$, $i = 0, \ldots, 3$
+\STATE $A \leftarrow \mathbf x_0 \wedge \mathbf x_1$, \quad $C \leftarrow \mathbf x_2 \wedge \mathbf x_3$ \hfill (\ref{eqn:bivectors})
+\STATE $o_0 \leftarrow |(\mathbf x_1 \wedge C)_{123}|$, \quad $o_1 \leftarrow |(\mathbf x_0 \wedge C)_{023}|$ \hfill (\ref{eqn:own})
+\STATE $o_2 \leftarrow |(A \wedge \mathbf x_3)_{013}|$, \quad $o_3 \leftarrow |(A \wedge \mathbf x_2)_{012}|$
+\STATE $k^* \leftarrow \arg\max_k o_k$, \quad $r \leftarrow T_{k^*} J^{-1}$ \hfill (\ref{eqn:trivectors_AC}), (\ref{eqn:coef_dual})
+\RETURN $r / |r|$
+\end{algorithmic}
+\caption{Robust Rotor Estimation. The result $r / |r|$ is the quaternion $(w, x, y, z)$ of the rotor $R = w + x E_1 + y E_2 + z E_3$.}
+\label{alg:rotor}
+\end{algorithm}
+
+%%% ----------------------------------------------------------------------
+\section{Comparisons}
+\label{section:comparisons}
+
+We selected several representative methods for comparison: FLAE \cite{Wu2017} (with its closed formula and with Newton's method), the Symbolic method \cite{Wu2018FS3R}, FA3R \cite{Wu2018FA3R}, QUEST and the Q-Method \cite{Shuster1981}, FOAM \cite{Markley1993}, Horn's method \cite{Horn1987}, and SVD \cite{Arun1987}, both with Eigen's SVD and with a fast $3 \times 3$ SVD. The Eigen library \cite{Eigen} was employed to implement all of them, in plain scalar code: no method is vectorized by hand, so that differences in speed reflect the methods and not the effort spent on each implementation. The tests ran on an Apple M1 Pro, compiled with Apple Clang 21 and the options \texttt{-O3} and \texttt{-Ofast}.
+
+Since the earlier version of this paper we corrected several defects of the implementations used for comparison: Newton iterations that started at $1$ (they now start at $S/2$, which Theorem~\ref{thm:newton} justifies for them as well), an SVD without the correction of reflections, FA3R applied without normalizing the data, and an indexing error in the $3 \times 3$ SVD. The implementations of FLAE and QUEST used for timing include safeguards against their singularities, which do not trigger on the random data used for timing.
+
+\subsection{Singular cases}
+
+We first isolate the effect of the choice of hyperplanes. We use a single implementation of Algorithm~\ref{alg:rotor} and change only its last step: the meet $T_0 J^{-1}$ (the choice of QUEST), the meet $T_3 J^{-1}$ (the choice of FLAE), the sum of the four meets (the earlier version), and the selected meet. The input is $1000$ unit vectors with random directions, rotated without noise. Table~\ref{tab:charts} shows the angle between the estimated and the true rotation. Each fixed choice fails, with errors of the order of a radian, exactly on the rotations predicted in Section~\ref{section:robustness}, and is accurate elsewhere. The selected meet is as accurate as Eigen's eigensolver applied to the same matrix in every case, and Newton's method needed a single step in all of them, as predicted by Theorem~\ref{thm:newton}.
+
+\begin{table}[t]
+\centering
+\caption{Angle error (radians) for noise-free data, with different choices of hyperplanes. The coordinates $(w, x, y, z)$ of the true rotors are, from top to bottom, $(1, 0, 0, 0)$, $(0, 0.27, 0.53, 0.80)$, $(0.71, 0, 0, 0.71)$, $(0.5, 0.61, 0.61, 0)$ and $(0.88, 0.13, 0.26, 0.38)$.}
+\label{tab:charts}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Rotation & $T_0$ & $T_3$ & sum & selected & eigen- \\
+ & (QUEST) & (FLAE) & (earlier) & & solver \\
+\midrule
+\csname @@input\endcsname tables/charts.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:near_singular} shows what happens near the singular families. On the left, the rotations are by $\pi - \delta$, so that $r_0 = \sin\frac{\delta}{2}$ approaches zero; on the right, they are by $\pi/2 + \delta$ about the $z$ axis, approaching the family of the sum. The error of the affected choice grows like $u / \delta$, as predicted, while the selected meet stays at the level of rounding errors.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{groupplot}[
+	group style={group size=2 by 1, horizontal sep=1.6cm},
+	width=0.47\textwidth, height=0.38\textwidth,
+	xmode=log, ymode=log, xlabel={$\delta$}, ymin=1e-17, ymax=1e-2,
+	legend style={font=\scriptsize, at={(0.98,0.98)}, anchor=north east},
+	tick label style={font=\scriptsize}, label style={font=\small}, title style={font=\small},
+	every axis plot/.append style={thick, mark size=1.2pt}]
+\nextgroupplot[title={rotation by $\pi - \delta$}, ylabel={angle error (rad)}]
+	\addplot[red, mark=*] table[x=delta, y=scalar, col sep=comma] {data/near_singular_pi.csv};
+	\addplot[orange, mark=square*] table[x=delta, y=alternating, col sep=comma] {data/near_singular_pi.csv};
+	\addplot[blue, mark=triangle*] table[x=delta, y=best, col sep=comma] {data/near_singular_pi.csv};
+	\legend{$T_0$, sum, selected}
+\nextgroupplot[title={rotation by $\pi/2 + \delta$ about $z$}]
+	\addplot[red, mark=*] table[x=delta, y=scalar, col sep=comma] {data/near_singular_sigma.csv};
+	\addplot[orange, mark=square*] table[x=delta, y=alternating, col sep=comma] {data/near_singular_sigma.csv};
+	\addplot[blue, mark=triangle*] table[x=delta, y=best, col sep=comma] {data/near_singular_sigma.csv};
+\end{groupplot}
+\end{tikzpicture}
+\caption{Largest angle error over $20$ noise-free problems of $1000$ unit vectors, approaching the singular family of $T_0$ (left) and of the sum of the four meets (right).}
+\label{fig:near_singular}
+\end{figure}
+
+\subsection{Accuracy}
+
+Next we test the library implementation of Algorithm~\ref{alg:rotor} on $100\,000$ random problems: between $3$ and $1000$ vectors (log-uniformly), random rotations, random weights in $[0.1, 1]$, half of the problems with unit vectors and half with lengths in $[1, 1000]$, and a fifth of them with all the $p_j$ in a plane. Each target is $q_j = R p_j \rev{R} + \eta\, |p_j|\, g_j$ with Gaussian vectors $g_j$, for five noise levels $\eta$. We compare with the eigenvector given by Eigen's eigensolver for the same matrix. Table~\ref{tab:accuracy} shows the worst case over $20\,000$ problems per noise level. The error of the estimate never exceeds that of the eigensolver by more than a few parts in $10^{9}$, and without noise the rotation is recovered to $3 \cdot 10^{-11}$ radians. The angle between the two solutions can be larger, up to $6 \cdot 10^{-5}$ radians for $\eta = 0.1$, in problems where the gap $2(s_2 + s_3)$ is small, for example planar data with few vectors: there, quite different rotations have almost the same error, and the rotation is poorly determined by the data, whichever method is used. The number of Newton steps grows with the noise, as explained in Section~\ref{section:eigenvalue}: one step without noise, two or three for moderate noise, and up to $16$ when the noise is as large as the data.
+
+\begin{table}[t]
+\centering
+\caption{Worst cases of Algorithm~\ref{alg:rotor} over $20\,000$ random problems per noise level $\eta$, compared with an eigensolver: angle between the two solutions, relative excess of the least squares error, angle to the true rotation (without noise), and number of Newton steps.}
+\label{tab:accuracy}
+\small
+\begin{tabular}{cccccc}
+\toprule
+$\eta$ & angle to & excess & angle to & mean & max \\
+ & eigensolver & error & truth & steps & steps \\
+\midrule
+\csname @@input\endcsname tables/accuracy.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Speed}
+
+Table~\ref{tab:timing} and Figure~\ref{fig:timing} compare the time per estimation for $n$ vectors, measured as the best of five runs of $4 \cdot 10^6 / (n + 10)$ estimations. For small $n$, Algorithm~\ref{alg:rotor} is among the fastest methods, together with QUEST, FOAM and FLAE with Newton's method, all of which solve the same quartic with a few Newton steps. QUEST is the fastest of them, by $15$--$20\%$ with \texttt{-O3} and $5$--$12\%$ with \texttt{-Ofast}; for small $n$ part of the difference is the eigenvector step, since QUEST's formula needs fewer operations than the selection of a meet, while for large $n$, where both methods accumulate the same sums, we have not identified the cause. Methods that call a general eigensolver or SVD are $13$ to $22$ times slower for small $n$. For large $n$, the loop over the data dominates every method, and the methods that need only $D$ (FLAE with its closed formula, Symbolic, FA3R) take $25$--$40\%$ less time at $n = 1000$ with \texttt{-O3} than those that also accumulate $S$. With \texttt{-Ofast}, which allows the compiler to reorder the sums, these differences shrink to about $10\%$. The compiler options also change the ranking of other methods: with \texttt{-Ofast} the fast $3 \times 3$ SVD becomes slower for large $n$, and the Q-Method is faster than Algorithm~\ref{alg:rotor} at $n = 1000$ with \texttt{-O3} but not with \texttt{-Ofast}. Comparisons of speed should therefore state the options used.
+
+\begin{table}[t]
+\centering
+\caption{Time per estimation (ns) for $n$ vectors. The fastest method for each $n$ and compiler option is in bold.}
+\label{tab:timing}
+\small
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{4}{c}{\texttt{-O3}} & \multicolumn{4}{c}{\texttt{-Ofast}} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+Method & $3$ & $10$ & $100$ & $1000$ & $3$ & $10$ & $100$ & $1000$ \\
+\midrule
+\csname @@input\endcsname tables/timing.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+	width=0.85\textwidth, height=0.5\textwidth,
+	xmode=log, ymode=log, xlabel={number of vectors $n$}, ylabel={time per estimation (ns), \texttt{-O3}},
+	legend style={font=\scriptsize, at={(0.02,0.98)}, anchor=north west}, legend columns=2,
+	tick label style={font=\scriptsize}, label style={font=\small},
+	every axis plot/.append style={thick, mark size=1.2pt}]
+	\addplot[blue, mark=*] table[x=n, y=Proposed, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[red, mark=square*] table[x=n, y=QUEST, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[orange, mark=triangle*] table[x=n, y=FLAENewton, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[brown, mark=diamond*] table[x=n, y=Symbolic, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[teal, mark=pentagon*] table[x=n, y=FA3R, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[violet, mark=o] table[x=n, y=QMethod, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[gray, mark=x] table[x=n, y=SVD, col sep=comma] {data/timing_O3_wide.csv};
+	\addplot[black, mark=+] table[x=n, y=SVDMcAdams, col sep=comma] {data/timing_O3_wide.csv};
+	\legend{Proposed, QUEST, FLAE Newton, Symbolic, FA3R, Q-Method, SVD, SVD $3 \times 3$}
+\end{axis}
+\end{tikzpicture}
+\caption{Time per estimation as a function of the number of vectors, compiled with \texttt{-O3}.}
+\label{fig:timing}
+\end{figure}
+
+%%% ----------------------------------------------------------------------
 \section{Conclusion}
 
-We presented a novel method for estimating the best quaternion aligning two sets of corresponding vectors and bivectors. Since we maximize a convex energy functional we only deal with non-negative eigenvalues, which makes Newton-Raphson iteration robust. We find the eigenvector corresponding to the largest eigenvalue intersecting hyper-planes in the language of geometric algebra. Results shows that our method is a good alternative in terms of robustness and accuracy. Its speed is competitive when the number of input vectors is relatively small. 
+We presented a method for estimating the best quaternion aligning two sets of corresponding vectors or bivectors, following the geometry of the problem at each step. Maximizing the length of the sum of each bivector and its rotated target, after multiplying by the rotor, gives an energy that is quadratic in the rotor, and its multivector derivative gives an eigenrotor equation. The positivity of the energies of the sum and of the difference bounds all the eigenvalues by $\pm S/2$, and the upper bound, exact without noise, is the starting point from which Newton's method converges monotonically to the largest eigenvalue. The eigenrotor is the line where the hyperplanes of the characteristic matrix meet, computed with outer products in the 4D geometric algebra.
 
+The same geometric picture explains the singularities of the closed form methods. Each meet of three hyperplanes points along the eigenrotor, with a length proportional to one of its coordinates; any method that fixes in advance which meet, or which combination of meets, to use, fails on a whole family of rotations: rotations by $\pi$ for QUEST, rotations about horizontal axes and the identity for FLAE, and rotations such as $\pi/2$ about the $z$ axis for the earlier version of this method. Choosing the meet from the data, by its largest component, removes the singularities, with a guaranteed size that depends only on the data. In our experiments the method always reaches the optimum, at a speed comparable to QUEST, the fastest method for small numbers of vectors. The selection of the meet does not depend on how the eigenvalue is computed, so it can also make other methods of the same family, such as FLAE, free of singularities.
 
 \bibliographystyle{abbrv}
 \bibliography{rotorestimation}
 
-% ------------------------------------------------------------------------
 \end{document}
-% ------------------------------------------------------------------------
