@@ -1,0 +1,13 @@
+% the eigenvalues of mu - K at mu = mu0 + t, before and after deflation along R0
+\begin{tikzpicture}[scale=0.62]
+  \draw[->] (-0.5,0) -- (13,0) node[right] {eigenvalues of $\mu - \K$};
+  \foreach \x/\l in {0.3/{$t$}, 6/{$\mu - \mu_1$}, 8/{$\mu - \mu_2$}, 10/{$\mu - \mu_3$}} {
+    \fill[blue!70!black] (\x,0) circle (3pt); \node[above, font=\scriptsize] at (\x,0.15) {\l};
+  }
+  \node[font=\scriptsize, red!70!black, align=center] at (0.3,-1.0) {$\to 0$ near the pole:\\ nearly singular};
+  \draw[->] (-0.5,-2.6) -- (13,-2.6) node[right] {after adding $\sigma R_0 (R_0 * \cdot)$};
+  \foreach \x/\l in {6/{$\mu - \mu_1$}, 8/{$\mu - \mu_2$}, 10/{$\mu - \mu_3$}, 11.6/{$t + \sigma$}} {
+    \fill[blue!70!black] (\x,-2.6) circle (3pt); \node[above, font=\scriptsize] at (\x,-2.45) {\l};
+  }
+  \draw[-{Stealth[length=2mm]}, red!70!black, thick] (0.3,-0.35) to[bend right=12] (11.6,-2.4);
+\end{tikzpicture}

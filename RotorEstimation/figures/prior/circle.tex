@@ -1,0 +1,17 @@
+% The plane of rotors spanned by R0 = 1 and R3 = E3 in the worked example: r(alpha) = cos(alpha) + sin(alpha) E3,
+% the rotation by 2 alpha about the z axis. The prior is at alpha = 45 degrees (a rotation by 90 degrees).
+\begin{tikzpicture}[scale=2.1]
+  \draw[->, gray] (-1.35,0) -- (1.45,0) node[right] {$1 = R_0$ direction};
+  \draw[->, gray] (0,-1.3) -- (0,1.35) node[above] {$E_3 = R_3$ direction};
+  \draw[thick] (0,0) circle (1);
+  \fill[blue!70!black] (0:1) circle (1.4pt) node[below right] {$R_0$};
+  \fill[blue!40] (180:1) circle (1.4pt) node[below left] {$-R_0$};
+  \fill[orange!80!black] (45:1) circle (1.4pt) node[above right] {$\bar R$ (prior)};
+  \fill[orange!40] (225:1) circle (1.4pt) node[below left] {$-\bar R$};
+  \draw[-{Stealth[length=2mm]}, thick, orange!80!black] (0,0) -- (45:0.55) node[midway, above left, font=\scriptsize] {$H = \beta \bar R$};
+  \fill[red!70!black] (7.11:1) circle (1.6pt);
+  \draw[red!70!black] (7.11:1) -- (7.11:1.18) node[right, font=\scriptsize] {$R^*$, $\beta = 2$};
+  \fill[red!50!black] (32.0:1) circle (1.6pt);
+  \draw[red!50!black] (32.0:1) -- (32.0:1.2) node[right, font=\scriptsize] {$R^*$, $\beta = 20$};
+  \draw[blue!60!black] (0:0.3) arc (0:45:0.3) node[midway, right, font=\scriptsize] {$\theta/2$};
+\end{tikzpicture}

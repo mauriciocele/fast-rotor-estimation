@@ -23,6 +23,8 @@
 \usepackage{graphicx}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\usepackage{adjustbox}
+\usetikzlibrary{arrows.meta}
 \pgfplotsset{compat=1.17}
 \usepgfplotslibrary{groupplots}
 
@@ -581,7 +583,37 @@ The pseudo-code of the proposed method is shown in Algorithm~\ref{alg:rotor}. Af
 \section{A Rotor with a Prior}
 \label{section:prior}
 
-Often the data are not all we know about the rotation. A tracker knows the rotation of the previous frame, an attitude filter has a propagated estimate, and in mesh deformation every cell knows the rotations of its neighbors. In all these cases we want the rotor that fits the data well \emph{and} stays close to a given rotor $\bar R$, the \emph{prior}, with a weight $\beta \geq 0$ that says how much we trust it. This section extends the method to that problem. The extension needs no new ideas beyond those of the previous sections: the same operator $\K$, the same bound and Newton iteration, and the same meet, followed by one more Newton iteration on a scalar equation whose behavior can be understood completely.
+Often the data are not all we know about the rotation. A tracker knows the rotation of the previous frame, an attitude filter has a propagated estimate, and in mesh deformation every cell knows the rotations of its neighbors. In all these cases we want the rotor that fits the data well \emph{and} stays close to a given rotor $\bar R$, the \emph{prior}, with a weight $\beta \geq 0$ that says how much we trust it. This section extends the method to that problem. We will need nothing beyond the previous sections: the same operator $\K$, its largest eigenvalue $\mu_0$ and eigenrotor $R_0$ from Algorithm~\ref{alg:rotor}, and one more Newton iteration, on a scalar equation whose behavior can be understood completely. We go step by step, and follow one small example through every step, so that each formula can be checked by hand and seen in a figure.
+
+\subsection{A worked example}
+\label{section:prior_example}
+
+Take three pairs of data: the unit vectors $e_1, e_2, e_3$, paired with $3 e_1$, $2 e_2$ and $1\, e_3$, all with weight $1$. The correlation is $D = \mathrm{diag}(3, 2, 1)$, already in its principal frames, and by~(\ref{eqn:spectrum}) the eigenvalues of $\K$ and their eigenrotors are
+\begin{equation}
+\label{eqn:prior_example_spectrum}
+\begin{aligned}
+\mu_0 &= 6, & R_0 &= 1, & \qquad \mu_1 &= 0, & R_1 &= E_1, \\
+\mu_2 &= -2, & R_2 &= E_2, & \qquad \mu_3 &= -4, & R_3 &= E_3 .
+\end{aligned}
+\end{equation}
+Without a prior the best rotor is $R_0 = 1$: the data are best aligned by not rotating at all. As prior we take the rotation by $\theta = 90^\circ$ about the $z$ axis,
+\begin{equation}
+\label{eqn:prior_example_prior}
+\bar R = \cos 45^\circ + \sin 45^\circ\, E_3 = \tfrac{1}{\sqrt 2} (1 + E_3).
+\end{equation}
+The data say ``do not rotate'', the prior says ``rotate by $90^\circ$ about $z$''; the answer must be a compromise between the two, depending on $\beta$. Since both $R_0$ and $\bar R$ lie in the plane of $\Ge_3^+$ spanned by $1$ and $E_3$, so will everything else in this example, and every rotor we meet has the form
+\begin{equation}
+\label{eqn:prior_example_circle}
+r(\alpha) = \cos\alpha + \sin\alpha\, E_3 ,
+\end{equation}
+the rotation by $2\alpha$ about the $z$ axis: a point on the unit circle of that plane, drawn in Figure~\ref{fig:prior_circle}. The prior is at $\alpha = 45^\circ$, half its rotation angle.
+
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/circle}}
+\caption{The worked example in the plane of $\Ge_3^+$ spanned by $1$ and $E_3$. The unit circle contains the rotors $\cos\alpha + \sin\alpha\, E_3$, the rotations by $2\alpha$ about $z$. The data's best rotor $R_0 = 1$ and its opposite $-R_0$ represent the same rotation; so do the prior $\bar R$ and $-\bar R$, at $\theta/2 = 45^\circ$ and $225^\circ$. The pull $H = \beta \bar R$ points to the prior, and the best rotor $R^*$ moves from $R_0$ towards it as $\beta$ grows.}
+\label{fig:prior_circle}
+\end{figure}
 
 \subsection{Two ways to be close to a rotor}
 
@@ -593,45 +625,97 @@ For two rotors $R$ and $\bar R$, $R * \bar R = \pm \cos(\theta / 2)$, where $\th
 \begin{proof}
 By the definition~(\ref{eqn:scalar_product}), $R * \bar R = \scal{R \rev{\bar R}}$, the scalar part of a rotor that rotates by $\theta$. A rotor $\cos(\phi/2) + B \sin(\phi/2)$ rotates by $\phi$, and the same rotation is represented by its opposite, so the scalar part is $\cos(\theta/2)$ or $-\cos(\theta/2)$.
 \end{proof}
+In the example, $R_0 * \bar R = \cos 45^\circ$: the angle between the two points on the circle is half the angle between the two rotations.
 
-\paragraph{Closeness of rotations.} The first way compares the rotations. Rotate an orthonormal frame by both and add up how well the rotated frame vectors agree: $\sum_k (R e_k \rev{R}) \cdot (\bar R e_k \rev{\bar R})$. This is the trace of the product of the two rotation matrices, $1 + 2 \cos \theta = 4 \cos^2(\theta/2) - 1 = 4 (R * \bar R)^2 - 1$, by Proposition~\ref{prop:rotor_angle}. It is quadratic in $R$, and it is nothing but the gain of three more pairs of data, the frame vectors $e_k$ (as bivectors $I e_k$) and their images under $\bar R$, with weight $\beta$. Such a prior is therefore handled by Algorithm~\ref{alg:rotor} itself: add $\beta$ times the rotation matrix of $\bar R$ to $D$, and $6 \beta$ to $S$. It cannot tell $\bar R$ from $-\bar R$, since it depends on $(R * \bar R)^2$.
+\paragraph{Closeness of rotations.} The first way compares the rotations. Rotate an orthonormal frame by both and add up how well the rotated frame vectors agree: $\sum_k (R e_k \rev{R}) \cdot (\bar R e_k \rev{\bar R})$. This is the trace of the product of the two rotation matrices, $1 + 2 \cos \theta = 4 \cos^2(\theta/2) - 1 = 4 (R * \bar R)^2 - 1$, by Proposition~\ref{prop:rotor_angle}. It is quadratic in $R$, and it is nothing but the gain of three more pairs of data, the frame vectors $e_k$ (as bivectors $I e_k$) and their images under $\bar R$, with weight $\beta$. Such a prior is therefore handled by Algorithm~\ref{alg:rotor} itself: add $\beta$ times the rotation matrix of $\bar R$ to $D$, and $6 \beta$ to $S$. It cannot tell $\bar R$ from $-\bar R$, since it depends on $(R * \bar R)^2$: in Figure~\ref{fig:prior_circle} it pulls equally towards $\bar R$ and towards $-\bar R$.
 
-\paragraph{Closeness of rotors.} The second way compares the rotors as elements of $\Ge_3^+$: $|R - \bar R|^2$. For rotors, $|R - \bar R|^2 = |R|^2 + |\bar R|^2 - 2 R * \bar R = 2 - 2 R * \bar R$, which is \emph{linear} in $R$, and which does distinguish $\bar R$ from $-\bar R$: the two represent the same rotation, but one is near $R$ and the other far from it. This is the right measure when the sign of the rotor carries information, as it does when a rotation is followed continuously through a half-turn, or when neighboring rotors are compared in $\Ge_3^+$, as in the smooth-rotation deformation of Section~\ref{section:application} formulated with rotors \cite{LopezBelonSRARAP}. It is the case we study now, because it is the one that Algorithm~\ref{alg:rotor} does not already solve.
+\paragraph{Closeness of rotors.} The second way compares the rotors as elements of $\Ge_3^+$: $|R - \bar R|^2$, the squared length of the chord between two points of the sphere. For rotors, $|R - \bar R|^2 = |R|^2 + |\bar R|^2 - 2 R * \bar R = 2 - 2 R * \bar R$, which is \emph{linear} in $R$, and which does distinguish $\bar R$ from $-\bar R$: they are the two ends of a diameter, one near $R$ and the other far from it. This is the right measure when the sign of the rotor carries information, as it does when a rotation is followed continuously through a half-turn, or when neighboring rotors are compared in $\Ge_3^+$, as in the smooth-rotation deformation of Section~\ref{section:application} formulated with rotors \cite{LopezBelonSRARAP}. It is the case we study now, because it is the one that Algorithm~\ref{alg:rotor} does not already solve.
 
-\subsection{The problem and its stationarity condition}
+\subsection{The problem: a tilted landscape}
 
-We maximize the gain minus the prior penalty, $G(R) - \beta |R - \bar R|^2$, over the rotors. Since $|R - \bar R|^2 = 2 - 2 R * \bar R$ on the unit sphere, this is the same as maximizing
+We maximize the gain minus the prior penalty, $G(R) - \beta |R - \bar R|^2$, over the rotors. Since $|R - \bar R|^2 = 2 - 2 R * \bar R$ on the unit sphere, and the constant $-2\beta$ does not move the maximum, this is the same as maximizing
 \begin{equation}
 \label{eqn:prior_problem}
-F(R) = R * \K(R) + 2\, H * R, \qquad H = \beta \bar R, \qquad |R| = 1.
+F(R) = R * \K(R) + 2\, H * R, \qquad H = \beta \bar R, \qquad |R| = 1 .
 \end{equation}
-We call $H$ the \emph{pull} of the prior. By~(\ref{eqn:derivative_energy}), the multivector derivative of $R * \K(R)$ is $2 \K(R)$, and that of the linear term $2 H * R$ is $2 H$. As in Section~\ref{section:estimation}, at a maximum on the unit sphere the derivative is parallel to $R$, $2 \K(R) + 2 H = 2 \mu R$ for a Lagrange multiplier $\mu$, that is,
+We call $H$ the \emph{pull} of the prior: it is the prior scaled by its weight, a vector of $\Ge_3^+$ pointing from the origin to $\bar R$.
+
+It helps to picture $F$ as a landscape on the unit sphere of $\Ge_3^+$. The first term, the gain, is the landscape of Algorithm~\ref{alg:rotor}: a quadratic function, which takes the same value at $R$ and $-R$, with its two highest points at $\pm R_0$. The second term is \emph{linear}: it is largest in the direction of $H$ and smallest in the opposite direction, so it tilts the landscape towards the prior and breaks the tie between $R_0$ and $-R_0$. In the example, along the circle~(\ref{eqn:prior_example_circle}), $r * \K(r) = \mu_0 \cos^2 \alpha + \mu_3 \sin^2 \alpha$ and $H * r = \beta \cos(\alpha - 45^\circ)$, so
+\begin{equation}
+\label{eqn:prior_example_F}
+F(\alpha) = 6 \cos^2 \alpha - 4 \sin^2 \alpha + 2 \beta \cos(\alpha - 45^\circ).
+\end{equation}
+Figure~\ref{fig:prior_landscape} draws it. Without a prior the two highest points are at $\alpha = 0$ and $180^\circ$, the two rotors of the same rotation. With $\beta = 2$ the landscape tilts: the highest point moves to $\alpha = 7.1^\circ$, the rotation by $14.2^\circ$ towards the prior, and $-R_0$ is no longer a maximum. With $\beta = 20$, ten times the scale of the gain's variations, the prior dominates and the maximum moves to $\alpha = 32^\circ$, most of the way to $45^\circ$.
+
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/landscape}}
+\caption{The objective $F$ of~(\ref{eqn:prior_problem}) along the circle of Figure~\ref{fig:prior_circle}, for the worked example. The gain alone ($\beta = 0$) has two equal maxima, at $R_0$ and $-R_0$. The linear prior term tilts the landscape towards the prior at $\alpha = 45^\circ$ (dotted), and the single maximum moves towards it as $\beta$ grows.}
+\label{fig:prior_landscape}
+\end{figure}
+
+\subsection{The stationarity condition}
+
+At the highest point of the landscape on the sphere, the landscape cannot rise in any direction \emph{along} the sphere. The directions along the sphere at $R$ are those orthogonal to $R$, so the derivative of $F$ must have no component orthogonal to $R$: it must be parallel to $R$. This is the method of Lagrange multipliers, as in Section~\ref{section:estimation}. We compute the derivative term by term. By~(\ref{eqn:derivative_energy}), the multivector derivative of the quadratic term $R * \K(R)$ is $2 \K(R)$, because $\K$ is symmetric. The derivative of the linear term $2 H * R$ is $2 H$, since $\frac{d}{dt} 2 H * (R + t X) = 2 H * X$ for every direction $X$. So $\partial F(R) = 2 \K(R) + 2 H$, and parallel to $R$ means $2 \K(R) + 2 H = 2 \mu R$ for some scalar $\mu$:
 \begin{equation}
 \label{eqn:prior_stationarity}
-(\mu - \K)(R) = H, \qquad |R| = 1,
+\K(R) + H = \mu R \quad \Longleftrightarrow \quad (\mu - \K)(R) = H, \qquad |R| = 1,
 \end{equation}
-where $\mu - \K$ denotes the operator $X \mapsto \mu X - \K(X)$. Without a prior, $H = 0$, this is the eigenrotor equation~(\ref{eqn:eigenrotor}); the pull turns it into a linear equation for $R$, with $\mu$ still to be found. Multiplying~(\ref{eqn:prior_stationarity}) by $R$ shows what $\mu$ is: $\mu = G(R) + H * R$, the value of the gain plus the agreement with the pull.
+where $\mu - \K$ denotes the operator $X \mapsto \mu X - \K(X)$. Three remarks make this equation familiar.
+\begin{itemize}
+\item Without a prior, $H = 0$, it is the eigenrotor equation~(\ref{eqn:eigenrotor}): $\K(R) = \mu R$. The pull turns an eigenvalue problem into a \emph{linear} equation for $R$, with $\mu$ still to be found.
+\item The multiplier has a value we can read: multiplying~(\ref{eqn:prior_stationarity}) by $R$ and using $|R| = 1$, $\mu = R * \K(R) + H * R$, the gain plus the agreement with the pull.
+\item For a given $\mu$, (\ref{eqn:prior_stationarity}) is a $4 \times 4$ linear system for the coordinates of $R$, and $|R| = 1$ is one scalar condition. The unknowns are four coordinates and one multiplier, five in all, for four equations plus one: the problem is well posed, and once $\mu$ is known, $R$ follows by one linear solve.
+\end{itemize}
 
+\subsection{Which solution is the maximum}
+
+Equation~(\ref{eqn:prior_stationarity}) has several solutions, just as the eigenrotor equation has four eigenrotors, because it describes every point of the landscape where the slope along the sphere vanishes: maxima, minima and saddles. The following classical result \cite{Gander1989, MoreSorensen1983} tells which one is the maximum.
 \begin{prop}
 \label{prop:prior_maximum}
 If $(R^*, \mu^*)$ solves~(\ref{eqn:prior_stationarity}) with $\mu^* \geq \mu_0$, the largest eigenvalue of $\K$, then $R^*$ maximizes $F$ over all rotors.
 \end{prop}
 \begin{proof}
-The operator $\Gop = \mu^* - \K$ is symmetric, and positive semi-definite because $\mu^*$ is at least every eigenvalue of $\K$. For a rotor $X$, $X * \K(X) = \mu^* - X * \Gop(X)$, and $H = \Gop(R^*)$, so $F(X) = \mu^* - X * \Gop(X) + 2 R^* * \Gop(X)$. Taking the difference with $X = R^*$,
+The idea is to write $F$ as a constant minus a square. Let $\Gop = \mu^* - \K$. It is symmetric, and its eigenvalues $\mu^* - \mu_k$ are all non-negative because $\mu^* \geq \mu_0 \geq \mu_k$: $\Gop$ is positive semi-definite, so $X * \Gop(X) \geq 0$ for every $X$. Now rewrite the two terms of $F$ for a rotor $X$ ($|X| = 1$). The quadratic term is $X * \K(X) = \mu^* |X|^2 - X * \Gop(X) = \mu^* - X * \Gop(X)$. The linear term uses the equation itself, $H = \Gop(R^*)$, and the symmetry of $\Gop$: $H * X = \Gop(R^*) * X = R^* * \Gop(X)$. So
+\begin{equation*}
+F(X) = \mu^* - X * \Gop(X) + 2\, R^* * \Gop(X),
+\end{equation*}
+and in particular $F(R^*) = \mu^* + R^* * \Gop(R^*)$. Subtracting,
 \begin{align*}
-F(R^*) - F(X) &= X * \Gop(X) - 2 R^* * \Gop(X) + R^* * \Gop(R^*) \\
-&= (X - R^*) * \Gop(X - R^*) \geq 0. \qedhere
+F(R^*) - F(X) &= X * \Gop(X) - 2\, R^* * \Gop(X) + R^* * \Gop(R^*) \\
+&= (X - R^*) * \Gop(X - R^*) \;\geq\; 0. \qedhere
 \end{align*}
 \end{proof}
+So we look for the solution whose multiplier is at least $\mu_0$. In the example, $\mu_0 = 6$.
 
 \subsection{The secular equation}
 
-Let $R_0, \ldots, R_3$ be the unit eigenrotors of $\K$, with eigenvalues $\mu_0 \geq \mu_1 \geq \mu_2 \geq \mu_3$, and write the pull in that basis, $H = \sum_k h_k R_k$, with $h_k = H * R_k$. For $\mu > \mu_0$ the operator $\mu - \K$ is invertible, and (\ref{eqn:prior_stationarity}) gives
+For $\mu > \mu_0$ the operator $\mu - \K$ has only positive eigenvalues, so it is invertible, and~(\ref{eqn:prior_stationarity}) can be solved for $R$ for each such $\mu$. The solution is clearest in the basis of the eigenrotors $R_0, \ldots, R_3$ of $\K$ (with $\mu_0 \geq \mu_1 \geq \mu_2 \geq \mu_3$), in which $\mu - \K$ is diagonal. Write the pull in that basis, $H = \sum_k h_k R_k$ with $h_k = H * R_k$. Then $(\mu - \K)(R_k) = (\mu - \mu_k) R_k$, and dividing component by component,
 \begin{equation}
 \label{eqn:prior_solution}
 R(\mu) = \sum_{k=0}^3 \frac{h_k}{\mu - \mu_k}\, R_k, \qquad |R(\mu)|^2 = \sum_{k=0}^3 \frac{h_k^2}{(\mu - \mu_k)^2}.
 \end{equation}
-Only the length of $R(\mu)$ remains to be fixed: we need $|R(\mu)| = 1$, the \emph{secular equation}. Each term of $|R(\mu)|^2$ decreases as $\mu$ grows, from $+\infty$ at $\mu_0$ (when $h_0 \neq 0$) to $0$, so the equation has exactly one root $\mu^* > \mu_0$, and by Proposition~\ref{prop:prior_maximum} it gives the best rotor. The root can be bracketed with the quantities we already have.
+Every component of the pull is divided by its distance $\mu - \mu_k$ to an eigenvalue. Only one condition remains, that the result have unit length: $|R(\mu)|^2 = 1$, the \emph{secular equation}, a single equation for the single unknown $\mu$.
+
+\paragraph{The shape of the secular function.} Each term $h_k^2 / (\mu - \mu_k)^2$ has a pole at its eigenvalue $\mu_k$ and decays to zero on both sides. On the interval $(\mu_0, \infty)$, to the right of the largest pole, every term \emph{decreases} as $\mu$ grows, from $+\infty$ next to $\mu_0$ (when $h_0 \neq 0$) to $0$ at infinity. So $|R(\mu)|^2$ crosses $1$ exactly once there: the secular equation has exactly one root $\mu^* > \mu_0$, and by Proposition~\ref{prop:prior_maximum} it gives the maximum. The other roots, between and below the poles, are the other stationary points of the landscape.
+
+In the example, $H = \beta \bar R = \frac{\beta}{\sqrt 2} (R_0 + R_3)$, so $h_0 = h_3 = \beta / \sqrt 2$ and $h_1 = h_2 = 0$. With $\beta = 2$,
+\begin{equation}
+\label{eqn:prior_example_secular}
+|R(\mu)|^2 = \frac{2}{(\mu - 6)^2} + \frac{2}{(\mu + 4)^2},
+\end{equation}
+with poles at $\mu_0 = 6$ and $\mu_3 = -4$ only (Figure~\ref{fig:prior_secular}). Its root above $6$ is $\mu^* = 7.42517$, and then $R^* = \frac{\sqrt 2}{1.42517} + \frac{\sqrt 2}{11.42517} E_3 = 0.99231 + 0.12378\, E_3$, a unit rotor, the rotation by $2 \arctan(0.12378 / 0.99231) = 14.2^\circ$ about $z$, as Figure~\ref{fig:prior_landscape} showed.
+
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/secular}}
+\caption{The secular function $|R(\mu)|^2$ of the worked example with $\beta = 2$. It has poles at the eigenvalues whose components $h_k$ are nonzero, here $\mu_0 = 6$ and $\mu_3 = -4$. To the right of $\mu_0$ it decreases from $+\infty$ to $0$, so it equals $1$ exactly once, at the multiplier $\mu^*$ of the maximum; that root lies in the bracket of Proposition~\ref{prop:prior_bracket} (shaded).}
+\label{fig:prior_secular}
+\end{figure}
+
+\subsection{A bracket for the root}
+
+Before solving, we can say where the root is, with the quantities we already have, and the bracket has a geometric meaning.
 \begin{prop}
 \label{prop:prior_bracket}
 Let $\theta$ be the angle between the rotations of $\bar R$ and of the data's best rotor $R_0$. Then
@@ -641,56 +725,113 @@ Let $\theta$ be the angle between the rotations of $\bar R$ and of the data's be
 \end{equation}
 \end{prop}
 \begin{proof}
-By Proposition~\ref{prop:rotor_angle}, $|h_0| = |H * R_0| = \beta |\bar R * R_0| = |H| \cos(\theta / 2)$. At $\mu = \mu_0 + |h_0|$ the first term of~(\ref{eqn:prior_solution}) alone gives $|R(\mu)|^2 \geq 1$, so $\mu$ is not beyond the root. At $\mu = \mu_0 + |H|$ every denominator is at least $|H|^2$, so $|R(\mu)|^2 \leq \sum_k h_k^2 / |H|^2 = 1$, and $\mu$ is not before it.
+First, $|h_0|$ in terms of the angle: $|h_0| = |H * R_0| = \beta |\bar R * R_0| = |H| \cos(\theta / 2)$ by Proposition~\ref{prop:rotor_angle}, since $|H| = \beta$. For the left end, keep only the term $k = 0$ of~(\ref{eqn:prior_solution}); the others are non-negative, so $|R(\mu)|^2 \geq h_0^2 / (\mu - \mu_0)^2$, which is at least $1$ for $\mu - \mu_0 \leq |h_0|$. So at $\mu = \mu_0 + |h_0|$ the function is still at least $1$: we are not yet past the root. For the right end, every denominator is at least $(\mu - \mu_0)^2$, because $\mu_k \leq \mu_0$; so $|R(\mu)|^2 \leq \sum_k h_k^2 / (\mu - \mu_0)^2 = |H|^2 / (\mu - \mu_0)^2$, which is at most $1$ for $\mu - \mu_0 \geq |H|$. So at $\mu = \mu_0 + |H|$ we are already past it.
 \end{proof}
-The bracket has a plain meaning. Its width is $|H| (1 - \cos(\theta/2))$: zero when the prior agrees with the data, $\theta = 0$, in which case $\mu^* = \mu_0 + |H|$ and $R^* = R_0$, and as wide as $|H|$ when the prior is half a turn away.
+The width of the bracket is $|H| (1 - \cos(\theta/2))$. When the prior agrees with the data, $\theta = 0$, the bracket closes to the single point $\mu^* = \mu_0 + |H|$, and indeed $R^* = R_0$: data and prior pull the same way. When the prior is half a turn away, $\theta = \pi$, the bracket is as wide as $|H|$. In the example, $\theta = 90^\circ$ and $|H| = 2$, so the bracket is $[6 + 2 \cos 45^\circ, 6 + 2] = [7.414, 8]$, and $\mu^* = 7.425$ is near its left end, shaded in Figure~\ref{fig:prior_secular}.
 
-\paragraph{Newton's method.} As in the trust-region literature \cite{MoreSorensen1983, Gander1989}, we apply Newton's method not to $|R(\mu)| = 1$, whose left-hand side has a pole at $\mu_0$, but to its reciprocal.
+\subsection{Newton's method on the reciprocal}
+
+Newton's method replaces a function by its tangent and moves to where the tangent reaches the target value. Applied to $|R(\mu)| = 1$ directly, it works badly: next to the pole at $\mu_0$ the function is steep and strongly curved, and the tangent from a point near the pole lands far away, possibly on the wrong side of $\mu_0$, where the problem changes character. The standard remedy \cite{MoreSorensen1983} is to apply Newton's method to the reciprocal, $\psi(\mu) = 1 / |R(\mu)|$. Near the pole $|R(\mu)| \approx |h_0| / (\mu - \mu_0)$, so $\psi(\mu) \approx (\mu - \mu_0) / |h_0|$: a straight line, on which Newton's method is exact. The other terms bend it a little, and always the same way.
+
 \begin{prop}
 \label{prop:prior_newton}
 $\psi(\mu) = 1 / |R(\mu)|$ is increasing and concave on $(\mu_0, \infty)$. Newton's method for $\psi(\mu) = 1$ started at the left end $\mu_0 + |h_0|$ of the bracket produces an increasing sequence that converges to $\mu^*$.
 \end{prop}
 \begin{proof}
-Let $\phi = |R(\mu)|^2 = \sum_k h_k^2 t_k^{-2}$ with $t_k = \mu - \mu_k > 0$. Then $\phi' = -2 \sum_k h_k^2 t_k^{-3} < 0$ and $\phi'' = 6 \sum_k h_k^2 t_k^{-4}$, so $\psi = \phi^{-1/2}$ has $\psi' = -\frac12 \phi^{-3/2} \phi' > 0$ and
+Write $\phi = |R(\mu)|^2 = \sum_k h_k^2 t_k^{-2}$ with $t_k = \mu - \mu_k > 0$, so that $\psi = \phi^{-1/2}$. Since $dt_k / d\mu = 1$, the derivatives of $\phi$ are
 \begin{equation*}
-\begin{aligned}
-\psi'' &= \tfrac14 \phi^{-5/2} (3 \phi'^2 - 2 \phi \phi'') \\
-&= 3 \phi^{-5/2} \Big( \big( \textstyle\sum_k h_k^2 t_k^{-3} \big)^2 - \big( \sum_k h_k^2 t_k^{-2} \big) \big( \sum_k h_k^2 t_k^{-4} \big) \Big) \leq 0
-\end{aligned}
+\phi' = -2 \sum_k h_k^2 t_k^{-3} < 0, \qquad \phi'' = 6 \sum_k h_k^2 t_k^{-4} > 0 .
 \end{equation*}
-by the Cauchy--Schwarz inequality for the vectors $(|h_k| t_k^{-1})_k$ and $(|h_k| t_k^{-2})_k$. Below the root $\psi < 1$, so the Newton step $(1 - \psi) / \psi'$ is positive; a concave function lies below its tangents, so at the new point, where the tangent reaches $1$, $\psi \leq 1$: the iterate stays below the root. The sequence increases and is bounded by $\mu^*$, so it converges, to a solution of $\psi = 1$.
-\end{proof}
+By the chain rule, $\psi' = -\frac12 \phi^{-3/2} \phi'$, which is positive: $\psi$ increases. Differentiating once more,
+\begin{equation*}
+\psi'' = \tfrac34 \phi^{-5/2} \phi'^2 - \tfrac12 \phi^{-3/2} \phi'' = \tfrac14 \phi^{-5/2} \big( 3 \phi'^2 - 2 \phi\, \phi'' \big).
+\end{equation*}
+Substituting the sums,
+\begin{equation*}
+3 \phi'^2 - 2 \phi\, \phi'' = 12 \Big( \big( \textstyle\sum_k h_k^2 t_k^{-3} \big)^2 - \big( \sum_k h_k^2 t_k^{-2} \big) \big( \sum_k h_k^2 t_k^{-4} \big) \Big).
+\end{equation*} The Cauchy--Schwarz inequality for the vectors $a = (|h_k| t_k^{-1})_k$ and $b = (|h_k| t_k^{-2})_k$, $(a \cdot b)^2 \leq |a|^2 |b|^2$, says exactly that this is $\leq 0$: $\psi$ is concave.
 
-\paragraph{Computing each step without the pole.} Each step needs $|R(\mu)|$ and $\psi'(\mu) = R * (\mu - \K)^{-1}(R) / |R|^3$, which do not require the eigenrotors $R_1, R_2, R_3$: with a Cholesky factorization $\mu - \K = L L^T$ of its $4 \times 4$ matrix, $R = L^{-T} L^{-1} H$ and $R * (\mu - \K)^{-1}(R) = |L^{-1} R|^2$. Near the pole, however, $\mu - \K$ is nearly singular and these solves lose accuracy, which happens exactly when $h_0$ is small, that is, when the prior is nearly half a turn away from the data. We therefore treat the direction of $R_0$, which we know, analytically. Writing $\mu = \mu_0 + t$ and splitting $R(\mu)$ along $R_0$ and orthogonally to it,
+Now the iteration. Let $\mu^{(t)} \in [\mu_0 + |h_0|, \mu^*)$, left of the root, where $\psi < 1$. The Newton step $(1 - \psi) / \psi'$ is positive, so $\mu^{(t+1)} > \mu^{(t)}$: the iterate moves right. It does not overshoot: a concave function lies below each of its tangents, and at $\mu^{(t+1)}$ the tangent equals $1$, so $\psi(\mu^{(t+1)}) \leq 1$, that is, $\mu^{(t+1)} \leq \mu^*$. The sequence increases and is bounded by $\mu^*$, so it converges, and its limit is a fixed point of the iteration, where $\psi = 1$: the root.
+\end{proof}
+Figure~\ref{fig:prior_newton} shows the first step for the example with $\beta = 20$, where the bracket is wide enough to see it: from $\mu^{(0)} = 6 + 20 \cos 45^\circ = 20.142$ the tangent reaches $1$ at $\mu^{(1)} = 22.656$, just below the root $\mu^* = 22.6783$, which the second step reaches to five digits. With $\beta = 2$ the root is found to eight digits in two steps.
+
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/newton}}
+\caption{Newton's method on $\psi = 1/|R|$ for the worked example with $\beta = 20$. The function is increasing and concave, so the tangent at the left end of the bracket (shaded) reaches $1$ below the root, and every step moves right without passing it.}
+\label{fig:prior_newton}
+\end{figure}
+
+\paragraph{One step in practice.} A Newton step needs $\psi$ and $\psi'$, that is, $|R|$ and $\phi'$. Neither requires the eigenrotors $R_1, R_2, R_3$, which Algorithm~\ref{alg:rotor} does not compute: $R(\mu)$ is the solution of the linear system $(\mu - \K)(R) = H$, and $-\frac12 \phi' = \sum_k h_k^2 t_k^{-3} = R * (\mu - \K)^{-1}(R)$, the same sum written without the basis. With a Cholesky factorization $\mu - \K = L L^T$ of its $4 \times 4$ matrix, possible because it is positive definite for $\mu > \mu_0$, both come from triangular solves:
+\begin{equation}
+\label{eqn:prior_step}
+\begin{gathered}
+R = L^{-T} L^{-1} H, \qquad R * (\mu - \K)^{-1}(R) = |L^{-1} R|^2, \\
+\mu \leftarrow \mu + \frac{|R|^2 (|R| - 1)}{|L^{-1} R|^2},
+\end{gathered}
+\end{equation}
+where the last formula is $\mu - (\psi - 1)/\psi'$ written out with $\psi = 1/|R|$ and $\psi' = |L^{-1} R|^2 / |R|^3$.
+
+\subsection{Computing near the pole: deflation}
+
+The left end of the bracket, where Newton's method starts, is at distance $|h_0| = |H| \cos(\theta/2)$ from the pole $\mu_0$. When the prior is nearly half a turn away from the data, $\theta \to \pi$, that distance is tiny, and the matrix $\mu - \K$ is nearly singular: its smallest eigenvalue is $t = \mu - \mu_0$, close to zero, and solving with it amplifies rounding errors. In our tests this loses up to a quarter of the objective. The cure uses the one piece of the problem we know exactly, the direction $R_0$.
+
+Write $\mu = \mu_0 + t$ and split $R(\mu)$ into its component along $R_0$ and the rest. By~(\ref{eqn:prior_solution}) the component along $R_0$ is $\frac{h_0}{t} R_0$, an explicit formula with no solve at all. The rest, $Y = \sum_{k \geq 1} \frac{h_k}{\mu - \mu_k} R_k$, involves only the eigenvalues away from the pole, and we want to compute it without ever dividing by $t$. Add to the operator a term that acts only along $R_0$:
 \begin{equation}
 \label{eqn:prior_deflated}
-R = \frac{h_0}{t}\, R_0 + Y, \qquad Y = \big( \mu - \K + \sigma\, R_0 (R_0 * \cdot) \big)^{-1} (H - h_0 R_0),
+R = \frac{h_0}{t}\, R_0 + Y, \qquad Y = \big( \mu - \K + \sigma\, R_0 (R_0 * \cdot) \big)^{-1} (H - h_0 R_0).
 \end{equation}
-where the added term, for any $\sigma > 0$ (we use $\sigma = S/2 + |H|$), replaces the eigenvalue $t$ of $\mu - \K$ along $R_0$ by $t + \sigma$ and leaves the others unchanged. The \emph{deflated} operator is then positive definite even at $t = 0$, and $Y$, the solution for the part of $H$ orthogonal to $R_0$, stays orthogonal to $R_0$. Hence
+The added operator $X \mapsto \sigma (R_0 * X) R_0$ multiplies the component along $R_0$ by $\sigma$ and kills the others. So the \emph{deflated} operator has the same eigenrotors as $\mu - \K$, the same eigenvalues $\mu - \mu_k$ for $k \geq 1$, and the eigenvalue $t + \sigma$ instead of $t$ along $R_0$ (Figure~\ref{fig:prior_deflation}). With $\sigma = S/2 + |H|$, of the order of the other eigenvalues, it is well conditioned even at $t = 0$. And it gives the right $Y$: the right-hand side $H - h_0 R_0$ has no component along $R_0$, so neither has its solution, and on the other eigenrotors the deflated operator is $\mu - \K$ itself. Because $Y$ is orthogonal to $R_0$, the two quantities of a Newton step split into the two parts:
 \begin{equation*}
 |R|^2 = \frac{h_0^2}{t^2} + |Y|^2, \qquad R * (\mu - \K)^{-1}(R) = \frac{h_0^2}{t^3} + |L^{-1} Y|^2,
 \end{equation*}
-with $L$ now the Cholesky factor of the deflated operator, and every quantity is well conditioned near the pole.
+with $L$ now the Cholesky factor of the deflated operator; the pole is in the explicit terms, and the solves never see it.
 
-\paragraph{The hard case.} When the prior is exactly half a turn away from the data, $h_0 = 0$, the pole disappears, and $|R(\mu)|$ stays bounded as $\mu \to \mu_0$, with limit $|Y(\mu_0)|$. If $|Y(\mu_0)| > 1$ the root is still above $\mu_0$ and Newton's method finds it from $t = 0$. If $|Y(\mu_0)| \leq 1$, the multiplier stops at $\mu^* = \mu_0$, and the maximizers are $R^* = Y(\mu_0) \pm \sqrt{1 - |Y(\mu_0)|^2}\, R_0$: the part along $R_0$ is no longer fixed by the pull, only completed to unit length. Both signs give the same value of $F$, and the tie has a geometric reason: a prior half a turn away from the data's rotation can be approached by turning either way.
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/deflation}}
+\caption{Deflation. Near the pole the eigenvalue $t = \mu - \mu_0$ of $\mu - \K$ goes to zero and the matrix becomes nearly singular. Adding $\sigma R_0 (R_0 * \cdot)$ moves that one eigenvalue to $t + \sigma$ and leaves the others, and the eigenrotors, unchanged; the component along $R_0$, which is the only one that sees the pole, is computed by its explicit formula instead.}
+\label{fig:prior_deflation}
+\end{figure}
 
-\paragraph{Two limits.} Without a prior, $\beta \to 0$, the root tends to $\mu_0$ and $R^*$ to $\pm R_0$, with the sign of $h_0$: even a vanishingly weak prior decides on which side of the sphere the rotor lies, which removes the ambiguity between $R_0$ and $-R_0$. With a dominant prior, $\beta \to \infty$, the gain becomes negligible and $R^* \to \bar R$, with its sign.
+\subsection{The hard case}
 
-Algorithm~\ref{alg:prior} summarizes the method. It is Algorithm~\ref{alg:rotor}, run with a tighter stopping test so that $\mu_0$ and $R_0$ are accurate to full precision, followed by the Newton iteration on $t$.
+When the prior is exactly half a turn away from the data, $\theta = \pi$, the pull has no component along $R_0$: $h_0 = 0$. The pole at $\mu_0$ disappears, and $|R(\mu)|^2 = |Y(\mu)|^2$ stays bounded as $\mu \to \mu_0$, with the limit $|Y(\mu_0)|^2$. Two things can happen, and the example shows both (Figure~\ref{fig:prior_hard}). Take the prior $\bar R = E_3$, the rotation by $180^\circ$ about $z$, so $h_0 = 0$ and $h_3 = \beta$, and $|R(\mu)|^2 = \beta^2 / (\mu + 4)^2$, with $|Y(\mu_0)|^2 = \beta^2 / 100$.
+\begin{itemize}
+\item If $|Y(\mu_0)| > 1$, the curve still crosses $1$ to the right of $\mu_0$, and Newton's method, started at $t = 0$, finds the root as before. With $\beta = 20$, the root is $\mu^* = 16$ and $R^* = \frac{20}{20} E_3 = \bar R$: the prior is strong enough to win outright.
+\item If $|Y(\mu_0)| \leq 1$, the curve never reaches $1$ to the right of $\mu_0$, the multiplier stops at $\mu^* = \mu_0$, and the maximizers are
+\begin{equation}
+\label{eqn:prior_hard}
+R^* = Y(\mu_0) \pm \sqrt{1 - |Y(\mu_0)|^2}\, R_0 :
+\end{equation}
+the part orthogonal to $R_0$ is fixed by the pull, and the part along $R_0$ only completes it to unit length. With $\beta = 2$, $Y(\mu_0) = 0.2\, E_3$ and $R^* = \pm 0.98 + 0.2\, E_3$: the rotations by $\pm 23.1^\circ$ about $z$. Both give the same value of $F$, and the tie has a plain reason: a prior half a turn away can be approached by turning either way.
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\adjustbox{max width=\linewidth}{\input{figures/prior/hard}}
+\caption{The hard case in the worked example: the prior $\bar R = E_3$ is half a turn away from $R_0 = 1$, so $h_0 = 0$ and the secular function has no pole at $\mu_0$. Left: with $\beta = 20$ it still crosses $1$ to the right of $\mu_0$, at $\mu^* = 16$; with $\beta = 2$ it stays below $1$, and the multiplier stops at $\mu_0$. Right: then there are two maximizers, $Y \pm \tau R_0$ with $\tau = \sqrt{1 - |Y|^2}$, the rotations by $\pm 23.1^\circ$ towards the prior.}
+\label{fig:prior_hard}
+\end{figure}
+
+\paragraph{Two limits.} Without a prior, $\beta \to 0$, the bracket shrinks to $\mu_0$ and $R^*$ tends to $\pm R_0$, with the sign of $h_0$: even a vanishingly weak prior decides on which side of the sphere the rotor lies, which removes the ambiguity between $R_0$ and $-R_0$. With a dominant prior, $\beta \to \infty$, the gain becomes negligible, $\mu^* \approx \mu_0 + |H|$, and $R^* \to \bar R$, with its sign. In the example, $\beta = 0.2$, $2$ and $20$ turn the rotation by $1.6^\circ$, $14.2^\circ$ and $64.0^\circ$ towards the prior at $90^\circ$.
+
+\subsection{The algorithm}
+
+Algorithm~\ref{alg:prior} collects the steps. Line 1 is Algorithm~\ref{alg:rotor}, run with a tighter stopping test so that $\mu_0$ and $R_0$ are accurate to full precision, because the bracket starts at $\mu_0$. Line 2 splits the pull along $R_0$ and orthogonally to it. Line 3 is the left end of the bracket, Proposition~\ref{prop:prior_bracket}, in the variable $t = \mu - \mu_0$. Lines 5--8 are one Newton step in the deflated form: the solve for the orthogonal part, the hard case, and the update of Proposition~\ref{prop:prior_newton}, with the pole handled by the explicit terms. Line 11 assembles the rotor from its two parts.
 
 \begin{algorithm}[t]
 \begin{algorithmic}[1]
 \REQUIRE {the data as in Algorithm~\ref{alg:rotor}, the prior rotor $\bar R$ (coordinates $\bar r$), its weight $\beta \geq 0$}
 \STATE run Algorithm~\ref{alg:rotor} to full precision: $K$, $\mu_0$ and the unit eigenrotor $r_0$
 \STATE $h \leftarrow \beta\, \bar r$, \quad $h_0 \leftarrow h \cdot r_0$, \quad $h_\perp \leftarrow h - h_0 r_0$, \quad $\sigma \leftarrow S/2 + |h|$
-\STATE $t \leftarrow |h_0|$ \hfill (\ref{eqn:prior_bracket})
+\STATE $t \leftarrow |h_0|$ \hfill (left end of the bracket~(\ref{eqn:prior_bracket}))
 \LOOP
-\STATE $L L^T \leftarrow (\mu_0 + t) I - K + \sigma\, r_0 r_0^T$, \quad $y \leftarrow L^{-T} L^{-1} h_\perp$ \hfill (\ref{eqn:prior_deflated})
+\STATE $L L^T \leftarrow (\mu_0 + t) I - K + \sigma\, r_0 r_0^T$, \quad $y \leftarrow L^{-T} L^{-1} h_\perp$ \hfill (deflated solve~(\ref{eqn:prior_deflated}))
 \IF{$t = 0$ and $|y| \leq 1$}
-\RETURN $y + \sqrt{1 - |y|^2}\, r_0$ \hfill (hard case)
+\RETURN $y + \sqrt{1 - |y|^2}\, r_0$ \hfill (hard case~(\ref{eqn:prior_hard}))
 \ENDIF
-\STATE $n \leftarrow \sqrt{h_0^2 / t^2 + |y|^2}$, \quad $\psi' \leftarrow (h_0^2 / t^3 + |L^{-1} y|^2) / n^3$
-\STATE $t \leftarrow t + (1 - 1/n) / \psi'$ \hfill (Newton for $\psi = 1/n = 1$)
+\STATE $n \leftarrow \sqrt{h_0^2 / t^2 + |y|^2}$, \quad $\psi' \leftarrow (h_0^2 / t^3 + |L^{-1} y|^2) / n^3$, \quad $t \leftarrow t + (1 - 1/n) / \psi'$
 \STATE \textbf{until} the step is negligible
 \ENDLOOP
 \RETURN the unit quaternion of $(h_0 / t)\, r_0 + y$
@@ -718,6 +859,8 @@ $\theta$ & $\kappa$ & steps & angle error & $F$ shortfall & from data \\
 \end{table}
 
 The results are exact to rounding in every row, including the hard case $\theta = \pi$, where the deflated form~(\ref{eqn:prior_deflated}) is what makes the solves accurate: without it, Newton's method next to the pole loses up to a quarter of the objective in our tests. Newton's method needs one step when the prior agrees with the data, two to six in general, and up to fourteen when a strong prior is half a turn away from the data, where the root lies far from both ends of the bracket. The last column shows the prior at work: a weak prior moves the result by a fraction of a degree, a prior as strong as the data by tens of degrees, towards the prior. The cost is that of Algorithm~\ref{alg:rotor} plus a few $4 \times 4$ Cholesky solves: \csname @@input\endcsname tables/prior_timing.tex
+
+%%% ----------------------------------------------------------------------
 
 %%% ----------------------------------------------------------------------
 \section{Comparisons}
