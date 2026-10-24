@@ -126,3 +126,29 @@ for col, name, fmt in (('local_ms', 'arap_local.tex', ms_fmt), ('solve_ns_per_ce
             cells = [f'${fmt(x)}$' for x in v]
             f.write(f"{names[s]} & ${int(r0['cells']):,}$ & ${r0['colors']}$ & ".replace(',', '{,}') + ' & '.join(cells)
                     + f" & ${v[0] / v[2]:.1f}\\times$ \\\\\n")
+
+# Tables: the rotor estimator with a prior (prior.cpp)
+rows = list(csv.DictReader(open(os.path.join(data, 'prior.csv'))))
+with open(os.path.join(tables, 'prior.tex'), 'w') as f:
+    for r in rows:
+        theta = {'0': '$0$', '180': '$\\pi$'}.get(r['theta_deg'], f"${r['theta_deg']}^\\circ$")
+        err = '--' if r['theta_deg'] == '180' else sci(r['max_error_rad'])
+        deficit = max(float(r['max_deficit_rel']), 0.0)
+        f.write(f"{theta} & ${float(r['beta_rel']):g}$ & ${float(r['steps_mean']):.1f}$ ({r['steps_max']}) & {err} & "
+                f"{sci(deficit) if deficit > 0 else '$0$'} & ${float(r['result_from_data_deg']):.2f}^\\circ$ \\\\\n")
+rows = list(csv.DictReader(open(os.path.join(data, 'prior_timing.csv'))))
+with open(os.path.join(tables, 'prior_timing.tex'), 'w') as f:
+    parts = [f"{float(r['prior_ns']):.0f}~ns against {float(r['la_ns']):.0f}~ns for $n = {r['n']}$" for r in rows]
+    f.write(', '.join(parts[:-1]) + ', and ' + parts[-1] + ', one problem at a time with \\texttt{-O3}.%\n')
+
+# Table: plain ARAP with rotor outputs (arap-sr-linearized, branch srarap-rotor-fits, `experiments arap_plain`)
+rows = list(csv.DictReader(open(os.path.join(data, 'arap_plain.csv'))))
+by = {(r['scene'], r['fit']): r for r in rows}
+scenes = list(dict.fromkeys(r['scene'] for r in rows))
+fits = ('svd', 'rotor', 'rotor_simd', 'foam', 'foam_simd')
+with open(os.path.join(tables, 'arap_plain.tex'), 'w') as f:
+    for sc in scenes:
+        local = [float(by[(sc, k)]['local_ms']) for k in fits]
+        fit = [float(by[(sc, k)]['fit_ns_per_cell']) for k in fits]
+        cells = [f'${ms_fmt(x)}$' for x in local] + [f'${x:.0f}$' for x in fit]
+        f.write(f"{names[sc]} & " + ' & '.join(cells) + ' \\\\\n')

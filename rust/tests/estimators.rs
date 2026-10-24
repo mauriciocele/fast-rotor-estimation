@@ -254,3 +254,102 @@ fn rotor_estimators_on_rotations_with_alternating_component_sum_zero() {
         }
     }
 }
+
+/// `sum w q.(R p R~) - beta |R - prior|^2` for a unit quaternion `r`, with the same sign as `prior`.
+fn prior_objective(p: &[Vec3], q: &[Vec3], w: &[f64], prior: &Quat, beta: f64, r: &Quat) -> f64 {
+    let gain: f64 = p.iter().zip(q).zip(w).map(|((pi, qi), &wi)| wi * qi.dot(&transform_vector(r, pi))).sum();
+    let d = r.coords - prior.coords;
+    gain - beta * d.norm_squared()
+}
+
+/// The maximum over the unit sphere by a dense start grid and projected-gradient refinement.
+fn prior_brute_force(p: &[Vec3], q: &[Vec3], w: &[f64], prior: &Quat, beta: f64) -> f64 {
+    let f = |c: &nalgebra::Vector4<f64>| {
+        let c = c.normalize();
+        prior_objective(p, q, w, prior, beta, &Quat::new(c[3], c[0], c[1], c[2]))
+    };
+    let mut best = f64::MIN;
+    let mut best_c = nalgebra::Vector4::zeros();
+    let n = 16;
+    for i in 0..=n {
+        for j in 0..=n {
+            for k in 0..=2 * n {
+                let (a, b, c) = (
+                    std::f64::consts::PI * i as f64 / n as f64,
+                    std::f64::consts::PI * j as f64 / n as f64,
+                    std::f64::consts::PI * k as f64 / n as f64,
+                );
+                let v = nalgebra::Vector4::new(a.cos(), a.sin() * b.cos(), a.sin() * b.sin() * c.cos(), a.sin() * b.sin() * c.sin());
+                let fv = f(&v);
+                if fv > best {
+                    best = fv;
+                    best_c = v;
+                }
+            }
+        }
+    }
+    let mut c = best_c;
+    for _ in 0..4000 {
+        let eps = 1e-6;
+        let g = nalgebra::Vector4::from_fn(|i, _| {
+            let mut d = nalgebra::Vector4::zeros();
+            d[i] = eps;
+            (f(&(c + d)) - f(&(c - d))) / (2.0 * eps)
+        });
+        let t = g - c * c.dot(&g);
+        c = (c + t * 0.05).normalize();
+    }
+    best.max(f(&c))
+}
+
+#[test]
+fn prior_rotor_estimator_reduces_to_the_estimator_and_to_the_prior() {
+    let (p, q, w, _) = noise_free(11, 50, 2.0);
+    let prior = angle_axis(1.0, &Vec3::new(0.3, -0.5, 0.8).normalize());
+    let plain = la_rotor_estimator(&p, &q, &w);
+    let zero = prior_rotor_estimator(&p, &q, &w, &prior, 0.0);
+    assert!(nalgebra::UnitQuaternion::from_quaternion(zero).angle_to(&nalgebra::UnitQuaternion::from_quaternion(plain)) < 1e-8);
+    let strong = prior_rotor_estimator(&p, &q, &w, &prior, 1e9);
+    assert!((strong.coords - prior.coords).norm() < 1e-6, "follows the prior, with its sign");
+    let flipped = Quat::from_vector(-prior.coords);
+    let strong = prior_rotor_estimator(&p, &q, &w, &flipped, 1e9);
+    assert!((strong.coords + prior.coords).norm() < 1e-6, "and with the opposite sign");
+}
+
+#[test]
+fn prior_rotor_estimator_is_the_global_maximum() {
+    let mut rng = StdRng::seed_from_u64(5);
+    for seed in 0..40 {
+        let (p, q, w) = noisy_large_norms(seed, 20, 1.0 + seed as f64 * 0.13);
+        let axis = Vec3::new(rng.random::<f64>() - 0.5, rng.random::<f64>() - 0.5, rng.random::<f64>() - 0.5).normalize();
+        let prior = angle_axis(rng.random::<f64>() * 6.0, &axis);
+        let s: f64 = p.iter().zip(&q).zip(&w).map(|((a, b), &c)| c * (a.norm_squared() + b.norm_squared())).sum();
+        for beta in [1e-3 * s, 0.1 * s, 2.0 * s] {
+            let r = prior_rotor_estimator(&p, &q, &w, &prior, beta);
+            assert!((r.norm() - 1.0).abs() < 1e-12);
+            let f = prior_objective(&p, &q, &w, &prior, beta, &r);
+            let brute = prior_brute_force(&p, &q, &w, &prior, beta);
+            assert!(f >= brute - 1e-9 * (1.0 + s), "seed {seed}, beta {beta}: {f} < {brute}");
+        }
+    }
+}
+
+#[test]
+fn prior_rotor_estimator_with_a_prior_half_a_turn_away() {
+    // the prior's quaternion orthogonal to the data's best rotor: the hard case, weak and strong
+    for seed in 0..20 {
+        let (p, q, w) = noisy_large_norms(seed, 20, 0.7 + 0.2 * seed as f64);
+        let data = la_rotor_estimator(&p, &q, &w);
+        let mut rng = StdRng::seed_from_u64(seed + 100);
+        let axis = Vec3::new(rng.random::<f64>() - 0.5, rng.random::<f64>() - 0.5, rng.random::<f64>() - 0.5).normalize();
+        let prior = data * angle_axis(std::f64::consts::PI, &axis);
+        let s: f64 = p.iter().zip(&q).zip(&w).map(|((a, b), &c)| c * (a.norm_squared() + b.norm_squared())).sum();
+        for beta in [0.005 * s, 0.05 * s, 0.5 * s] {
+            let r = prior_rotor_estimator(&p, &q, &w, &prior, beta);
+            assert!((r.norm() - 1.0).abs() < 1e-12 && r.coords.iter().all(|c| c.is_finite()));
+            let f = prior_objective(&p, &q, &w, &prior, beta, &r);
+            let brute = prior_brute_force(&p, &q, &w, &prior, beta);
+            assert!(f >= brute - 1e-9 * (1.0 + s), "seed {seed}, beta {beta}: {f} < {brute}");
+        }
+    }
+}

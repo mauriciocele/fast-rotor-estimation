@@ -51,7 +51,7 @@
 \date{October 23, 2026}
 
 \begin{abstract}
-Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Closed form solutions have been proposed in the quaternion framework; they are fast, but they have singularities, i.e., they completely fail on certain input data. In this paper we formulate the problem in Geometric Algebra and follow the geometry at every step. The best rotor maximizes an energy that is quadratic in the rotor, and its multivector derivative leads to an eigenrotor equation. Two energies that are sums of squares bound the eigenvalues, and the bound is a starting point from which Newton's method provably converges to the largest eigenvalue, in one step when the data are free of noise. The eigenrotor is then found as the intersection of hyperplanes, computed with outer products in the 4D Geometric Algebra. This geometric view explains the singularities of the closed form methods, and of the tempting alternative of combining all the hyperplanes symmetrically, as a single phenomenon: they all fix in advance the scale of one hyperplane, or of one combination of them, and every such choice fails on a whole family of rotations. Choosing the hyperplanes from the data removes the singularities, without any data-dependent branch. The method reaches the optimum on all our test cases, with a speed comparable to the fastest methods for small numbers of vectors; when several problems are solved at once with SIMD instructions, it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST.
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Closed form solutions have been proposed in the quaternion framework; they are fast, but they have singularities, i.e., they completely fail on certain input data. In this paper we formulate the problem in Geometric Algebra and follow the geometry at every step. The best rotor maximizes an energy that is quadratic in the rotor, and its multivector derivative leads to an eigenrotor equation. Two energies that are sums of squares bound the eigenvalues, and the bound is a starting point from which Newton's method provably converges to the largest eigenvalue, in one step when the data are free of noise. The eigenrotor is then found as the intersection of hyperplanes, computed with outer products in the 4D Geometric Algebra. This geometric view explains the singularities of the closed form methods, and of the tempting alternative of combining all the hyperplanes symmetrically, as a single phenomenon: they all fix in advance the scale of one hyperplane, or of one combination of them, and every such choice fails on a whole family of rotations. Choosing the hyperplanes from the data removes the singularities, without any data-dependent branch. The method reaches the optimum on all our test cases, with a speed comparable to the fastest methods for small numbers of vectors; when several problems are solved at once with SIMD instructions, it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST. The same tools solve the problem with a prior rotor: the best rotor for the data and a pull towards a given rotor is found by one more monotone Newton iteration, on a secular equation whose root is bracketed by the angle between the prior and the data, exactly even when the prior is half a turn away.
 \end{abstract}
 
 \maketitle
@@ -69,7 +69,7 @@ In this paper we formulate the problem in the $\Ge_3$ geometric algebra, where r
 \item Two energies that are sums of squares bound the eigenvalues. The bound tells us where to start Newton's method so that it converges to the largest eigenvalue, and it is exact when the data are free of noise (Sections~\ref{section:positivity} and~\ref{section:eigenvalue}).
 \item In the 4D geometric algebra, the eigenrotor is the line where four hyperplanes meet, and the meet of any three of them is computed with outer products (Section~\ref{section:intersection}). We show how large each of these meets is, which explains the singularities of the closed form methods and how to avoid them (Section~\ref{section:robustness}).
 \end{itemize}
-Section~\ref{section:algorithms} gives the algorithm and Section~\ref{section:comparisons} compares it with other methods, including a comparison with QUEST, FOAM and FLAE when many problems are solved in parallel with SIMD instructions, where the absence of data-dependent branches in our method pays off. Section~\ref{section:application} applies the method to the rotation fits of smooth-rotation ARAP mesh deformation.
+Section~\ref{section:algorithms} gives the algorithm and Section~\ref{section:comparisons} compares it with other methods, including a comparison with QUEST, FOAM and FLAE when many problems are solved in parallel with SIMD instructions, where the absence of data-dependent branches in our method pays off. Section~\ref{section:prior} extends the method to a rotor with a prior, and Section~\ref{section:application} applies both to the rotation fits of ARAP mesh deformation.
 
 Two natural ideas turn out to be misleading, and we discuss both because seeing why they fail is the clearest way to understand what works. The first is that, since every single hyperplane fails for some rotations, constraining all of them at once, symmetrically, should avoid every failure. As we show in Section~\ref{section:sum_of_meets}, that symmetric choice is itself a fixed choice, and it fails, for example, for every rotation by $\pi/2$ about the $z$ axis. The second is that a positive semi-definite energy makes Newton's method robust. Positivity is useful, but what makes the iteration robust is where it starts, as explained in Section~\ref{section:eigenvalue}.
 
@@ -578,6 +578,148 @@ The pseudo-code of the proposed method is shown in Algorithm~\ref{alg:rotor}. Af
 \end{algorithm}
 
 %%% ----------------------------------------------------------------------
+\section{A Rotor with a Prior}
+\label{section:prior}
+
+Often the data are not all we know about the rotation. A tracker knows the rotation of the previous frame, an attitude filter has a propagated estimate, and in mesh deformation every cell knows the rotations of its neighbors. In all these cases we want the rotor that fits the data well \emph{and} stays close to a given rotor $\bar R$, the \emph{prior}, with a weight $\beta \geq 0$ that says how much we trust it. This section extends the method to that problem. The extension needs no new ideas beyond those of the previous sections: the same operator $\K$, the same bound and Newton iteration, and the same meet, followed by one more Newton iteration on a scalar equation whose behavior can be understood completely.
+
+\subsection{Two ways to be close to a rotor}
+
+There are two natural ways to measure how far a rotor $R$ is from $\bar R$, and they lead to different problems. Both start from the same fact.
+\begin{prop}
+\label{prop:rotor_angle}
+For two rotors $R$ and $\bar R$, $R * \bar R = \pm \cos(\theta / 2)$, where $\theta \in [0, \pi]$ is the angle of the rotation $R \rev{\bar R}$ that takes the rotation of $\bar R$ to that of $R$.
+\end{prop}
+\begin{proof}
+By the definition~(\ref{eqn:scalar_product}), $R * \bar R = \scal{R \rev{\bar R}}$, the scalar part of a rotor that rotates by $\theta$. A rotor $\cos(\phi/2) + B \sin(\phi/2)$ rotates by $\phi$, and the same rotation is represented by its opposite, so the scalar part is $\cos(\theta/2)$ or $-\cos(\theta/2)$.
+\end{proof}
+
+\paragraph{Closeness of rotations.} The first way compares the rotations. Rotate an orthonormal frame by both and add up how well the rotated frame vectors agree: $\sum_k (R e_k \rev{R}) \cdot (\bar R e_k \rev{\bar R})$. This is the trace of the product of the two rotation matrices, $1 + 2 \cos \theta = 4 \cos^2(\theta/2) - 1 = 4 (R * \bar R)^2 - 1$, by Proposition~\ref{prop:rotor_angle}. It is quadratic in $R$, and it is nothing but the gain of three more pairs of data, the frame vectors $e_k$ (as bivectors $I e_k$) and their images under $\bar R$, with weight $\beta$. Such a prior is therefore handled by Algorithm~\ref{alg:rotor} itself: add $\beta$ times the rotation matrix of $\bar R$ to $D$, and $6 \beta$ to $S$. It cannot tell $\bar R$ from $-\bar R$, since it depends on $(R * \bar R)^2$.
+
+\paragraph{Closeness of rotors.} The second way compares the rotors as elements of $\Ge_3^+$: $|R - \bar R|^2$. For rotors, $|R - \bar R|^2 = |R|^2 + |\bar R|^2 - 2 R * \bar R = 2 - 2 R * \bar R$, which is \emph{linear} in $R$, and which does distinguish $\bar R$ from $-\bar R$: the two represent the same rotation, but one is near $R$ and the other far from it. This is the right measure when the sign of the rotor carries information, as it does when a rotation is followed continuously through a half-turn, or when neighboring rotors are compared in $\Ge_3^+$, as in the smooth-rotation deformation of Section~\ref{section:application} formulated with rotors \cite{LopezBelonSRARAP}. It is the case we study now, because it is the one that Algorithm~\ref{alg:rotor} does not already solve.
+
+\subsection{The problem and its stationarity condition}
+
+We maximize the gain minus the prior penalty, $G(R) - \beta |R - \bar R|^2$, over the rotors. Since $|R - \bar R|^2 = 2 - 2 R * \bar R$ on the unit sphere, this is the same as maximizing
+\begin{equation}
+\label{eqn:prior_problem}
+F(R) = R * \K(R) + 2\, H * R, \qquad H = \beta \bar R, \qquad |R| = 1.
+\end{equation}
+We call $H$ the \emph{pull} of the prior. By~(\ref{eqn:derivative_energy}), the multivector derivative of $R * \K(R)$ is $2 \K(R)$, and that of the linear term $2 H * R$ is $2 H$. As in Section~\ref{section:estimation}, at a maximum on the unit sphere the derivative is parallel to $R$, $2 \K(R) + 2 H = 2 \mu R$ for a Lagrange multiplier $\mu$, that is,
+\begin{equation}
+\label{eqn:prior_stationarity}
+(\mu - \K)(R) = H, \qquad |R| = 1,
+\end{equation}
+where $\mu - \K$ denotes the operator $X \mapsto \mu X - \K(X)$. Without a prior, $H = 0$, this is the eigenrotor equation~(\ref{eqn:eigenrotor}); the pull turns it into a linear equation for $R$, with $\mu$ still to be found. Multiplying~(\ref{eqn:prior_stationarity}) by $R$ shows what $\mu$ is: $\mu = G(R) + H * R$, the value of the gain plus the agreement with the pull.
+
+\begin{prop}
+\label{prop:prior_maximum}
+If $(R^*, \mu^*)$ solves~(\ref{eqn:prior_stationarity}) with $\mu^* \geq \mu_0$, the largest eigenvalue of $\K$, then $R^*$ maximizes $F$ over all rotors.
+\end{prop}
+\begin{proof}
+The operator $\Gop = \mu^* - \K$ is symmetric, and positive semi-definite because $\mu^*$ is at least every eigenvalue of $\K$. For a rotor $X$, $X * \K(X) = \mu^* - X * \Gop(X)$, and $H = \Gop(R^*)$, so $F(X) = \mu^* - X * \Gop(X) + 2 R^* * \Gop(X)$. Taking the difference with $X = R^*$,
+\begin{align*}
+F(R^*) - F(X) &= X * \Gop(X) - 2 R^* * \Gop(X) + R^* * \Gop(R^*) \\
+&= (X - R^*) * \Gop(X - R^*) \geq 0. \qedhere
+\end{align*}
+\end{proof}
+
+\subsection{The secular equation}
+
+Let $R_0, \ldots, R_3$ be the unit eigenrotors of $\K$, with eigenvalues $\mu_0 \geq \mu_1 \geq \mu_2 \geq \mu_3$, and write the pull in that basis, $H = \sum_k h_k R_k$, with $h_k = H * R_k$. For $\mu > \mu_0$ the operator $\mu - \K$ is invertible, and (\ref{eqn:prior_stationarity}) gives
+\begin{equation}
+\label{eqn:prior_solution}
+R(\mu) = \sum_{k=0}^3 \frac{h_k}{\mu - \mu_k}\, R_k, \qquad |R(\mu)|^2 = \sum_{k=0}^3 \frac{h_k^2}{(\mu - \mu_k)^2}.
+\end{equation}
+Only the length of $R(\mu)$ remains to be fixed: we need $|R(\mu)| = 1$, the \emph{secular equation}. Each term of $|R(\mu)|^2$ decreases as $\mu$ grows, from $+\infty$ at $\mu_0$ (when $h_0 \neq 0$) to $0$, so the equation has exactly one root $\mu^* > \mu_0$, and by Proposition~\ref{prop:prior_maximum} it gives the best rotor. The root can be bracketed with the quantities we already have.
+\begin{prop}
+\label{prop:prior_bracket}
+Let $\theta$ be the angle between the rotations of $\bar R$ and of the data's best rotor $R_0$. Then
+\begin{equation}
+\label{eqn:prior_bracket}
+\mu_0 + |H| \cos\frac{\theta}{2} \;\leq\; \mu^* \;\leq\; \mu_0 + |H| .
+\end{equation}
+\end{prop}
+\begin{proof}
+By Proposition~\ref{prop:rotor_angle}, $|h_0| = |H * R_0| = \beta |\bar R * R_0| = |H| \cos(\theta / 2)$. At $\mu = \mu_0 + |h_0|$ the first term of~(\ref{eqn:prior_solution}) alone gives $|R(\mu)|^2 \geq 1$, so $\mu$ is not beyond the root. At $\mu = \mu_0 + |H|$ every denominator is at least $|H|^2$, so $|R(\mu)|^2 \leq \sum_k h_k^2 / |H|^2 = 1$, and $\mu$ is not before it.
+\end{proof}
+The bracket has a plain meaning. Its width is $|H| (1 - \cos(\theta/2))$: zero when the prior agrees with the data, $\theta = 0$, in which case $\mu^* = \mu_0 + |H|$ and $R^* = R_0$, and as wide as $|H|$ when the prior is half a turn away.
+
+\paragraph{Newton's method.} As in the trust-region literature \cite{MoreSorensen1983, Gander1989}, we apply Newton's method not to $|R(\mu)| = 1$, whose left-hand side has a pole at $\mu_0$, but to its reciprocal.
+\begin{prop}
+\label{prop:prior_newton}
+$\psi(\mu) = 1 / |R(\mu)|$ is increasing and concave on $(\mu_0, \infty)$. Newton's method for $\psi(\mu) = 1$ started at the left end $\mu_0 + |h_0|$ of the bracket produces an increasing sequence that converges to $\mu^*$.
+\end{prop}
+\begin{proof}
+Let $\phi = |R(\mu)|^2 = \sum_k h_k^2 t_k^{-2}$ with $t_k = \mu - \mu_k > 0$. Then $\phi' = -2 \sum_k h_k^2 t_k^{-3} < 0$ and $\phi'' = 6 \sum_k h_k^2 t_k^{-4}$, so $\psi = \phi^{-1/2}$ has $\psi' = -\frac12 \phi^{-3/2} \phi' > 0$ and
+\begin{equation*}
+\begin{aligned}
+\psi'' &= \tfrac14 \phi^{-5/2} (3 \phi'^2 - 2 \phi \phi'') \\
+&= 3 \phi^{-5/2} \Big( \big( \textstyle\sum_k h_k^2 t_k^{-3} \big)^2 - \big( \sum_k h_k^2 t_k^{-2} \big) \big( \sum_k h_k^2 t_k^{-4} \big) \Big) \leq 0
+\end{aligned}
+\end{equation*}
+by the Cauchy--Schwarz inequality for the vectors $(|h_k| t_k^{-1})_k$ and $(|h_k| t_k^{-2})_k$. Below the root $\psi < 1$, so the Newton step $(1 - \psi) / \psi'$ is positive; a concave function lies below its tangents, so at the new point, where the tangent reaches $1$, $\psi \leq 1$: the iterate stays below the root. The sequence increases and is bounded by $\mu^*$, so it converges, to a solution of $\psi = 1$.
+\end{proof}
+
+\paragraph{Computing each step without the pole.} Each step needs $|R(\mu)|$ and $\psi'(\mu) = R * (\mu - \K)^{-1}(R) / |R|^3$, which do not require the eigenrotors $R_1, R_2, R_3$: with a Cholesky factorization $\mu - \K = L L^T$ of its $4 \times 4$ matrix, $R = L^{-T} L^{-1} H$ and $R * (\mu - \K)^{-1}(R) = |L^{-1} R|^2$. Near the pole, however, $\mu - \K$ is nearly singular and these solves lose accuracy, which happens exactly when $h_0$ is small, that is, when the prior is nearly half a turn away from the data. We therefore treat the direction of $R_0$, which we know, analytically. Writing $\mu = \mu_0 + t$ and splitting $R(\mu)$ along $R_0$ and orthogonally to it,
+\begin{equation}
+\label{eqn:prior_deflated}
+R = \frac{h_0}{t}\, R_0 + Y, \qquad Y = \big( \mu - \K + \sigma\, R_0 (R_0 * \cdot) \big)^{-1} (H - h_0 R_0),
+\end{equation}
+where the added term, for any $\sigma > 0$ (we use $\sigma = S/2 + |H|$), replaces the eigenvalue $t$ of $\mu - \K$ along $R_0$ by $t + \sigma$ and leaves the others unchanged. The \emph{deflated} operator is then positive definite even at $t = 0$, and $Y$, the solution for the part of $H$ orthogonal to $R_0$, stays orthogonal to $R_0$. Hence
+\begin{equation*}
+|R|^2 = \frac{h_0^2}{t^2} + |Y|^2, \qquad R * (\mu - \K)^{-1}(R) = \frac{h_0^2}{t^3} + |L^{-1} Y|^2,
+\end{equation*}
+with $L$ now the Cholesky factor of the deflated operator, and every quantity is well conditioned near the pole.
+
+\paragraph{The hard case.} When the prior is exactly half a turn away from the data, $h_0 = 0$, the pole disappears, and $|R(\mu)|$ stays bounded as $\mu \to \mu_0$, with limit $|Y(\mu_0)|$. If $|Y(\mu_0)| > 1$ the root is still above $\mu_0$ and Newton's method finds it from $t = 0$. If $|Y(\mu_0)| \leq 1$, the multiplier stops at $\mu^* = \mu_0$, and the maximizers are $R^* = Y(\mu_0) \pm \sqrt{1 - |Y(\mu_0)|^2}\, R_0$: the part along $R_0$ is no longer fixed by the pull, only completed to unit length. Both signs give the same value of $F$, and the tie has a geometric reason: a prior half a turn away from the data's rotation can be approached by turning either way.
+
+\paragraph{Two limits.} Without a prior, $\beta \to 0$, the root tends to $\mu_0$ and $R^*$ to $\pm R_0$, with the sign of $h_0$: even a vanishingly weak prior decides on which side of the sphere the rotor lies, which removes the ambiguity between $R_0$ and $-R_0$. With a dominant prior, $\beta \to \infty$, the gain becomes negligible and $R^* \to \bar R$, with its sign.
+
+Algorithm~\ref{alg:prior} summarizes the method. It is Algorithm~\ref{alg:rotor}, run with a tighter stopping test so that $\mu_0$ and $R_0$ are accurate to full precision, followed by the Newton iteration on $t$.
+
+\begin{algorithm}[t]
+\begin{algorithmic}[1]
+\REQUIRE {the data as in Algorithm~\ref{alg:rotor}, the prior rotor $\bar R$ (coordinates $\bar r$), its weight $\beta \geq 0$}
+\STATE run Algorithm~\ref{alg:rotor} to full precision: $K$, $\mu_0$ and the unit eigenrotor $r_0$
+\STATE $h \leftarrow \beta\, \bar r$, \quad $h_0 \leftarrow h \cdot r_0$, \quad $h_\perp \leftarrow h - h_0 r_0$, \quad $\sigma \leftarrow S/2 + |h|$
+\STATE $t \leftarrow |h_0|$ \hfill (\ref{eqn:prior_bracket})
+\LOOP
+\STATE $L L^T \leftarrow (\mu_0 + t) I - K + \sigma\, r_0 r_0^T$, \quad $y \leftarrow L^{-T} L^{-1} h_\perp$ \hfill (\ref{eqn:prior_deflated})
+\IF{$t = 0$ and $|y| \leq 1$}
+\RETURN $y + \sqrt{1 - |y|^2}\, r_0$ \hfill (hard case)
+\ENDIF
+\STATE $n \leftarrow \sqrt{h_0^2 / t^2 + |y|^2}$, \quad $\psi' \leftarrow (h_0^2 / t^3 + |L^{-1} y|^2) / n^3$
+\STATE $t \leftarrow t + (1 - 1/n) / \psi'$ \hfill (Newton for $\psi = 1/n = 1$)
+\STATE \textbf{until} the step is negligible
+\ENDLOOP
+\RETURN the unit quaternion of $(h_0 / t)\, r_0 + y$
+\end{algorithmic}
+\caption{Rotor estimation with a prior rotor: the unit quaternion $r$ maximizing $r^T K r + 2 \beta\, \bar r \cdot r$.}
+\label{alg:prior}
+\end{algorithm}
+
+\subsection{Experiments}
+
+We tested the C++ implementation on problems of $20$ noisy vectors with random rotations, with priors at an angle $\theta$ from the data's best rotation and on the same side of the sphere, $\bar R = R_0 \exp(-B \theta / 2)$ for a random unit bivector $B$, and weights $\beta = \kappa\, S / 2$, so that $\kappa$ measures the prior against the scale of the gain. As reference we solve the secular equation~(\ref{eqn:prior_solution}) by bisection on the bracket~(\ref{eqn:prior_bracket}), with the eigendecomposition of $K$ in extended precision, and completing along $R_0$ in the hard case. Table~\ref{tab:prior} reports, over $500$ problems per row, the Newton steps, the largest angle to the reference, the largest shortfall of $F$ below the reference value, relative to $S/2 + |H|$, and the mean angle between the result and the data's best rotation.
+
+\begin{table}[t]
+\centering
+\caption{The prior estimator (Algorithm~\ref{alg:prior}) on $500$ problems per row: Newton steps (mean and maximum), largest angle to the extended-precision reference (radians; at $\theta = \pi$ the two maximizers tie and only the value of $F$ is compared), largest relative shortfall of $F$, and mean angle (degrees) between the result and the data's best rotation.}
+\label{tab:prior}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+$\theta$ & $\kappa$ & steps & angle error & $F$ shortfall & from data \\
+\midrule
+\csname @@input\endcsname tables/prior.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+The results are exact to rounding in every row, including the hard case $\theta = \pi$, where the deflated form~(\ref{eqn:prior_deflated}) is what makes the solves accurate: without it, Newton's method next to the pole loses up to a quarter of the objective in our tests. Newton's method needs one step when the prior agrees with the data, two to six in general, and up to fourteen when a strong prior is half a turn away from the data, where the root lies far from both ends of the bracket. The last column shows the prior at work: a weak prior moves the result by a fraction of a degree, a prior as strong as the data by tens of degrees, towards the prior. The cost is that of Algorithm~\ref{alg:rotor} plus a few $4 \times 4$ Cholesky solves: \csname @@input\endcsname tables/prior_timing.tex
+
+%%% ----------------------------------------------------------------------
 \section{Comparisons}
 \label{section:comparisons}
 
@@ -840,7 +982,7 @@ The SR-ARAP update needs rotation matrices: $M_i$ in~(\ref{eqn:cell_gain}) is bu
 \label{fig:srarap}
 \end{figure}
 
-We implemented the fits in Rust, generic over the lane type, \texttt{f64} for one cell and the four-wide \texttt{f64x4} of the \texttt{wide} crate for four cells (two 128-bit NEON registers), and measured them on the Apple M1 Pro of Section~\ref{section:comparisons}, on one core. The program is compiled as a single code generation unit: with the default split into several units the compiler did not inline the SIMD code as well, and four lanes lost their advantage. We deform four meshes (Figure~\ref{fig:srarap}): the control mesh of the Armadillo used for interactive editing, the Cactus, a bar bent into a quarter circle, and the full Armadillo. After five local/global iterations from the rest pose, we time one local step of three Gauss--Seidel sweeps from the same state with every fit (Table~\ref{tab:arap_local}), and, separately, the fits alone on the cell problems of that state (Table~\ref{tab:arap_fit}).
+We implemented the fits in Rust, in the code of \cite{GALinearizedArap} (on its branch \texttt{srarap\-rotor\-fits}), generic over the lane type, \texttt{f64} for one cell and the four-wide \texttt{f64x4} of the \texttt{wide} crate for four cells (two 128-bit NEON registers), and measured them on the Apple M1 Pro of Section~\ref{section:comparisons}, on one core. The program is compiled as a single code generation unit: with the default split into several units the compiler did not inline the SIMD code as well, and four lanes lost their advantage. We deform four meshes (Figure~\ref{fig:srarap}): the control mesh of the Armadillo used for interactive editing, the Cactus, a bar bent into a quarter circle, and the full Armadillo. After five local/global iterations from the rest pose, we time one local step of three Gauss--Seidel sweeps from the same state with every fit (Table~\ref{tab:arap_local}), and, separately, the fits alone on the cell problems of that state (Table~\ref{tab:arap_fit}).
 
 \begin{table}[t]
 \centering
@@ -878,14 +1020,44 @@ The fits agree. After one local step from the same state, the rotations of every
 
 The fit itself becomes $11$ to $13$ times cheaper with Algorithm~\ref{alg:rotor} one cell at a time, and $16$ to $18$ times with four lanes, where it costs $25$ to $29$ ns per cell. The local step, which also builds the matrices $M_i$, becomes $4$ to $7$ times faster with one cell at a time and $5$ to $8$ times with SIMD. Once the fit is cheap, building $M_i$ from the edges and the neighbors' rotations dominates the local step, and that part is the same for every fit; it is also why the full Armadillo, whose $173{,}000$ cells do not fit in the cache, gains less. Four lanes speed up the fit by a factor of about $1.5$, less than the $2.2$ of Section~\ref{section:comparisons}: Newton's method needs only one to three steps here, which leaves less work to share, the matrices have to be gathered into the lanes and scattered back, and every group of four takes as many steps as its slowest cell.
 
-FOAM is faster in this application, by $7$ to $14\%$ for the local step. Its fit costs $20$ to $24$ ns per cell, and four lanes do not make it faster. The reason is the one of Section~\ref{section:comparisons}: SR-ARAP needs rotation matrices, which FOAM computes directly from $3 \times 3$ matrices, while Algorithm~\ref{alg:rotor} works with $4 \times 4$ quantities and returns a rotor that must then be converted. When the rotations are wanted as rotors, for instance to interpolate them across the mesh, the comparison turns the other way. The lesson of the application is that, once the cell fit is recognized as a Wahba problem with the bound~(\ref{eqn:cell_bound}), any of the Newton methods of this paper turns the SR-ARAP local step from a cost dominated by SVDs into one dominated by bookkeeping, with the same results.
+FOAM is faster in this application, by $7$ to $14\%$ for the local step. Its fit costs $20$ to $24$ ns per cell, and four lanes do not make it faster. The reason is the one of Section~\ref{section:comparisons}: SR-ARAP needs rotation matrices, which FOAM computes directly from $3 \times 3$ matrices, while Algorithm~\ref{alg:rotor} works with $4 \times 4$ quantities and returns a rotor that must then be converted. When the rotations are wanted as rotors the advantage of FOAM disappears, as Section~\ref{section:plain_arap} shows. The lesson of the application is that, once the cell fit is recognized as a Wahba problem with the bound~(\ref{eqn:cell_bound}), any of the Newton methods of this paper turns the SR-ARAP local step from a cost dominated by SVDs into one dominated by bookkeeping, with the same results.
+
+
+\subsection{Plain ARAP: one rotor per cell}
+\label{section:plain_arap}
+
+Without the bending term, $\alpha = 0$, the deformation is the original ARAP of \cite{Sorkine2007}, and its local step is the textbook case of many independent Wahba problems: every cell's rotation fits its own edges, $\max \tr(R_i^T M_i)$ with $M_i = \sum_j w_{ij} v_{ij} u_{ij}^T$, independently of the others. No coloring is needed, any four cells can share the SIMD lanes, and the bound~(\ref{eqn:cell_bound}) reduces to its first term. We store the rotations as rotors, which is what the global step of a rotor formulation needs and what is interpolated across the mesh in multiresolution editing \cite{LopezBelonSRARAP}. Algorithm~\ref{alg:rotor} returns the rotor directly; the SVD and FOAM return a matrix, which we convert into a rotor, with nalgebra's conversion for the SVD and with the branch-free selection of the largest column of $4\, \mathbf q \mathbf q^T$ for FOAM, which can share the lanes. Table~\ref{tab:arap_plain} shows the local step and the fit alone, on the same four meshes.
+
+\begin{table}[t]
+\centering
+\caption{Plain ARAP ($\alpha = 0$): time of one local step (ms) and of the fit alone (ns per cell), with each cell's rotor found by the SVD (and a conversion), by Algorithm~\ref{alg:rotor}, or by FOAM (and a branch-free conversion), one cell at a time or four at a time in SIMD lanes.}
+\label{tab:arap_plain}
+\scriptsize
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+ & \multicolumn{5}{c}{local step (ms)} & \multicolumn{5}{c}{fit alone (ns per cell)} \\
+\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+mesh & SVD & Prop. & Prop. & FOAM & FOAM & SVD & Prop. & Prop. & FOAM & FOAM \\
+ & & & SIMD & & SIMD & & & SIMD & & SIMD \\
+\midrule
+\csname @@input\endcsname tables/arap_plain.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+The fits agree, to $7 \cdot 10^{-14}$ radians after one local step and $8 \cdot 10^{-15}$ in the positions after $50$ iterations. With rotors as the output, the proposed method and FOAM tie: each needs $31$ to $43$ ns per cell one cell at a time; with four lanes the proposed method is ahead by $0$ to $4\%$ in the fit alone ($25$ to $29$ ns per cell against $25$ to $30$), and the local steps take the same time. The SVD, with $420$ to $490$ ns per cell, makes the local step $5.7$ to $7.3$ times slower. Which of the two Newton methods to use therefore depends on what the application stores: a matrix favors FOAM, a rotor is free with Algorithm~\ref{alg:rotor}, and only the latter has the robustness analysis of Section~\ref{section:robustness}.
+
+\subsection{Smooth rotations formulated with rotors}
+
+The SR-ARAP energy~(\ref{eqn:srarap}) compares neighboring rotations as matrices. A formulation with rotors \cite{LopezBelonSRARAP} compares them in $\Ge_3^+$ instead, $\|R_i - R_j\|^2$, and makes the local step one sparse linear system, which leaves no per-cell rotation fit to replace. The methods of this paper still appear there, twice. First, its rule for the cells inside a handle takes, when the handle has turned far from the cell's neighbors, the rotor that fits the cell's own edges best: the eigenrotor of the cell, computed by Algorithm~\ref{alg:rotor}. Second, solving a cell of that formulation exactly on the unit sphere, with its neighbors fixed, is the problem of Section~\ref{section:prior}: the membrane term is $E_-$ of~(\ref{eqn:two_energies}), $S |R|^2 - 2 G(R)$ for the cell's edges, and the bending terms become, on the unit sphere, a linear pull $H = \alpha A$ times the mean of the neighbors' rotors, so minimizing the cell's energy is maximizing $G(R) + H * R$, which is~(\ref{eqn:prior_problem}) with the pull halved. In that setting the half-turn of Section~\ref{section:prior} is not a curiosity: it is what happens to the cells of a handle turned by $\pi$, whose own rotor is orthogonal to those of their resting neighbors.
 
 %%% ----------------------------------------------------------------------
 \section{Conclusion}
 
 We presented a method for estimating the best quaternion aligning two sets of corresponding vectors or bivectors, following the geometry of the problem at each step. Maximizing the length of the sum of each bivector and its rotated target, after multiplying by the rotor, gives an energy that is quadratic in the rotor, and its multivector derivative gives an eigenrotor equation. The positivity of the energies of the sum and of the difference bounds all the eigenvalues by $\pm S/2$, and the upper bound, exact without noise, is the starting point from which Newton's method converges monotonically to the largest eigenvalue. The eigenrotor is the line where the hyperplanes of the characteristic matrix meet, computed with outer products in the 4D geometric algebra.
 
-The same geometric picture explains the singularities of the closed form methods. Each meet of three hyperplanes points along the eigenrotor, with a length proportional to one of its coordinates; any method that fixes in advance which meet, or which combination of meets, to use, fails on a whole family of rotations: rotations by $\pi$ for QUEST, rotations about horizontal axes and the identity for FLAE, and rotations such as $\pi/2$ about the $z$ axis for the symmetric sum of all four meets. Choosing the meet from the data, by its largest component, removes the singularities, with a guaranteed size that depends only on the data. In our experiments the method always reaches the optimum, at a speed comparable to QUEST, the fastest method for small numbers of vectors. Because the selection of the meet needs no data-dependent branch, the method is also well suited to solving many problems at once with SIMD instructions, where it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST; FOAM is faster still when a rotation matrix is the desired output. In smooth-rotation ARAP deformation, every cell update is a Wahba problem with a tight bound for Newton's method; replacing its SVD by the proposed method makes the local step $5$ to $8$ times faster with the same results. The selection of the meet does not depend on how the eigenvalue is computed, so it can also make other methods of the same family, such as FLAE, free of singularities.
+The same geometric picture explains the singularities of the closed form methods. Each meet of three hyperplanes points along the eigenrotor, with a length proportional to one of its coordinates; any method that fixes in advance which meet, or which combination of meets, to use, fails on a whole family of rotations: rotations by $\pi$ for QUEST, rotations about horizontal axes and the identity for FLAE, and rotations such as $\pi/2$ about the $z$ axis for the symmetric sum of all four meets. Choosing the meet from the data, by its largest component, removes the singularities, with a guaranteed size that depends only on the data. In our experiments the method always reaches the optimum, at a speed comparable to QUEST, the fastest method for small numbers of vectors. Because the selection of the meet needs no data-dependent branch, the method is also well suited to solving many problems at once with SIMD instructions, where it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST; FOAM is faster still when a rotation matrix is the desired output. With a prior rotor, the eigenrotor equation becomes a linear equation with a free multiplier; the bound, the Newton iteration and the meet give a bracket for the multiplier, from the angle between the prior and the data, and a monotone Newton iteration inside it, which a deflation along the eigenrotor keeps accurate when the prior is half a turn away. In ARAP mesh deformation, every cell update is a Wahba problem with a tight bound for Newton's method; replacing its SVD by the proposed method makes the local step $5$ to $8$ times faster with the same results, and when the rotations are stored as rotors the proposed method is as fast as FOAM. The prior estimator is the exact cell of smooth-rotation deformation formulated with rotors. The selection of the meet does not depend on how the eigenvalue is computed, so it can also make other methods of the same family, such as FLAE, free of singularities.
 
 \bibliographystyle{abbrv}
 \bibliography{rotorestimation}

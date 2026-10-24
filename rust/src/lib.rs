@@ -25,7 +25,7 @@ pub use common::{Mat3, Quat, Vec3};
 pub use davenport::davenport;
 pub use fa3r::{fa3r_double, fa3r_int};
 pub use flae::{flae, flae_newton, flae_symbolic};
-pub use ga_rotor_estimator::{ga_rotor_estimator, la_rotor_estimator};
+pub use ga_rotor_estimator::{ga_rotor_estimator, la_rotor_estimator, prior_rotor_estimator};
 pub use ga_valkenburg::ga_valkenburg;
 pub use horn::horn;
 pub use quaternion_direct::quaternion_direct;

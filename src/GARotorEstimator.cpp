@@ -184,6 +184,44 @@ Quaterniond GARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 	return QQ;
 }
 
+/*
+	The eigenrotor of K for the eigenvalue mu, unnormalized, in the basis e1..e4 = (x, y, z, w): the largest of
+	the four meets of the hyperplanes of K - mu I, whose columns are k_i - mu e_i.
+*/
+static inline Vector4d BestMeet(const Vector4d& k1, const Vector4d& k2, const Vector4d& k3, const Vector4d& k4, double mu)
+{
+	const Vector4d x1 = k1 - mu * Vector4d::UnitX();
+	const Vector4d x2 = k2 - mu * Vector4d::UnitY();
+	const Vector4d x3 = k3 - mu * Vector4d::UnitZ();
+	const Vector4d x4 = k4 - mu * Vector4d::UnitW();
+	const Bivector4 A = wedge(x1, x2);
+	const Bivector4 C = wedge(x3, x4);
+
+	// dual(Tk) . ek is the coefficient of Tk on the blade without ek
+	const double own[4] = {
+		C.e23 * x2[3] - C.e24 * x2[2] + C.e34 * x2[1],   // (x2 ^ C) . e234
+		C.e13 * x1[3] - C.e14 * x1[2] + C.e34 * x1[0],   // (x1 ^ C) . e134
+		A.e12 * x4[3] - A.e14 * x4[1] + A.e24 * x4[0],   // (A ^ x4) . e124
+		A.e12 * x3[2] - A.e13 * x3[1] + A.e23 * x3[0] }; // (A ^ x3) . e123
+	// Branch-free selection: the largest meet is T = B ^ v with (B, v) = (C, x2), (C, x1),
+	// (A, x4) or (A, x3); select B and v, then compute a single trivector. The winner depends
+	// on the rotation, so a branch here would often be mispredicted.
+	const bool m1 = std::abs(own[1]) > std::abs(own[0]);
+	double best = m1 ? std::abs(own[1]) : std::abs(own[0]);
+	Bivector4 Bs = C;
+	Vector4d v = select(m1, x1, x2);
+	const bool m2 = std::abs(own[2]) > best;
+	best = m2 ? std::abs(own[2]) : best;
+	Bs = select(m2, A, Bs);
+	v = select(m2, x4, v);
+	const bool m3 = std::abs(own[3]) > best;
+	Bs = select(m3, A, Bs);
+	v = select(m3, x3, v);
+	const Trivector4 T = wedge(Bs, v);
+
+	return dual(T);
+}
+
 Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w)
 {
 	// S = sum w (|p|^2 + |q|^2) and Sx = sum w p q^T
@@ -253,37 +291,134 @@ Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 		? T1 = x2 ^ C;  T2 = x1 ^ C;  T3 = A ^ x4;  T4 = A ^ x3;   (Tk misses xk)
 		? R = dual(Tk) for the k with the largest |dual(Tk) . ek|
 	*/
-	const Vector4d x1 = k1 - mu * Vector4d::UnitX();
-	const Vector4d x2 = k2 - mu * Vector4d::UnitY();
-	const Vector4d x3 = k3 - mu * Vector4d::UnitZ();
-	const Vector4d x4 = k4 - mu * Vector4d::UnitW();
-	const Bivector4 A = wedge(x1, x2);
-	const Bivector4 C = wedge(x3, x4);
-
-	// dual(Tk) . ek is the coefficient of Tk on the blade without ek
-	const double own[4] = {
-		C.e23 * x2[3] - C.e24 * x2[2] + C.e34 * x2[1],   // (x2 ^ C) . e234
-		C.e13 * x1[3] - C.e14 * x1[2] + C.e34 * x1[0],   // (x1 ^ C) . e134
-		A.e12 * x4[3] - A.e14 * x4[1] + A.e24 * x4[0],   // (A ^ x4) . e124
-		A.e12 * x3[2] - A.e13 * x3[1] + A.e23 * x3[0] }; // (A ^ x3) . e123
-	// Branch-free selection: the largest meet is T = B ^ v with (B, v) = (C, x2), (C, x1),
-	// (A, x4) or (A, x3); select B and v, then compute a single trivector. The winner depends
-	// on the rotation, so a branch here would often be mispredicted.
-	const bool m1 = std::abs(own[1]) > std::abs(own[0]);
-	double best = m1 ? std::abs(own[1]) : std::abs(own[0]);
-	Bivector4 Bs = C;
-	Vector4d v = select(m1, x1, x2);
-	const bool m2 = std::abs(own[2]) > best;
-	best = m2 ? std::abs(own[2]) : best;
-	Bs = select(m2, A, Bs);
-	v = select(m2, x4, v);
-	const bool m3 = std::abs(own[3]) > best;
-	Bs = select(m3, A, Bs);
-	v = select(m3, x3, v);
-	const Trivector4 T = wedge(Bs, v);
-
 	// basis order e1, e2, e3, e4, which Quaterniond(Vector4d) reads as x, y, z, w
-	Quaterniond R( dual(T) );
+	Quaterniond R( BestMeet(k1, k2, k3, k4, mu) );
+	R.normalize();
+	return R;
+}
+
+/*
+	Cholesky factorization A = L L^T of a symmetric positive definite 4x4 matrix, with the solves the prior estimator
+	needs: x = A^-1 b and z = L^-1 x. Written out for the fixed size (Eigen's LLT is general and slower here).
+*/
+struct Cholesky4 {
+	double l[4][4], inv[4];   // L, and the reciprocals of its diagonal (divisions are slow)
+	explicit Cholesky4(const Matrix4d& A) {
+		for (int j = 0; j < 4; ++j) {
+			double d = A(j, j);
+			for (int k = 0; k < j; ++k) d -= l[j][k] * l[j][k];
+			l[j][j] = std::sqrt(d);
+			inv[j] = 1.0 / l[j][j];
+			for (int i = j + 1; i < 4; ++i) {
+				double v = A(i, j);
+				for (int k = 0; k < j; ++k) v -= l[i][k] * l[j][k];
+				l[i][j] = v * inv[j];
+			}
+		}
+	}
+	Vector4d lower(const Vector4d& b) const {   // L^-1 b
+		Vector4d z;
+		for (int i = 0; i < 4; ++i) {
+			double v = b[i];
+			for (int k = 0; k < i; ++k) v -= l[i][k] * z[k];
+			z[i] = v * inv[i];
+		}
+		return z;
+	}
+	Vector4d solve(const Vector4d& b) const {   // L^-T L^-1 b
+		const Vector4d z = lower(b);
+		Vector4d x;
+		for (int i = 3; i >= 0; --i) {
+			double v = z[i];
+			for (int k = i + 1; k < 4; ++k) v -= l[k][i] * x[k];
+			x[i] = v * inv[i];
+		}
+		return x;
+	}
+};
+
+/*
+	The best rotor for the data with a prior rotor 'prior' of weight beta >= 0: the unit quaternion R maximizing
+
+		sum w q.(R p ~R) - beta |R - prior|^2,
+
+	with |R - prior| the distance of the quaternions in R^4. On the unit sphere the prior term is 2 beta R.prior plus
+	a constant, so in coordinates the problem is max r^T K r + 2 h^T r, |r| = 1, h = beta prior. Its maximizer solves
+	(mu I - K) r = h with the multiplier mu above the largest eigenvalue mu0 of K. With the eigenrotor r0 of mu0,
+	mu lies in [mu0 + |h.r0|, mu0 + |h|], and Newton's method on 1 / |r(mu)| = 1 from the left end increases
+	monotonically to it. Unlike a prior on rotation matrices, this one tells prior from -prior.
+*/
+Quaterniond PriorRotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& Q, const vector<double>& w, const Quaterniond& prior, double beta, int* steps)
+{
+	if (steps) *steps = 0;
+	Matrix3d Sx;
+	Sx.setZero();
+	double S = 0;
+	for (size_t j = 0; j < P.size(); ++j) {
+		S += w[j] * (P[j].squaredNorm() + Q[j].squaredNorm());
+		Sx.noalias() += (w[j] * P[j]) * Q[j].transpose();
+	}
+	const double tr = Sx.trace();
+	const Vector4d k1(2.0 * Sx(0, 0) - tr, Sx(0, 1) + Sx(1, 0), Sx(2, 0) + Sx(0, 2), Sx(1, 2) - Sx(2, 1));
+	const Vector4d k2(Sx(0, 1) + Sx(1, 0), 2.0 * Sx(1, 1) - tr, Sx(1, 2) + Sx(2, 1), Sx(2, 0) - Sx(0, 2));
+	const Vector4d k3(Sx(2, 0) + Sx(0, 2), Sx(1, 2) + Sx(2, 1), 2.0 * Sx(2, 2) - tr, Sx(0, 1) - Sx(1, 0));
+	const Vector4d k4(Sx(1, 2) - Sx(2, 1), Sx(2, 0) - Sx(0, 2), Sx(0, 1) - Sx(1, 0), tr);
+	const double a = -2.0 * Sx.squaredNorm();
+	const double b = -8.0 * Sx.determinant();
+	const double c = wedge(wedge(k1, k2), wedge(k3, k4));
+	// mu0 from S/2, decreasing monotonically; to full precision, since the bracket starts at it
+	double mu = 0.5 * S;
+	for (int it = 0; it < 100; ++it) {
+		const double mu2 = mu * mu;
+		const double step = ((mu2 + a) * mu2 + b * mu + c) / ((4.0 * mu2 + 2.0 * a) * mu + b);
+		if (!(step > 1e-15 * S)) break;
+		mu -= step;
+	}
+	const double mu0 = mu;
+	const Vector4d r0 = BestMeet(k1, k2, k3, k4, mu0).normalized();
+	const Vector4d h = beta * Vector4d(prior.x(), prior.y(), prior.z(), prior.w());
+	Matrix4d K;
+	K << k1, k2, k3, k4;
+	/*
+		Write mu = mu0 + t, t > 0. Splitting r(mu) = (mu I - K)^-1 h along r0 and orthogonally to it,
+			r = (c1 / t) r0 + y,   c1 = h.r0,   y = (mu I - K + sigma r0 r0^T)^-1 (h - c1 r0),
+		where the deflated matrix is positive definite even at t = 0 (its eigenvalue along r0 is t + sigma) and leaves
+		y orthogonal to r0. Then |r|^2 = c1^2 / t^2 + |y|^2 and r^T (mu I - K)^-1 r = c1^2 / t^3 + |L^-1 y|^2, both well
+		conditioned near the pole. Newton's method on psi = 1 / |r| = 1 starts at t = |c1|, where |r| >= 1, and
+		increases monotonically to the root. If c1 = 0 and |y(0)| <= 1 (the hard case), the root is t = 0 and r is y
+		completed to unit length along r0.
+	*/
+	const double sigma = 0.5 * S + h.norm();
+	const double c1 = h.dot(r0);
+	const Vector4d hp = h - c1 * r0;
+	const Matrix4d deflated = sigma * r0 * r0.transpose() - K;
+	double t = std::abs(c1);
+	Vector4d y = Vector4d::Zero();
+	for (int it = 0; it < 100; ++it) {
+		const Cholesky4 llt((mu0 + t) * Matrix4d::Identity() + deflated);
+		y = llt.solve(hp);
+		if (t == 0.0) {
+			if (y.squaredNorm() <= 1.0) break;   // the hard case
+			t = 1e-300;                          // the root is to the right of the pole: start just after it
+		}
+		const double z2 = llt.lower(y).squaredNorm();
+		const double ct = c1 / t;                // (c1 / t)^2, not c1^2 / t^2, which underflows near t = 0
+		const double a2 = ct * ct;
+		const double n = std::sqrt(a2 + y.squaredNorm());
+		const double dpsi = (a2 / t + z2) / (n * n * n);
+		const double step = (1.0 - 1.0 / n) / dpsi;
+		if (steps) ++*steps;
+		if (!(t + step > 0.0)) break;            // rounding at the root: keep the last t
+		t += step;
+		if (std::abs(step) <= 1e-13 * t || std::abs(n - 1.0) <= 1e-15) break;
+	}
+	Vector4d r;
+	if (t == 0.0) {
+		r = y + std::sqrt(std::max(0.0, 1.0 - y.squaredNorm())) * r0;
+	} else {
+		r = (c1 / t) * r0 + Cholesky4((mu0 + t) * Matrix4d::Identity() + deflated).solve(hp);
+	}
+	Quaterniond R(r);
 	R.normalize();
 	return R;
 }

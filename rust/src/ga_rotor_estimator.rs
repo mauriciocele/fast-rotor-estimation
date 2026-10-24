@@ -250,6 +250,13 @@ pub fn la_rotor_estimator(p: &[Vec3], q: &[Vec3], w: &[f64]) -> Quat {
         }
     }
 
+    // basis order e1, e2, e3, e4, read as x, y, z, w
+    normalize_quat(quat_from_xyzw(&best_meet(&k1, &k2, &k3, &k4, mu)))
+}
+
+/// The eigenrotor of `K` for the eigenvalue `mu`, unnormalized, in the basis e1..e4 = (x, y, z, w): the largest of the
+/// four meets of the hyperplanes of `K - mu I`, whose columns are `k_i - mu e_i`.
+fn best_meet(k1: &Vec4, k2: &Vec4, k3: &Vec4, k4: &Vec4, mu: f64) -> Vec4 {
     // Eigenrotor, as in `ga_rotor_estimator`: the dual of each triple wedge of the columns
     // x1..x4 of K - mu I (= M - lambda I) is parallel to the eigenrotor, scaled by its component along
     // the missing column. Keep the one where that component is largest (summing them
@@ -258,10 +265,10 @@ pub fn la_rotor_estimator(p: &[Vec3], q: &[Vec3], w: &[f64]) -> Quat {
     //   A = x1 ^ x2;  C = x3 ^ x4;
     //   T1 = x2 ^ C;  T2 = x1 ^ C;  T3 = A ^ x4;  T4 = A ^ x3;   (Tk misses xk)
     //   R = dual(Tk) for the k with the largest |dual(Tk) . ek|
-    let x1 = k1 - mu * Vec4::x();
-    let x2 = k2 - mu * Vec4::y();
-    let x3 = k3 - mu * Vec4::z();
-    let x4 = k4 - mu * Vec4::w();
+    let x1 = *k1 - mu * Vec4::x();
+    let x2 = *k2 - mu * Vec4::y();
+    let x3 = *k3 - mu * Vec4::z();
+    let x4 = *k4 - mu * Vec4::w();
     let a = wedge2(&x1, &x2);
     let c = wedge2(&x3, &x4);
 
@@ -298,6 +305,88 @@ pub fn la_rotor_estimator(p: &[Vec3], q: &[Vec3], w: &[f64]) -> Quat {
     v = pick4(m3, &x3, &v);
     let t = wedge3(&bs, &v);
 
-    // basis order e1, e2, e3, e4, read as x, y, z, w
-    normalize_quat(quat_from_xyzw(&dual3(&t)))
+    dual3(&t)
+}
+
+
+/// The best rotor for the data with a prior rotor `prior`, of weight `beta >= 0`: the unit quaternion `R` maximizing
+///
+/// ```text
+/// sum w q.(R p R~)  -  beta |R - prior|^2,
+/// ```
+///
+/// where `|R - prior|` is the distance of the quaternions in R^4. On the unit sphere the prior term is
+/// `2 beta R.prior` plus a constant, so in coordinates the problem is `max r^T K r + 2 h^T r`, `|r| = 1`, `h = beta
+/// prior`, with Davenport's matrix `K`. Its maximizer solves `(mu I - K) r = h` with the multiplier `mu` above the
+/// largest eigenvalue `mu0` of `K`. With the eigenrotor `r0` of `mu0` (Algorithm 1), `mu` lies in
+/// `[mu0 + |h.r0|, mu0 + |h|]`, and Newton's method on `1 / |r(mu)| = 1` from the left end of that bracket increases
+/// monotonically to it. Unlike a prior `|R - prior|_F^2` on rotation matrices, this one distinguishes `prior` from
+/// `-prior`, the two quaternions of the same rotation.
+pub fn prior_rotor_estimator(p: &[Vec3], q: &[Vec3], w: &[f64], prior: &Quat, beta: f64) -> Quat {
+    let mut sx = Mat3::zeros();
+    let mut s = 0.0;
+    for ((pj, qj), &wj) in p.iter().zip(q).zip(w) {
+        s += wj * (pj.norm_squared() + qj.norm_squared());
+        sx += (wj * pj) * qj.transpose();
+    }
+    let tr = sx.trace();
+    let k1 = Vec4::new(2.0 * sx[(0, 0)] - tr, sx[(0, 1)] + sx[(1, 0)], sx[(2, 0)] + sx[(0, 2)], sx[(1, 2)] - sx[(2, 1)]);
+    let k2 = Vec4::new(sx[(0, 1)] + sx[(1, 0)], 2.0 * sx[(1, 1)] - tr, sx[(1, 2)] + sx[(2, 1)], sx[(2, 0)] - sx[(0, 2)]);
+    let k3 = Vec4::new(sx[(2, 0)] + sx[(0, 2)], sx[(1, 2)] + sx[(2, 1)], 2.0 * sx[(2, 2)] - tr, sx[(0, 1)] - sx[(1, 0)]);
+    let k4 = Vec4::new(sx[(1, 2)] - sx[(2, 1)], sx[(2, 0)] - sx[(0, 2)], sx[(0, 1)] - sx[(1, 0)], tr);
+    let a = -2.0 * sx.norm_squared();
+    let b = -8.0 * sx.determinant();
+    let c = wedge4(&wedge2(&k1, &k2), &wedge2(&k3, &k4));
+    // mu0 from S/2, decreasing monotonically; to full precision, since the bracket starts at it
+    let mut mu = 0.5 * s;
+    for _ in 0..100 {
+        let mu2 = mu * mu;
+        let step = ((mu2 + a) * mu2 + b * mu + c) / ((4.0 * mu2 + 2.0 * a) * mu + b);
+        if step.is_nan() || step <= 1e-15 * s {
+            break;
+        }
+        mu -= step;
+    }
+    let mu0 = mu;
+    let r0 = best_meet(&k1, &k2, &k3, &k4, mu0).normalize();
+    let h = Vec4::new(prior.i, prior.j, prior.k, prior.w) * beta;
+    let kmat = Mat4::from_columns(&[k1, k2, k3, k4]);
+    // Write mu = mu0 + t, t >= 0, and split r(mu) = (mu I - K)^-1 h along r0 and orthogonally to it:
+    //   r = (c1 / t) r0 + y,  c1 = h.r0,  y = (mu I - K + sigma r0 r0^T)^-1 (h - c1 r0).
+    // The deflated matrix is positive definite even at t = 0 and keeps y orthogonal to r0, so |r|^2 = (c1/t)^2 + |y|^2
+    // and r^T (mu I - K)^-1 r = (c1/t)^2 / t + |L^-1 y|^2 are well conditioned near the pole. Newton's method on
+    // psi = 1 / |r| = 1 starts at t = |c1|, where |r| >= 1, and increases monotonically to the root. If c1 = 0 and
+    // |y(0)| <= 1 (the hard case), the root is t = 0 and r is y completed to unit length along r0.
+    let sigma = 0.5 * s + h.norm();
+    let c1 = h.dot(&r0);
+    let hp = h - r0 * c1;
+    let deflated = r0 * r0.transpose() * sigma - kmat;
+    let solve = |t: f64| (Mat4::identity() * (mu0 + t) + deflated).cholesky().expect("the deflated matrix is positive definite");
+    let mut t = c1.abs();
+    for _ in 0..100 {
+        let ch = solve(t);
+        let y = ch.solve(&hp);
+        if t == 0.0 {
+            if y.norm_squared() <= 1.0 {
+                break; // the hard case
+            }
+            t = 1e-300; // the root is to the right of the pole: start just after it
+        }
+        let z2 = ch.l().solve_lower_triangular(&y).expect("triangular").norm_squared();
+        let ct = c1 / t; // (c1 / t)^2, not c1^2 / t^2, which underflows near t = 0
+        let a2 = ct * ct;
+        let n = (a2 + y.norm_squared()).sqrt();
+        let dpsi = (a2 / t + z2) / (n * n * n);
+        let step = (1.0 - 1.0 / n) / dpsi;
+        if t + step <= 0.0 || step.is_nan() {
+            break; // rounding at the root: keep the last t
+        }
+        t += step;
+        if step.abs() <= 1e-13 * t || (n - 1.0).abs() <= 1e-15 {
+            break;
+        }
+    }
+    let y = solve(t).solve(&hp);
+    let r = if t == 0.0 { y + r0 * (1.0 - y.norm_squared()).max(0.0).sqrt() } else { r0 * (c1 / t) + y };
+    normalize_quat(quat_from_xyzw(&r))
 }
