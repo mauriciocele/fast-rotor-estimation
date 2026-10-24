@@ -20,6 +20,7 @@
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{graphicx}
 \usepackage{tikz}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.17}
@@ -50,7 +51,7 @@
 \date{October 23, 2026}
 
 \begin{abstract}
-Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Closed form solutions have been proposed in the quaternion framework; they are fast, but they have singularities, i.e., they completely fail on certain input data. In this paper we formulate the problem in Geometric Algebra and follow the geometry at every step. The best rotor maximizes an energy that is quadratic in the rotor, and its multivector derivative leads to an eigenrotor equation. Two energies that are sums of squares bound the eigenvalues, and the bound is a starting point from which Newton's method provably converges to the largest eigenvalue, in one step when the data are free of noise. The eigenrotor is then found as the intersection of hyperplanes, computed with outer products in the 4D Geometric Algebra. This geometric view explains the singularities of the closed form methods, and of an earlier version of this method, as a single phenomenon: they all fix in advance the scale of one hyperplane, or of one combination of them, and every such choice fails on a whole family of rotations. Choosing the hyperplanes from the data removes the singularities. The method reaches the optimum on all our test cases, with a speed comparable to the fastest methods for small numbers of vectors.
+Robust methods for finding the best rotation aligning two sets of corresponding vectors are formulated in the linear algebra framework, using tools like the SVD for polar decomposition or QR for finding eigenvectors. Those are well established numerical algorithms which on the other hand are iterative and computationally expensive. Closed form solutions have been proposed in the quaternion framework; they are fast, but they have singularities, i.e., they completely fail on certain input data. In this paper we formulate the problem in Geometric Algebra and follow the geometry at every step. The best rotor maximizes an energy that is quadratic in the rotor, and its multivector derivative leads to an eigenrotor equation. Two energies that are sums of squares bound the eigenvalues, and the bound is a starting point from which Newton's method provably converges to the largest eigenvalue, in one step when the data are free of noise. The eigenrotor is then found as the intersection of hyperplanes, computed with outer products in the 4D Geometric Algebra. This geometric view explains the singularities of the closed form methods, and of the tempting alternative of combining all the hyperplanes symmetrically, as a single phenomenon: they all fix in advance the scale of one hyperplane, or of one combination of them, and every such choice fails on a whole family of rotations. Choosing the hyperplanes from the data removes the singularities, without any data-dependent branch. The method reaches the optimum on all our test cases, with a speed comparable to the fastest methods for small numbers of vectors; when several problems are solved at once with SIMD instructions, it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST.
 \end{abstract}
 
 \maketitle
@@ -68,9 +69,9 @@ In this paper we formulate the problem in the $\Ge_3$ geometric algebra, where r
 \item Two energies that are sums of squares bound the eigenvalues. The bound tells us where to start Newton's method so that it converges to the largest eigenvalue, and it is exact when the data are free of noise (Sections~\ref{section:positivity} and~\ref{section:eigenvalue}).
 \item In the 4D geometric algebra, the eigenrotor is the line where four hyperplanes meet, and the meet of any three of them is computed with outer products (Section~\ref{section:intersection}). We show how large each of these meets is, which explains the singularities of the closed form methods and how to avoid them (Section~\ref{section:robustness}).
 \end{itemize}
-Section~\ref{section:algorithms} gives the algorithm and Section~\ref{section:comparisons} compares it with other methods.
+Section~\ref{section:algorithms} gives the algorithm and Section~\ref{section:comparisons} compares it with other methods, including a comparison with QUEST, FOAM and FLAE when many problems are solved in parallel with SIMD instructions, where the absence of data-dependent branches in our method pays off. Section~\ref{section:application} applies the method to the rotation fits of smooth-rotation ARAP mesh deformation.
 
-An earlier version of this paper proposed constraining all the hyperplanes at once, and claimed that this avoids all singularities. As we show in Section~\ref{section:earlier}, that choice is itself a fixed choice, and it fails, for example, for every rotation by $\pi/2$ about the $z$ axis. Its argument that a positive definite energy makes Newton's method robust was also incomplete: what makes it robust is where the iteration starts, as explained in Section~\ref{section:eigenvalue}. This version corrects both.
+Two natural ideas turn out to be misleading, and we discuss both because seeing why they fail is the clearest way to understand what works. The first is that, since every single hyperplane fails for some rotations, constraining all of them at once, symmetrically, should avoid every failure. As we show in Section~\ref{section:sum_of_meets}, that symmetric choice is itself a fixed choice, and it fails, for example, for every rotation by $\pi/2$ about the $z$ axis. The second is that a positive semi-definite energy makes Newton's method robust. Positivity is useful, but what makes the iteration robust is where it starts, as explained in Section~\ref{section:eigenvalue}.
 
 %%% ----------------------------------------------------------------------
 \section{Geometric Algebra $\Ge_3$}
@@ -268,7 +269,7 @@ which agrees with~(\ref{eqn:energy_K}). Being a sum of matrices of the form $M_j
 
 \subsection{Bounds on the eigenvalues}
 
-The earlier version of this paper argued that, since the energy is a positive semi-definite quadratic form, Newton's method for its largest eigenvalue is robust. Positivity is useful, but for a different reason. $M$ and $K$ have the same eigenvectors, and their eigenvalues differ by the shift $\lambda = S + 2\mu$; shifting the eigenvalues changes nothing in the eigenvector problem, nor in Newton's method, whose iterates are simply shifted too. What positivity does provide is a \emph{bound}.
+It is tempting to conclude that, since the energy is a positive semi-definite quadratic form, Newton's method for its largest eigenvalue is robust. Positivity is useful, but for a different reason. $M$ and $K$ have the same eigenvectors, and their eigenvalues differ by the shift $\lambda = S + 2\mu$; shifting the eigenvalues changes nothing in the eigenvector problem, nor in Newton's method, whose iterates are simply shifted too. What positivity does provide is a \emph{bound}.
 
 There are two sums of squares, one for the sum and one for the difference. Repeating the expansion~(\ref{eqn:expansion}) with a minus sign,
 \begin{equation}
@@ -339,7 +340,7 @@ The system has a nonzero solution exactly when the matrix in~(\ref{eqn:eigensyst
 \end{equation}
 The coefficient of $J$ is the volume, which is the determinant of the characteristic matrix, so it is the characteristic polynomial $P(\mu)$ \cite{HestenesSobczyk1984}.
 
-We will evaluate $P$ several times, so it pays to compute its coefficients once. The earlier version expanded the outer product~(\ref{eqn:characteristic_outer_product}) symbolically and evaluated the long expression at every iteration. Section~\ref{section:positivity} gives a shortcut: by~(\ref{eqn:charpoly}), two of the coefficients come directly from the correlation matrix, and only $c = \det K = P(0)$ needs the four columns. At $\mu = 0$, the outer product~(\ref{eqn:characteristic_outer_product}) is the volume of the columns themselves, and it can be computed as the outer product of two bivectors,
+We will evaluate $P$ several times, once per Newton step, so it pays to compute its coefficients once. Expanding the outer product~(\ref{eqn:characteristic_outer_product}) symbolically as a function of $\mu$ would give a long expression, and evaluating it at every step would repeat the same products of the data over and over. Section~\ref{section:positivity} gives a shortcut: by~(\ref{eqn:charpoly}), two of the coefficients come directly from the correlation matrix, and only $c = \det K = P(0)$ needs the four columns. At $\mu = 0$, the outer product~(\ref{eqn:characteristic_outer_product}) is the volume of the columns themselves, and it can be computed as the outer product of two bivectors,
 \begin{equation}
 \label{eqn:c}
 c\, J = (\mathbf m_0 \wedge \mathbf m_1) \wedge (\mathbf m_2 \wedge \mathbf m_3).
@@ -348,7 +349,7 @@ Each of the two bivectors has six coefficients, the $2 \times 2$ minors of a pai
 
 \subsection{Finding the largest eigenvalue}
 
-A simple way to find the largest root of $P$ is Newton's method, $\mu^{(t+1)} = \mu^{(t)} - P(\mu^{(t)}) / P'(\mu^{(t)})$, which follows the tangent of the graph of $P$ down to the axis. But $P$ has four real roots, and Newton's method converges to one of them that depends on where it starts. Figure~\ref{fig:newton} shows the danger. If we start between two roots, for instance at $\mu = 1$, as the implementations of QUEST and FOAM in the earlier version of this paper did, the iteration can converge to a smaller root and return a wrong rotation. In our tests this happened in about $30\%$ of noisy problems with vectors of random lengths.
+A simple way to find the largest root of $P$ is Newton's method, $\mu^{(t+1)} = \mu^{(t)} - P(\mu^{(t)}) / P'(\mu^{(t)})$, which follows the tangent of the graph of $P$ down to the axis. But $P$ has four real roots, and Newton's method converges to one of them that depends on where it starts. Figure~\ref{fig:newton} shows the danger. If we start between two roots, for instance at $\mu = 1$, as is customary in implementations of QUEST and FOAM, where the weights are normalized so that the largest eigenvalue is close to $1$, the iteration can converge to a smaller root and return a wrong rotation. In our tests this happened in about $30\%$ of noisy problems with vectors of random lengths.
 
 \begin{figure}[t]
 \centering
@@ -384,7 +385,7 @@ $P(\mu) = \prod_k (\mu - \mu_k)$, and for $\mu > \mu_0$ every factor is positive
 
 How many steps are needed? By~(\ref{eqn:overshoot}), the start overestimates $\mu_0$ by half the least squares error. When the data can be aligned well, the start is very close to the root, and the quadratic convergence of Newton's method near a simple root takes over immediately: one step without noise, two or three with moderate noise. Only for very noisy data, where the least squares error is comparable to $S$, does the iteration start far from the root, where $P$ behaves like $\mu^4$ and each step shrinks $\mu$ by about one quarter. We stop when a step is smaller than a tolerance $\epsilon$ ($10^{-5}$ in our implementation). By then the error is of order $\epsilon^2$, relative to the scale of the eigenvalues.
 
-The earlier version started Newton's method from $S$. In the scaling of that version the eigenvalue of its matrix was $\mu + S/2$, so that starting point is exactly our $S/2$, and the analysis above explains why it worked: it is an upper bound, exact without noise. The same start works for every method that solves the same quartic, including QUEST, FOAM and FLAE with Newton's method.
+Nothing in this argument is specific to our method. Any method that finds the largest eigenvalue of the same matrix by Newton's method, such as QUEST, FOAM and FLAE with Newton's method, solves the same quartic up to a shift of $\mu$, and the same start $S/2$, shifted accordingly, makes it converge monotonically to the right root. The start $1$ is the special case of unit vectors with weights adding up to one, where $S/2 = 1$; for other data it may lie between two roots.
 
 %%% ----------------------------------------------------------------------
 \section{The Eigenrotor as an Intersection of Hyperplanes}
@@ -430,15 +431,15 @@ A linear function extends to multivectors as an outermorphism, $\Gop(\mathbf a \
 
 So every meet points along the eigenrotor, and its length $|\kappa|\, |r_k|$ has two factors. The first one, $|\kappa|$, is the product of the three gaps between $\mu_0$ and the other eigenvalues; it depends only on the data, and it vanishes only when the best rotation is not unique. The second one, $|r_k|$, is the size of the $k$-th coordinate of the eigenrotor, and it depends on the rotation. A meet is a reliable way of computing the eigenrotor when $r_k$ is large, and a useless one when $r_k$ is close to zero: then it is a tiny vector made mostly of rounding errors.
 
-\subsection{The earlier choice: constraining all the hyperplanes}
-\label{section:earlier}
+\subsection{A tempting alternative: constraining all the hyperplanes}
+\label{section:sum_of_meets}
 
-The earlier version of this paper fixed the scale of the solution by adding the same offset $\gamma$ to all four hyperplanes and intersecting them, $(\mathbf x_0 + \gamma) \wedge (\mathbf x_1 + \gamma) \wedge (\mathbf x_2 + \gamma) \wedge (\mathbf x_3 + \gamma)$. Distributing the outer product, the terms of grade three are $\gamma$ times the sum of the four trivectors~(\ref{eqn:trivectors}), so the solution was $\sum_k T_k J^{-1}$. The motivation was sound: fixing the scale of a single hyperplane fails for some rotations, and constraining all of them was meant to avoid every such failure. Proposition~\ref{prop:meets} shows what the sum computes:
+Since each single meet fails when one coordinate of the eigenrotor vanishes, a natural idea is to treat the four hyperplanes alike. Instead of fixing the scale of the solution through one of them, we could add the same offset $\gamma$ to all four and intersect them, $(\mathbf x_0 + \gamma) \wedge (\mathbf x_1 + \gamma) \wedge (\mathbf x_2 + \gamma) \wedge (\mathbf x_3 + \gamma)$. Distributing the outer product, the terms of grade three are $\gamma$ times the sum of the four trivectors~(\ref{eqn:trivectors}), so the solution would be $\sum_k T_k J^{-1}$. The idea is appealing: it is symmetric, it costs no more than a single meet, and it seems to avoid relying on any particular coordinate. Proposition~\ref{prop:meets} lets us check whether it does, by telling us exactly what the sum computes:
 \begin{equation}
 \label{eqn:sum_of_meets}
 \sum_{k=0}^3 T_k\, J^{-1} = \kappa\, (r_0 - r_1 + r_2 - r_3)\, r.
 \end{equation}
-The four meets point along the same line, but with signed lengths $\kappa r_0$, $-\kappa r_1$, $\kappa r_2$, $-\kappa r_3$, and they cancel when $r_0 - r_1 + r_2 - r_3 = 0$. This happens for many common rotations: for example the rotation by $\pi/2$ about the $z$ axis, whose coordinates are $(\frac{1}{\sqrt2}, 0, 0, \frac{1}{\sqrt2})$, or the rotation by $2\pi/3$ about the axis $(1, 1, 1)/\sqrt3$, whose coordinates are $(\frac12, \frac12, \frac12, \frac12)$. Constraining all the hyperplanes does not remove the singularities; it moves them to a different family of rotations.
+The four meets point along the same line, but with signed lengths $\kappa r_0$, $-\kappa r_1$, $\kappa r_2$, $-\kappa r_3$, and they cancel when $r_0 - r_1 + r_2 - r_3 = 0$. This happens for many common rotations: for example the rotation by $\pi/2$ about the $z$ axis, whose coordinates are $(\frac{1}{\sqrt2}, 0, 0, \frac{1}{\sqrt2})$, or the rotation by $2\pi/3$ about the axis $(1, 1, 1)/\sqrt3$, whose coordinates are $(\frac12, \frac12, \frac12, \frac12)$. Constraining all the hyperplanes does not remove the singularities; it moves them to a different family of rotations. The reason is that the sum, too, is decided before looking at the data: it is one more fixed combination of the meets, and the next section shows that every fixed combination fails somewhere.
 
 %%% ----------------------------------------------------------------------
 \section{Optimal Computation}
@@ -500,7 +501,7 @@ No fixed choice of $\sigma$ can avoid this. The eigenrotors with $\sigma \cdot r
 \begin{itemize}
 \item QUEST \cite{Shuster1981} computes the eigenrotor from a closed formula whose scalar part $\gamma$ is the scale, the choice $r_0$. It fails when the scalar part of the rotor vanishes, that is, for every rotation by $\pi$, since the scalar part of a rotor is $\cos\frac{\theta}{2}$.
 \item FLAE \cite{Wu2017} and the Symbolic method \cite{Wu2018FS3R} fix the last coordinate of the quaternion, the choice $r_3$. They fail when $r_3 = \sin\frac{\theta}{2}\, n_3 = 0$: for every rotation about an axis orthogonal to the $z$ axis, and for the identity.
-\item The sum of the earlier version is the choice $\sigma = (1, -1, 1, -1)$ and fails on the family described in Section~\ref{section:earlier}.
+\item The sum of the four meets of Section~\ref{section:sum_of_meets} is the choice $\sigma = (1, -1, 1, -1)$ and fails on the family described there.
 \end{itemize}
 
 Figure~\ref{fig:meet_sizes} follows the size of each candidate as a rotation turns from $0$ to $2\pi$ about a fixed axis. Every single meet, and the sum, reaches zero somewhere. But the four coordinates of a unit eigenrotor cannot all be small at once: their squares add up to one, so the largest one always satisfies $|r_k| \geq \frac12$.
@@ -521,10 +522,10 @@ Figure~\ref{fig:meet_sizes} follows the size of each candidate as a rotation tur
 	\addplot[gray, thick, dashed] {abs(cos(x/2) - sin(x/2)*(1 - 2 + 3)/sqrt(14))};
 	\addplot[blue, ultra thick] {max(abs(cos(x/2)), abs(sin(x/2))*3/sqrt(14))};
 	\addplot[black, densely dotted, domain=0:360] {0.5};
-	\legend{$|r_0|$ (QUEST), $|r_1|$, $|r_2|$, $|r_3|$ (FLAE), sum (earlier), largest}
+	\legend{$|r_0|$ (QUEST), $|r_1|$, $|r_2|$, $|r_3|$ (FLAE), sum, largest}
 \end{axis}
 \end{tikzpicture}
-\caption{Size of each meet, divided by $|\kappa|$, for the rotations by $\theta$ about a fixed axis. The meet $T_0 J^{-1}$ (as in QUEST) vanishes at $\theta = \pi$; the meets $T_1, T_2, T_3$ (the last one as in FLAE) vanish at the identity; the sum of the earlier version vanishes near $\theta = 0.7\pi$. The largest meet never goes below $\frac12$ (dotted line).}
+\caption{Size of each meet, divided by $|\kappa|$, for the rotations by $\theta$ about a fixed axis. The meet $T_0 J^{-1}$ (as in QUEST) vanishes at $\theta = \pi$; the meets $T_1, T_2, T_3$ (the last one as in FLAE) vanish at the identity; the sum of the four meets vanishes near $\theta = 0.7\pi$. The largest meet never goes below $\frac12$ (dotted line).}
 \label{fig:meet_sizes}
 \end{figure}
 
@@ -542,7 +543,7 @@ which is largest, in absolute value, for the largest $|r_k|$. This component is 
 \end{equation}
 The right-hand side depends only on the singular values of the data, not on the rotation, and it vanishes only when the best rotation is not unique. Whatever the rotation, the selected meet is computed with a relative error of the order of the unit roundoff. The remaining degeneracy belongs to the problem, not to the method.
 
-The same idea appears elsewhere. Shepperd's method \cite{Shepperd1978} converts a rotation matrix into a quaternion by first finding the largest of the four components, from the diagonal of the matrix, and solving for the others relative to it. QUEST can be made robust with the method of sequential rotations \cite{Shuster1981}: when $\gamma$ is too small, the problem is solved again in a reference frame rotated by $\pi$ about a coordinate axis, which exchanges the roles of the four coordinates. In the language of this section, both select a better hyperplane. Here the selection costs almost nothing, because the four candidates come from the same two bivectors.
+The same idea appears elsewhere. Shepperd's method \cite{Shepperd1978} converts a rotation matrix into a quaternion by first finding the largest of the four components, from the diagonal of the matrix, and solving for the others relative to it. QUEST can be made robust with the method of sequential rotations \cite{Shuster1981}: when $\gamma$ is too small, the problem is solved again in a reference frame rotated by $\pi$ about a coordinate axis, which exchanges the roles of the four coordinates. In our implementation of FLAE, when the leading $3 \times 3$ minor of $K - \mu_0 I$ shows that $q_z^2 < 0.01$, the eigenrotor is read instead from the column of the adjugate of $K - \mu_0 I$ with the largest diagonal entry, which is the selection of this section written with matrices. In the language of this section, all of them select a better hyperplane. Here the selection costs almost nothing, because the four candidates come from the same two bivectors.
 
 %%% ----------------------------------------------------------------------
 \section{Algorithms}
@@ -582,11 +583,11 @@ The pseudo-code of the proposed method is shown in Algorithm~\ref{alg:rotor}. Af
 
 We selected several representative methods for comparison: FLAE \cite{Wu2017} (with its closed formula and with Newton's method), the Symbolic method \cite{Wu2018FS3R}, FA3R \cite{Wu2018FA3R}, QUEST and the Q-Method \cite{Shuster1981}, FOAM \cite{Markley1993}, Horn's method \cite{Horn1987}, and SVD \cite{Arun1987}, both with Eigen's SVD and with a fast $3 \times 3$ SVD. The Eigen library \cite{Eigen} was employed to implement all of them, in plain scalar code: no method is vectorized by hand, so that differences in speed reflect the methods and not the effort spent on each implementation. The tests ran on an Apple M1 Pro, compiled with Apple Clang 21 and the options \texttt{-O3} and \texttt{-Ofast}.
 
-Since the earlier version of this paper we corrected several defects of the implementations used for comparison: Newton iterations that started at $1$ (they now start at $S/2$, which Theorem~\ref{thm:newton} justifies for them as well), an SVD without the correction of reflections, FA3R applied without normalizing the data, and an indexing error in the $3 \times 3$ SVD. The implementations of FLAE and QUEST used for timing include safeguards against their singularities, which do not trigger on the random data used for timing.
+To compare the methods on equal terms, every implementation must reach the optimum on the data it is given. We therefore made a few changes to the implementations as they are usually written: the Newton iterations of QUEST, FOAM and FLAE start at $S/2$ instead of $1$, which Theorem~\ref{thm:newton} justifies for them as well and which matters for vectors that are not of unit length; the SVD method corrects reflections, which it can otherwise return for planar or noisy data; FA3R normalizes the correlation matrix first, since its iteration is tuned for data of unit scale; and the fast $3 \times 3$ SVD uses the correct entry when sorting the singular values and enough sweeps for double precision. The implementations of FLAE and QUEST used for timing include safeguards against their singularities, which do not trigger on the random data used for timing.
 
 \subsection{Singular cases}
 
-We first isolate the effect of the choice of hyperplanes. We use a single implementation of Algorithm~\ref{alg:rotor} and change only its last step: the meet $T_0 J^{-1}$ (the choice of QUEST), the meet $T_3 J^{-1}$ (the choice of FLAE), the sum of the four meets (the earlier version), and the selected meet. The input is $1000$ unit vectors with random directions, rotated without noise. Table~\ref{tab:charts} shows the angle between the estimated and the true rotation. Each fixed choice fails, with errors of the order of a radian, exactly on the rotations predicted in Section~\ref{section:robustness}, and is accurate elsewhere. The selected meet is as accurate as Eigen's eigensolver applied to the same matrix in every case, and Newton's method needed a single step in all of them, as predicted by Theorem~\ref{thm:newton}.
+We first isolate the effect of the choice of hyperplanes. We use a single implementation of Algorithm~\ref{alg:rotor} and change only its last step: the meet $T_0 J^{-1}$ (the choice of QUEST), the meet $T_3 J^{-1}$ (the choice of FLAE), the sum of the four meets (Section~\ref{section:sum_of_meets}), and the selected meet. The input is $1000$ unit vectors with random directions, rotated without noise. Table~\ref{tab:charts} shows the angle between the estimated and the true rotation. Each fixed choice fails, with errors of the order of a radian, exactly on the rotations predicted in Section~\ref{section:robustness}, and is accurate elsewhere. The selected meet is as accurate as Eigen's eigensolver applied to the same matrix in every case, and Newton's method needed a single step in all of them, as predicted by Theorem~\ref{thm:newton}.
 
 \begin{table}[t]
 \centering
@@ -597,7 +598,7 @@ We first isolate the effect of the choice of hyperplanes. We use a single implem
 \begin{tabular}{lccccc}
 \toprule
 Rotation & $T_0$ & $T_3$ & sum & selected & eigen- \\
- & (QUEST) & (FLAE) & (earlier) & & solver \\
+ & (QUEST) & (FLAE) & of meets & & solver \\
 \midrule
 \csname @@input\endcsname tables/charts.tex
 \bottomrule
@@ -652,7 +653,9 @@ $\eta$ & angle to & excess & angle to & mean & max \\
 
 \subsection{Speed}
 
-Table~\ref{tab:timing} and Figure~\ref{fig:timing} compare the time per estimation for $n$ vectors, measured as the best of five runs of $4 \cdot 10^6 / (n + 10)$ estimations. For small $n$, Algorithm~\ref{alg:rotor} is among the fastest methods, together with QUEST, FOAM and FLAE with Newton's method, all of which solve the same quartic with a few Newton steps. QUEST is the fastest of them, by $15$--$20\%$ with \texttt{-O3} and $5$--$12\%$ with \texttt{-Ofast}; for small $n$ part of the difference is the eigenvector step, since QUEST's formula needs fewer operations than the selection of a meet, while for large $n$, where both methods accumulate the same sums, we have not identified the cause. Methods that call a general eigensolver or SVD are $13$ to $22$ times slower for small $n$. For large $n$, the loop over the data dominates every method, and the methods that need only $D$ (FLAE with its closed formula, Symbolic, FA3R) take $25$--$40\%$ less time at $n = 1000$ with \texttt{-O3} than those that also accumulate $S$. With \texttt{-Ofast}, which allows the compiler to reorder the sums, these differences shrink to about $10\%$. The compiler options also change the ranking of other methods: with \texttt{-Ofast} the fast $3 \times 3$ SVD becomes slower for large $n$, and the Q-Method is faster than Algorithm~\ref{alg:rotor} at $n = 1000$ with \texttt{-O3} but not with \texttt{-Ofast}. Comparisons of speed should therefore state the options used.
+Table~\ref{tab:timing} and Figure~\ref{fig:timing} compare the time per estimation for $n$ vectors. For each $n$ we use a pool of $256$ problems with uniformly random rotations and small noise, so that data-dependent branches are exercised as they would be in practice, and report the best of five runs over the pool. For small $n$, Algorithm~\ref{alg:rotor} is among the fastest methods, together with QUEST, FOAM and FLAE with Newton's method, all of which solve the same quartic with a few Newton steps. The differences among these four are within about $20\%$ and change with $n$ and the compiler options: QUEST is the fastest for $n = 3$, FOAM for $n$ between $10$ and $100$ with \texttt{-O3}, and Algorithm~\ref{alg:rotor} for $n = 10$ with \texttt{-Ofast}. Methods that call a general eigensolver or SVD are $11$ to $19$ times slower for $n = 3$. For large $n$, the loop over the data dominates every method, and the methods that need only $D$ (FLAE with its closed formula, Symbolic, FA3R) take $30$--$40\%$ less time than Algorithm~\ref{alg:rotor} at $n = 1000$ with \texttt{-O3}, and $20$--$30\%$ less than QUEST, since they do not accumulate $S$. With \texttt{-Ofast}, which allows the compiler to reorder the sums, these differences shrink to $10\%$ or less. The compiler options also change the ranking of other methods: with \texttt{-Ofast} the fast $3 \times 3$ SVD becomes slower for large $n$, and the Q-Method is faster than Algorithm~\ref{alg:rotor} at $n = 1000$ with \texttt{-O3} but not with \texttt{-Ofast}. Comparisons of speed should therefore state the options used.
+
+At this level, small details of an implementation matter as much as the method. For example, writing the loop over the data with explicit sums instead of Eigen expressions changes the time of a method by up to $15\%$. The next subsection therefore compares the proposed method and QUEST, the two fastest robust methods for small $n$, with implementations written in exactly the same style.
 
 \begin{table}[t]
 \centering
@@ -694,12 +697,195 @@ Method & $3$ & $10$ & $100$ & $1000$ & $3$ & $10$ & $100$ & $1000$ \\
 \label{fig:timing}
 \end{figure}
 
+\subsection{Solving many problems at once with SIMD}
+
+Many applications estimate a large number of independent rotations: one per element in shape deformation, one per frame or per sensor in tracking. Such problems can be solved several at a time with SIMD instructions, which apply the same operation to several numbers at once: each lane of a vector register holds a different problem. This works well only when all lanes execute the same instructions. A data-dependent branch, a test whose outcome differs between problems, forces all the lanes to execute both paths whenever any lane needs the other one.
+
+We compare the four methods of Table~\ref{tab:timing} that solve the quartic with Newton's method, since they are the fastest for small $n$, and they differ in their branches. The selection of the meet in Algorithm~\ref{alg:rotor} has no branch: all four candidates come from the same two bivectors $A$ and $C$, and choosing the largest is a comparison followed by conditional selects, which are SIMD operations. FOAM has no branch either: after Newton's method, a single formula gives the rotation matrix. When a quaternion is needed, it is read from the matrix as Shepperd does~\cite{Shepperd1978}: the columns of $4\,\mathbf{q}\mathbf{q}^T$ are linear in the entries of the matrix, and the one with the largest diagonal entry, at least $1$, is chosen with conditional selects, the same choice as that of the meet. FLAE as published has no branch, but it fixes $q_z = -1$ and fails for rotations about horizontal axes (Section~\ref{section:robustness}). With the fallback of Section~\ref{section:robustness}, which reads the eigenrotor from the best column of the adjugate when $q_z^2 < 0.01$, it is robust but has a branch, taken for about $13\%$ of random rotations. The robust version of QUEST also has a branch: when $q_w^2 = \gamma / P'(\lambda)$ is below a threshold $\tau$, it solves the problem again in a rotated frame (the method of sequential rotations). With $\tau = 0.1$, which keeps the relative error of QUEST of the order of $u / \sqrt{\tau} \approx 3u$, comparable to the bound~(\ref{eqn:lower_bound}) of the proposed method, the branch is taken for about $40\%$ of random rotations (the rotors with $|q_w| < 0.32$). With four lanes, at least one of them needs the branch in $1 - 0.87^4 \approx 42\%$ of the groups for FLAE, and in $1 - 0.6^4 \approx 87\%$ for QUEST. In those groups the branch is computed for all four lanes, and each lane keeps the result it needs.
+
+To compare them on equal terms, we implemented all of them in the same style, with the same accumulation loop, the same data layout, the same Newton iteration from $S/2$ and the same stopping test, once for a single problem and once for four problems in the lanes of Clang's four-wide vector type (two 128-bit NEON registers on our machine). The whole computation runs in the lanes; the only decisions made once per group are whether all the lanes have converged, which ends Newton's method, and whether any lane needs a branch. The data are stored with each coordinate in its own array and the four problems interleaved, the same for every method; in an application, producing that layout is part of the cost. All the implementations agree with the library ones to $2 \cdot 10^{-14}$ radians, except FOAM for $n = 3$, to $2 \cdot 10^{-10}$: its formula for the matrix is exact only at the eigenvalue, so its result depends on where Newton's method stops, and a lane keeps iterating until all the lanes in its group have converged. FLAE as published is compared only where the library does not need its fallback. Tables~\ref{tab:simd} and~\ref{tab:simd_scalar} show the time per problem, and Tables~\ref{tab:simd_accuracy} and~\ref{tab:simd_accuracy_flae} the accuracy near the singular sets of QUEST and FLAE.
+
+\begin{table}[t]
+\centering
+\caption{Time per problem (ns), \texttt{-O3}, four problems at a time in SIMD lanes, for matched implementations, on a pool of $1024$ problems with random rotations. The first four methods return a quaternion at full accuracy, and the fastest of them is in bold. The last three trade something: FOAM returns a rotation matrix, FLAE as published fails near $q_z = 0$, and QUEST with $\tau = 10^{-4}$ loses accuracy near rotations by $\pi$.}
+\label{tab:simd}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{rrrrrrrr}
+\toprule
+ & \multicolumn{4}{c}{quaternion, full accuracy} & \multicolumn{3}{c}{trading something} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-8}
+$n$ & Proposed & FOAM & FLAE & QUEST & FOAM & FLAE & QUEST \\
+ & & + quaternion & + fallback & $\tau = 0.1$ & matrix & published & $\tau = 10^{-4}$ \\
+\midrule
+\csname @@input\endcsname tables/simd.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Time per problem (ns), \texttt{-O3}, for the implementations of Table~\ref{tab:simd} run on one problem at a time.}
+\label{tab:simd_scalar}
+\small
+\begin{tabular}{rrrrrrr}
+\toprule
+$n$ & Proposed & FOAM & FLAE & QUEST & FOAM & FLAE \\
+ & & + quaternion & + fallback & $\tau = 0.1$ & matrix & published \\
+\midrule
+\csname @@input\endcsname tables/simd_scalar.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Largest angle error (radians) over $200$ noise-free problems of $100$ unit vectors, for rotations by $\pi - \delta$ about random axes, whose scalar part is $q_w = \sin\frac{\delta}{2}$.}
+\label{tab:simd_accuracy}
+\footnotesize
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{cccccccc}
+\toprule
+$\delta$ & $q_w$ & Proposed & FOAM & FLAE & FLAE & QUEST & QUEST \\
+ & & & & published & + fallback & $\tau = 0.1$ & $\tau = 10^{-4}$ \\
+\midrule
+\csname @@input\endcsname tables/simd_accuracy.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Largest angle error (radians) over $200$ noise-free problems of $100$ unit vectors, for rotations by random angles in $[0.1, \pi - 0.1]$ about random axes at angle $\delta$ from the $xy$-plane, where $q_z$ is proportional to $\sin\delta$.}
+\label{tab:simd_accuracy_flae}
+\small
+\begin{tabular}{cccccc}
+\toprule
+$\delta$ & Proposed & FOAM & FLAE & FLAE & QUEST \\
+ & & & published & + fallback & $\tau = 0.1$ \\
+\midrule
+\csname @@input\endcsname tables/simd_accuracy_flae.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+Among the methods that return a quaternion at full accuracy, the proposed method is the fastest with four lanes: for $n = 3$ it is $7\%$ faster than FOAM followed by the conversion, $20\%$ faster than FLAE with its fallback and $29\%$ faster than QUEST; for $n = 10$ it ties with FOAM and is $14$--$16\%$ faster than the other two. The gap narrows as $n$ grows, and for $n = 1000$ the loop over the data dominates and all the methods take the same time. The four lanes make the proposed method $2.2$ times faster than its scalar version for $n = 3$, but QUEST only $1.6$ times, because its branch is taken in some lane in most groups. One problem at a time, the four methods are within $11\%$ of each other for $n \leq 100$.
+
+Faster options exist when something else can be given up. If the rotation matrix is what the application needs, FOAM is the fastest method, $26\%$ faster than the proposed one for $n = 3$ and $27\%$ for $n = 10$: it works with $3 \times 3$ matrices and needs no conversion. Its matrix, however, is a rotation only to the precision of Newton's method. FLAE as published is $16\%$ faster than the proposed method for $n = 3$, but its error grows as $q_z$ goes to $0$ and reaches $\pi$ for rotations about horizontal axes (Table~\ref{tab:simd_accuracy_flae}). QUEST with $\tau = 10^{-4}$ rarely takes its branch and is $20\%$ faster for $n = 3$. Its error near rotations by $\pi$, just above the threshold, grows to $2 \cdot 10^{-14}$ radians, $30$ times that of the proposed method, in agreement with the $u / |q_w|$ behavior of Section~\ref{section:robustness}. Whether those errors matter depends on the application. The comparison shows that, among the methods that need no compromise, the absence of branches gives the proposed method an advantage when many problems are solved in parallel.
+
+%%% ----------------------------------------------------------------------
+\section{An Application: Smooth-Rotation ARAP Deformation}
+\label{section:application}
+
+Mesh deformation is a good test for a rotation estimator, because it does not solve one problem but hundreds of thousands, over and over, and because the problems come in a form that is not quite Wahba's. In this section we take a well-known deformation method whose inner loop is a rotation fit computed with an SVD, show that each fit is an instance of the problem of this paper, and measure what changes when the SVD is replaced by Algorithm~\ref{alg:rotor}, one cell at a time and four cells at a time with SIMD instructions.
+
+\subsection{The deformation model}
+
+As-rigid-as-possible (ARAP) deformation \cite{Sorkine2007} moves the vertices $x_i$ of a triangle mesh to new positions $x'_i$ such that the one-ring of every vertex, its \emph{cell}, moves as rigidly as possible. Every cell $i$ has its own rotation $R_i$, and the energy measures how far the deformed edges $v_{ij} = x'_j - x'_i$ are from the rotated rest edges $u_{ij} = x_j - x_i$,
+\begin{equation}
+\sum_i \sum_{j \in \mathcal N(i)} w_{ij}\, |R_i u_{ij} - v_{ij}|^2,
+\end{equation}
+where $\mathcal N(i)$ are the $d_i$ neighbors of vertex $i$ and $w_{ij}$ are the cotangent weights of the mesh. With the positions fixed, every cell's rotation can be fitted on its own; with the rotations fixed, the positions solve a linear (Poisson) system. Alternating the two steps, the \emph{local} and the \emph{global} step, decreases the energy. The local step of ARAP is a set of independent Wahba problems, one per cell, usually solved with an SVD.
+
+The rotations of independent cells can change abruptly from one cell to the next, and the deformed surface shows it. Smooth-rotation ARAP (SR-ARAP) \cite{Levi2015} adds a bending term that asks neighboring rotations to agree,
+\begin{equation}
+\label{eqn:srarap}
+E = \sum_i \sum_{j \in \mathcal N(i)} w_{ij}\, |R_i u_{ij} - v_{ij}|^2 + \alpha A \sum_i \sum_{j \in \mathcal N(i)} \frac{1}{d_i}\, \| R_i - R_j \|_F^2,
+\end{equation}
+where $A$ is the area of the mesh and $\alpha$ a stiffness. Now the rotations are coupled, and the local step is no longer a set of independent problems. It is solved by Gauss--Seidel sweeps: visit the cells one after the other and fit each rotation with its neighbors' current rotations held fixed.
+
+\subsection{Each cell update is a Wahba problem}
+
+Let us collect the terms of~(\ref{eqn:srarap}) that contain one rotation $R_i$, with everything else fixed. For an edge term, since a rotation preserves lengths,
+\[
+|R_i u - v|^2 = |u|^2 + |v|^2 - 2\, v \cdot (R_i u),
+\]
+and only the last term depends on $R_i$. For the bending term, $\|R\|_F^2 = 3$ for every rotation, so
+\[
+\| R_i - R_j \|_F^2 = 6 - 2 \tr(R_i^T R_j).
+\]
+The rotation $R_i$ appears in its own bending terms, with weight $1/d_i$, and in the term of each neighbor $j$ that has $i$ among its neighbors, with weight $1/d_j$. Writing $b_{ij} = \alpha A (1/d_i + 1/d_j)$ and dropping the constants, minimizing $E$ over $R_i$ is maximizing
+\begin{gather}
+\sum_{j} w_{ij}\, v_{ij} \cdot (R_i u_{ij}) + \sum_j b_{ij} \tr(R_i^T R_j) = \tr(R_i^T M_i), \nonumber \\
+\label{eqn:cell_gain}
+M_i = \sum_j w_{ij}\, v_{ij} u_{ij}^T + \sum_j b_{ij} R_j,
+\end{gather}
+where we used $v \cdot (R u) = \tr(R^T v u^T)$. This is the orthogonal Procrustes problem for the matrix $M_i$, which is why SR-ARAP fits each cell with an SVD.
+
+It is also an instance of the problem of this paper. The edge terms are already pairs of vectors: the rest edge $u_{ij}$ should be rotated onto the deformed edge $v_{ij}$, with weight $w_{ij}$. The bending terms become pairs too, once we read the trace in a basis: $\tr(R_i^T R_j) = \sum_k (R_j e_k) \cdot (R_i e_k)$. A neighbor's rotation asks for the three frame vectors $e_k$ to be sent where $R_j$ sends them, with weight $b_{ij}$. Each cell problem is therefore Wahba's problem with $d_i$ edge pairs and $3 d_i$ frame pairs, and its correlation matrix $D = \sum c\, \hat q \hat p^T$ of Section~\ref{section:algorithms} is exactly $M_i$. We never form the frame pairs: Algorithm~\ref{alg:rotor} needs only $D$, and the bound $S/2$ where Newton's method starts.
+
+The bound needs one more thought. The frame pairs contribute $|e_k|^2 + |R_j e_k|^2 = 2$ each, three per neighbor, so $3 b_{ij}$ to $S/2$. The edge pairs would contribute $\frac12 w_{ij} (|u_{ij}|^2 + |v_{ij}|^2)$, but the cotangent weights $w_{ij}$ are negative at obtuse triangles, and the bounds~(\ref{eqn:bounds}) were derived from sums of squares with non-negative weights. What Theorem~\ref{thm:newton} really needs is a start above the largest eigenvalue $\mu_0 = s_1 + s_2 + s_3$, and that sum is at most the sum of the singular values of $D$, its nuclear norm. The nuclear norm of a sum is at most the sum of the nuclear norms, and a single pair has $\|c\, \hat q \hat p^T\|_* = |c|\, |\hat p|\, |\hat q| \leq \frac12 |c| (|\hat p|^2 + |\hat q|^2)$. So
+\begin{equation}
+\label{eqn:cell_bound}
+\frac{S}{2} = \frac12 \sum_j |w_{ij}| \left(|u_{ij}|^2 + |v_{ij}|^2\right) + 3 \sum_j b_{ij}
+\end{equation}
+is a valid start, and the proof of Theorem~\ref{thm:newton} applies unchanged. In the middle of a deformation the bound is tight: on the bar of Table~\ref{tab:arap_local} below, $S/2$ exceeds $\mu_0$ by $0.01\%$ on average, and Newton's method stops after one step for $10\%$ of the cells, two for $77\%$ and three for the rest.
+
+\subsection{Gauss--Seidel in colors, four cells at a time}
+
+A Gauss--Seidel sweep is sequential: each cell uses the rotations its neighbors have just received. But it uses only its neighbors. Two cells that are not neighbors can be updated in either order, or at the same time, with exactly the same result. So we color the cells such that no two neighbors share a color, which a greedy pass over the vertices does with $4$ to $7$ colors on our meshes, and sweep color by color. Within a color the updates are independent, and we solve them four at a time, one cell per SIMD lane. The color order is a different visiting order from the order of the vertex indices, and so a slightly different Gauss--Seidel iteration, but an equally valid one. We use it for every fit, the SVD included, so that all of them compute the same iteration and differ only in how each cell is fitted.
+
+The SR-ARAP update needs rotation matrices: $M_i$ in~(\ref{eqn:cell_gain}) is built from the neighbors' matrices $R_j$. Algorithm~\ref{alg:rotor} returns a rotor, which we convert to a matrix, and FOAM, which we include for comparison, returns the matrix directly. For the SIMD versions, four cells' matrices $M_i$ and bounds are gathered into the lanes, solved, and the four rotations are scattered back. Everything else in the local step, building $M_i$ from the edges and the neighbors' rotations, is the same for all fits and is not vectorized.
+
+\subsection{Results}
+
+\begin{figure}[t]
+\centering
+\includegraphics[height=0.3\textwidth]{figures/srarap_armadillo_pose1.png}\hfill
+\includegraphics[height=0.3\textwidth]{figures/srarap_armadillo_pose2.png}\hfill
+\includegraphics[height=0.3\textwidth]{figures/srarap_armadillo_pose3.png}\\[4pt]
+\includegraphics[height=0.36\textwidth]{figures/srarap_cactus.png}\hspace{0.08\textwidth}
+\includegraphics[height=0.36\textwidth]{figures/srarap_bar.png}
+\caption{SR-ARAP deformations with every cell's rotation fitted by Algorithm~\ref{alg:rotor}, four cells at a time in SIMD lanes; the orange spheres are the handles. Top: the Armadillo, solved on its $502$-vertex control mesh and transferred to the detailed mesh. Bottom: the Cactus ($5{,}261$ cells) with its trunk bent along an arc of $120^\circ$, and a bar ($7{,}776$ cells) bent into a quarter circle with a half twist, both deformed directly. With the SVD the shapes are the same, to $10^{-15}$; one local/global iteration of the first Armadillo pose takes $0.27$~ms instead of $0.99$~ms.}
+\label{fig:srarap}
+\end{figure}
+
+We implemented the fits in Rust, generic over the lane type, \texttt{f64} for one cell and the four-wide \texttt{f64x4} of the \texttt{wide} crate for four cells (two 128-bit NEON registers), and measured them on the Apple M1 Pro of Section~\ref{section:comparisons}, on one core. The program is compiled as a single code generation unit: with the default split into several units the compiler did not inline the SIMD code as well, and four lanes lost their advantage. We deform four meshes (Figure~\ref{fig:srarap}): the control mesh of the Armadillo used for interactive editing, the Cactus, a bar bent into a quarter circle, and the full Armadillo. After five local/global iterations from the rest pose, we time one local step of three Gauss--Seidel sweeps from the same state with every fit (Table~\ref{tab:arap_local}), and, separately, the fits alone on the cell problems of that state (Table~\ref{tab:arap_fit}).
+
+\begin{table}[t]
+\centering
+\caption{Time of one SR-ARAP local step (ms), three Gauss--Seidel sweeps in color order, with each cell fitted by the SVD, by Algorithm~\ref{alg:rotor} (proposed), or by FOAM, one cell at a time or four at a time in SIMD lanes. The last column (gain) is the speed-up of the proposed method with SIMD over the SVD.}
+\label{tab:arap_local}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+mesh & cells & colors & SVD & Proposed & Proposed & FOAM & FOAM & gain \\
+ & & & & & SIMD & & SIMD & \\
+\midrule
+\csname @@input\endcsname tables/arap_local.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Time of the fit alone (ns per cell) on the cell problems $M_i$ of the same state, stored as one $3 \times 3$ matrix per cell, including the conversion of the result to a rotation matrix and, for SIMD, the gathering and scattering of the lanes.}
+\label{tab:arap_fit}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+mesh & cells & colors & SVD & Proposed & Proposed & FOAM & FOAM & gain \\
+ & & & & & SIMD & & SIMD & \\
+\midrule
+\csname @@input\endcsname tables/arap_fit.tex
+\bottomrule
+\end{tabular}
+\end{table}
+
+The fits agree. After one local step from the same state, the rotations of every method differ from those of the SVD by at most $7 \cdot 10^{-15}$ radians, and after $50$ full iterations the vertex positions differ by at most $7 \cdot 10^{-15}$, relative to the half-diagonal of the bounding box. The shapes are the same; only the time changes.
+
+The fit itself becomes $11$ to $13$ times cheaper with Algorithm~\ref{alg:rotor} one cell at a time, and $16$ to $18$ times with four lanes, where it costs $25$ to $29$ ns per cell. The local step, which also builds the matrices $M_i$, becomes $4$ to $7$ times faster with one cell at a time and $5$ to $8$ times with SIMD. Once the fit is cheap, building $M_i$ from the edges and the neighbors' rotations dominates the local step, and that part is the same for every fit; it is also why the full Armadillo, whose $173{,}000$ cells do not fit in the cache, gains less. Four lanes speed up the fit by a factor of about $1.5$, less than the $2.2$ of Section~\ref{section:comparisons}: Newton's method needs only one to three steps here, which leaves less work to share, the matrices have to be gathered into the lanes and scattered back, and every group of four takes as many steps as its slowest cell.
+
+FOAM is faster in this application, by $7$ to $14\%$ for the local step. Its fit costs $20$ to $24$ ns per cell, and four lanes do not make it faster. The reason is the one of Section~\ref{section:comparisons}: SR-ARAP needs rotation matrices, which FOAM computes directly from $3 \times 3$ matrices, while Algorithm~\ref{alg:rotor} works with $4 \times 4$ quantities and returns a rotor that must then be converted. When the rotations are wanted as rotors, for instance to interpolate them across the mesh, the comparison turns the other way. The lesson of the application is that, once the cell fit is recognized as a Wahba problem with the bound~(\ref{eqn:cell_bound}), any of the Newton methods of this paper turns the SR-ARAP local step from a cost dominated by SVDs into one dominated by bookkeeping, with the same results.
+
 %%% ----------------------------------------------------------------------
 \section{Conclusion}
 
 We presented a method for estimating the best quaternion aligning two sets of corresponding vectors or bivectors, following the geometry of the problem at each step. Maximizing the length of the sum of each bivector and its rotated target, after multiplying by the rotor, gives an energy that is quadratic in the rotor, and its multivector derivative gives an eigenrotor equation. The positivity of the energies of the sum and of the difference bounds all the eigenvalues by $\pm S/2$, and the upper bound, exact without noise, is the starting point from which Newton's method converges monotonically to the largest eigenvalue. The eigenrotor is the line where the hyperplanes of the characteristic matrix meet, computed with outer products in the 4D geometric algebra.
 
-The same geometric picture explains the singularities of the closed form methods. Each meet of three hyperplanes points along the eigenrotor, with a length proportional to one of its coordinates; any method that fixes in advance which meet, or which combination of meets, to use, fails on a whole family of rotations: rotations by $\pi$ for QUEST, rotations about horizontal axes and the identity for FLAE, and rotations such as $\pi/2$ about the $z$ axis for the earlier version of this method. Choosing the meet from the data, by its largest component, removes the singularities, with a guaranteed size that depends only on the data. In our experiments the method always reaches the optimum, at a speed comparable to QUEST, the fastest method for small numbers of vectors. The selection of the meet does not depend on how the eigenvalue is computed, so it can also make other methods of the same family, such as FLAE, free of singularities.
+The same geometric picture explains the singularities of the closed form methods. Each meet of three hyperplanes points along the eigenrotor, with a length proportional to one of its coordinates; any method that fixes in advance which meet, or which combination of meets, to use, fails on a whole family of rotations: rotations by $\pi$ for QUEST, rotations about horizontal axes and the identity for FLAE, and rotations such as $\pi/2$ about the $z$ axis for the symmetric sum of all four meets. Choosing the meet from the data, by its largest component, removes the singularities, with a guaranteed size that depends only on the data. In our experiments the method always reaches the optimum, at a speed comparable to QUEST, the fastest method for small numbers of vectors. Because the selection of the meet needs no data-dependent branch, the method is also well suited to solving many problems at once with SIMD instructions, where it is the fastest of the methods we tested that return a quaternion at full accuracy, up to $29\%$ faster than QUEST; FOAM is faster still when a rotation matrix is the desired output. In smooth-rotation ARAP deformation, every cell update is a Wahba problem with a tight bound for Newton's method; replacing its SVD by the proposed method makes the local step $5$ to $8$ times faster with the same results. The selection of the meet does not depend on how the eigenvalue is computed, so it can also make other methods of the same family, such as FLAE, free of singularities.
 
 \bibliographystyle{abbrv}
 \bibliography{rotorestimation}

@@ -272,18 +272,31 @@ pub fn la_rotor_estimator(p: &[Vec3], q: &[Vec3], w: &[f64]) -> Quat {
         a.e12 * x4[3] - a.e14 * x4[1] + a.e24 * x4[0], // (A ^ x4) . e124
         a.e12 * x3[2] - a.e13 * x3[1] + a.e23 * x3[0], // (A ^ x3) . e123
     ];
-    let mut best = 0;
-    for k in 1..4 {
-        if own[k].abs() > own[best].abs() {
-            best = k;
-        }
-    }
-    let t = match best {
-        0 => wedge3(&c, &x2),
-        1 => wedge3(&c, &x1),
-        2 => wedge3(&a, &x4),
-        _ => wedge3(&a, &x3),
+    // Branch-free selection: the largest meet is T = B ^ v with (B, v) = (C, x2), (C, x1),
+    // (A, x4) or (A, x3); select B and v, then compute a single trivector. The winner depends
+    // on the rotation, so a branch here would often be mispredicted.
+    let pick = |m: bool, a: f64, b: f64| if m { a } else { b };
+    let pick4 = |m: bool, a: &Vec4, b: &Vec4| Vec4::from_fn(|i, _| pick(m, a[i], b[i]));
+    let pick_b = |m: bool, a: &Bivector4, b: &Bivector4| Bivector4 {
+        e12: pick(m, a.e12, b.e12),
+        e13: pick(m, a.e13, b.e13),
+        e14: pick(m, a.e14, b.e14),
+        e23: pick(m, a.e23, b.e23),
+        e24: pick(m, a.e24, b.e24),
+        e34: pick(m, a.e34, b.e34),
     };
+    let m1 = own[1].abs() > own[0].abs();
+    let mut best = pick(m1, own[1].abs(), own[0].abs());
+    let mut bs = Bivector4 { ..c }; // T_0 and T_1 both use C
+    let mut v = pick4(m1, &x1, &x2);
+    let m2 = own[2].abs() > best;
+    best = pick(m2, own[2].abs(), best);
+    bs = pick_b(m2, &a, &bs);
+    v = pick4(m2, &x4, &v);
+    let m3 = own[3].abs() > best;
+    bs = pick_b(m3, &a, &bs);
+    v = pick4(m3, &x3, &v);
+    let t = wedge3(&bs, &v);
 
     // basis order e1, e2, e3, e4, read as x, y, z, w
     normalize_quat(quat_from_xyzw(&dual3(&t)))

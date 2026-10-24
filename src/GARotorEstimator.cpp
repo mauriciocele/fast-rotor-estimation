@@ -51,6 +51,18 @@ static inline double wedge(const Bivector4& A, const Bivector4& C)
 	return A.e12 * C.e34 - A.e13 * C.e24 + A.e14 * C.e23 + A.e23 * C.e14 - A.e24 * C.e13 + A.e34 * C.e12;
 }
 
+/* m ? a : b, component by component, so that the compiler can use conditional selects */
+static inline Vector4d select(bool m, const Vector4d& a, const Vector4d& b)
+{
+	return Vector4d(m ? a[0] : b[0], m ? a[1] : b[1], m ? a[2] : b[2], m ? a[3] : b[3]);
+}
+
+static inline Bivector4 select(bool m, const Bivector4& a, const Bivector4& b)
+{
+	return { m ? a.e12 : b.e12, m ? a.e13 : b.e13, m ? a.e14 : b.e14,
+	         m ? a.e23 : b.e23, m ? a.e24 : b.e24, m ? a.e34 : b.e34 };
+}
+
 /* T . (e1^e2^e3^e4)^-1, the vector dual to T */
 static inline Vector4d dual(const Trivector4& T)
 {
@@ -254,11 +266,21 @@ Quaterniond LARotorEstimator(const vector<Vector3d>& P, const vector<Vector3d>& 
 		C.e13 * x1[3] - C.e14 * x1[2] + C.e34 * x1[0],   // (x1 ^ C) . e134
 		A.e12 * x4[3] - A.e14 * x4[1] + A.e24 * x4[0],   // (A ^ x4) . e124
 		A.e12 * x3[2] - A.e13 * x3[1] + A.e23 * x3[0] }; // (A ^ x3) . e123
-	int best = 0;
-	for (int k = 1; k < 4; ++k)
-		if (std::abs(own[k]) > std::abs(own[best]))
-			best = k;
-	const Trivector4 T = best == 0 ? wedge(C, x2) : best == 1 ? wedge(C, x1) : best == 2 ? wedge(A, x4) : wedge(A, x3);
+	// Branch-free selection: the largest meet is T = B ^ v with (B, v) = (C, x2), (C, x1),
+	// (A, x4) or (A, x3); select B and v, then compute a single trivector. The winner depends
+	// on the rotation, so a branch here would often be mispredicted.
+	const bool m1 = std::abs(own[1]) > std::abs(own[0]);
+	double best = m1 ? std::abs(own[1]) : std::abs(own[0]);
+	Bivector4 Bs = C;
+	Vector4d v = select(m1, x1, x2);
+	const bool m2 = std::abs(own[2]) > best;
+	best = m2 ? std::abs(own[2]) : best;
+	Bs = select(m2, A, Bs);
+	v = select(m2, x4, v);
+	const bool m3 = std::abs(own[3]) > best;
+	Bs = select(m3, A, Bs);
+	v = select(m3, x3, v);
+	const Trivector4 T = wedge(Bs, v);
 
 	// basis order e1, e2, e3, e4, which Quaterniond(Vector4d) reads as x, y, z, w
 	Quaterniond R( dual(T) );

@@ -74,3 +74,55 @@ for opt in ('O3', 'Ofast'):
         for n in ns:
             f.write(f'{n},' + ','.join(f'{t[(opt, m, n)]:.1f}' for m in order) + '\n')
 print('tables written to', os.path.normpath(tables))
+
+# Tables: batched SIMD comparison (matched implementations)
+# simd.tex: four lanes; the fastest method that returns a quaternion at full accuracy
+# (proposed, FOAM + conversion, FLAE + fallback, QUEST tau = 0.1) is in bold.
+rows = list(csv.DictReader(open(os.path.join(data, 'simd_timing.csv'))))
+cols = ('proposed_simd', 'foamq_simd', 'flae_adj_simd', 'quest_simd', 'foam_simd', 'flae_simd', 'quest_simd_1e-4')
+robust = 4
+with open(os.path.join(tables, 'simd.tex'), 'w') as f:
+    for r in rows:
+        v = [float(r[k]) for k in cols]
+        cells = [f'${x:.1f}$' for x in v]
+        b = min(v[:robust])
+        for i in range(robust):
+            if f'{v[i]:.1f}' == f'{b:.1f}':
+                cells[i] = f'$\\mathbf{{{v[i]:.1f}}}$'
+        f.write(f"${r['n']}$ & " + ' & '.join(cells) + ' \\\\\n')
+scols = ('proposed_scalar', 'foamq_scalar', 'flae_adj_scalar', 'quest_scalar', 'foam_scalar', 'flae_scalar')
+with open(os.path.join(tables, 'simd_scalar.tex'), 'w') as f:
+    for r in rows:
+        v = [float(r[k]) for k in scols]
+        cells = [f'${x:.1f}$' for x in v]
+        b = min(v[:robust])
+        for i in range(robust):
+            if f'{v[i]:.1f}' == f'{b:.1f}':
+                cells[i] = f'$\\mathbf{{{v[i]:.1f}}}$'
+        f.write(f"${r['n']}$ & " + ' & '.join(cells) + ' \\\\\n')
+g3 = lambda x: sci(x) if 0 < float(x) < 1e-3 else f'${float(x):.3g}$'
+rows = list(csv.DictReader(open(os.path.join(data, 'simd_accuracy.csv'))))
+with open(os.path.join(tables, 'simd_accuracy.tex'), 'w') as f:
+    for r in rows:
+        f.write(f"{g3(r['delta'])} & {g3(r['qw'])} & " + ' & '.join(sci(r[k]) for k in ('proposed', 'foam', 'flae', 'flae_adj', 'quest_0.1', 'quest_1e-4')) + ' \\\\\n')
+rows = list(csv.DictReader(open(os.path.join(data, 'simd_accuracy_flae.csv'))))
+with open(os.path.join(tables, 'simd_accuracy_flae.tex'), 'w') as f:
+    for r in rows:
+        f.write(f"{g3(r['delta'])} & " + ' & '.join(sci(r[k]) if float(r[k]) < 1e-3 else f"${float(r[k]):.3g}$" for k in ('proposed', 'foam', 'flae', 'flae_adj', 'quest_0.1')) + ' \\\\\n')
+
+# Tables: SR-ARAP local step with different Procrustes fits (data copied from the arap-sr-linearized repository,
+# `cargo run --release --bin experiments procrustes`)
+rows = list(csv.DictReader(open(os.path.join(data, 'arap_procrustes.csv'))))
+names = {'armadillo_control': 'Armadillo, control', 'cactus': 'Cactus', 'tube': 'Bar', 'armadillo_full': 'Armadillo'}
+fits = ('svd', 'rotor', 'rotor_simd', 'foam', 'foam_simd')
+by = {(r['scene'], r['fit']): r for r in rows}
+scenes = list(dict.fromkeys(r['scene'] for r in rows))
+ms_fmt = lambda x: f'{x:.3f}' if x < 1 else f'{x:.2f}' if x < 10 else f'{x:.1f}'
+for col, name, fmt in (('local_ms', 'arap_local.tex', ms_fmt), ('solve_ns_per_cell', 'arap_fit.tex', lambda x: f'{x:.0f}')):
+    with open(os.path.join(tables, name), 'w') as f:
+        for s in scenes:
+            r0 = by[(s, 'svd')]
+            v = [float(by[(s, k)][col]) for k in fits]
+            cells = [f'${fmt(x)}$' for x in v]
+            f.write(f"{names[s]} & ${int(r0['cells']):,}$ & ${r0['colors']}$ & ".replace(',', '{,}') + ' & '.join(cells)
+                    + f" & ${v[0] / v[2]:.1f}\\times$ \\\\\n")

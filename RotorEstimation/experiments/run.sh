@@ -12,4 +12,6 @@ for opt in O3 Ofast; do
 	c++ -std=c++17 -$opt -DNDEBUG -I"$EIGEN" -I$SRC timing.cpp $LIB -o timing_$opt
 	./timing_$opt > ../data/timing_$opt.csv
 done
+clang++ -std=c++17 -O3 -DNDEBUG -I"$EIGEN" -I$SRC simd.cpp $LIB -o simd
+./simd ../data
 python3 make_tables.py
